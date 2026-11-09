@@ -139,7 +139,7 @@ module.exports = (scenario) => {
           apart(vNum, box('#villain .shout'));
           apart(vNum, box('#villain .inset'));
           apart(vNum, box('#next'));
-          apart(vNum, ink('#villain .max'));
+          apart(vNum, glyphs('#villain .max'));
           within(ink('#villain .line'), box('#villain .shout'));
           apart(box('#villain .shout'), box('#next'));
           apart(box('#villain .shout'), box('#villain .inset'));
@@ -149,14 +149,16 @@ module.exports = (scenario) => {
           if (hNum.top < vKeys.bottom) out.push('The hero number reaches the villain keys');
           apart(hNum, box('#seal'));
           apart(hNum, box('#hero .round'));
-          apart(hNum, ink('#hero .max'));
+          apart(hNum, glyphs('#hero .max'));
+          apart(box('#hero .max'), box('#hero .round'));
+          apart(box('#villain .max'), box('#villain .shout'));
           if (hNum.bottom > hero.bottom) out.push('The hero number spills out of the bottom of its panel');
           within(ink('#hero .line'), box('#hero .round'));
 
           for (const sel of ['#set', '#next', '#seal', ...[0, 1, 2, 3].map((i) => document.querySelectorAll('.key')[i])]) {
             const b = box(sel);
             within(b, view);
-            if (b.height < 30 || b.width < 44) out.push(`${b.name} is too small to tap (${Math.round(b.width)}×${Math.round(b.height)})`);
+            if (b.height < 44 || b.width < 44) out.push(`${b.name} is too small to tap (${Math.round(b.width)}×${Math.round(b.height)})`);
           }
           within(villain, view);
           within(hero, view);

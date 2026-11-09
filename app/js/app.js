@@ -1,6 +1,6 @@
 // Startup and drawing. The page is a manga "flashback" page: paper panels on black gutters.
 
-import { state, started, total, change, toggleBoost } from './store.js';
+import { state, started, total, change, toggleBoost, MAX_HP } from './store.js';
 import { VILLAIN_LINES, HERO_LINES, lineFor } from './lines.js';
 import { soundEffect } from './sfx.js';
 import { trackPresses, onHold } from './presses.js';
@@ -29,6 +29,8 @@ const sides = Object.fromEntries(
         line: $('.line', panel),
         focus: $('.focus', panel),
         status: $('.status', panel),
+        minus: $(`.key[data-side="${key}"][data-dir="-1"]`),
+        plus: $(`.key[data-side="${key}"][data-dir="1"]`),
       },
     ];
   })
@@ -45,10 +47,14 @@ function draw() {
     if (!c) continue;
     el.num.textContent = c.hp;
     el.max.textContent = `/ ${total(c)}`;
-    if (c.up) el.max.append(make('span', 'up', ` (+${c.up})`));
+    if (c.up) el.max.append(make('span', 'up', `(+${c.up})`));
     el.status.textContent = `${el.name} ${c.hp} of ${total(c)}`;
     setVertical(el.line, lineFor(el.lines, c.hp / total(c)));
     el.panel.classList.toggle('down', c.hp === 0);
+    // A key that can't change anything right now shows faint (it stays pressable: nothing happens).
+    const [canLower, canRaise] = state.boost ? [c.up > 0, total(c) < MAX_HP] : [c.hp > 0, c.hp < total(c)];
+    el.minus.classList.toggle('inert', !canLower);
+    el.plus.classList.toggle('inert', !canRaise);
   }
   $('#stage-num').textContent = state.stage;
   $('#game-num').textContent = Math.max(1, state.game);

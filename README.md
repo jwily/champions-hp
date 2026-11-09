@@ -7,11 +7,13 @@ no build step, no dependencies.
 
 ## Using it
 
-- **Set HP** (top right) starts a game: type the hero's and the villain's HP. The number beside
+- **New game** (top right) starts a game: type the villain's and the hero's HP. The number beside
   "HP—ヒットポイント—" counts games.
 - **− / +** under each panel: tap for 1, hold for 5 (and another 5 every half second while held).
-  Fast taps all count, so tapping − three times is 3 damage. + heals up to max HP.
-- **Next stage ▸** asks for the villain's HP for the next stage. It pulses when the villain is at 0.
+  Fast taps all count, so tapping − three times is 3 damage. + heals up to max HP. A key shows
+  faint when it can't change anything (− at 0, + at max), and a defeated side's number is hollow.
+- **Next stage ▸** asks for the villain's HP for the next stage. It turns solid ink when the villain
+  is at 0.
 - **The 増 seal** ("increase") is the toggle for raising max HP, for effects that say a character
   "gets +X hit points" (Rules Reference v1.8, p. 22). While it's inked orange, − and + change the
   bonus instead: raising it raises max and current HP together; lowering it lowers both, which can

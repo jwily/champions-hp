@@ -9,7 +9,7 @@ const form = $('#sheet-form');
 const heroRow = $('#hero-row');
 const heroInput = $('#hero-input');
 const villainInput = $('#villain-input');
-const error = $('#sheet-error');
+const error = $('#sheet-error'); // for screen readers; the panel itself shows the problem
 let mode = 'new';
 
 // The fields' panels get the main page's art: spirals for the villain, rays for the hero.
@@ -61,15 +61,23 @@ form.addEventListener('submit', (e) => {
   }
 });
 
+// A bad entry: its panel says what's wanted in its own label, and gets the heavy border.
 function fail(input, who) {
+  const row = input.closest('.entry');
+  const label = $('.narration', row);
+  label.textContent = `${label.dataset.label}: 1–${MAX_HP}`;
+  row.classList.add('invalid');
   error.textContent = `Enter ${who} HP from 1 to ${MAX_HP}.`;
-  error.hidden = false;
   input.focus();
 }
 
 function clearError() {
+  for (const row of sheet.querySelectorAll('.entry')) {
+    row.classList.remove('invalid');
+    const label = $('.narration', row);
+    label.textContent = label.dataset.label;
+  }
   error.textContent = '';
-  error.hidden = true;
 }
 
 for (const input of [heroInput, villainInput]) input.addEventListener('input', clearError);

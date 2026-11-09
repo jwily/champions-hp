@@ -58,9 +58,9 @@ module.exports = (scenario) => {
     await page.click('#seal');
     equal(await page.getAttribute('#seal', 'aria-pressed'), 'true', 'Seal on');
     await tap(page, 'hero', '+', 3);
-    equal(await read(page, 'hero'), { hp: 10, max: '/ 13 (+3)', line: 'まだまだ!!' }, '+3 hit points');
+    equal(await read(page, 'hero'), { hp: 10, max: '/ 13(+3)', line: 'まだまだ!!' }, '+3 hit points');
     await tap(page, 'hero', '-');
-    equal(await read(page, 'hero'), { hp: 9, max: '/ 12 (+2)', line: 'まだまだ!!' }, 'Lowering it lowers HP too');
+    equal(await read(page, 'hero'), { hp: 9, max: '/ 12(+2)', line: 'まだまだ!!' }, 'Lowering it lowers HP too');
     await page.click('#seal');
     await tap(page, 'hero', '+', 5);
     equal((await read(page, 'hero')).hp, 12, 'Heals reach the raised max');
@@ -93,11 +93,11 @@ module.exports = (scenario) => {
     equal((await read(page, 'hero')).hp, 10, 'Hero untouched');
   });
 
-  scenario('Set HP mid-game starts a new game', async (open) => {
+  scenario('New game mid-game starts a new game', async (open) => {
     const page = await open({ game: { hero: [4, 11], villain: [3, 15], stage: 2, game: 3 } });
     await page.click('#set');
     check(await page.isVisible('#sheet-cancel'), 'Cancel available mid-game');
-    equal(await page.evaluate(() => document.activeElement === document.body), true, 'Nothing focused when Set HP opens the sheet');
+    equal(await page.evaluate(() => document.activeElement === document.body), true, 'Nothing focused when New game opens the sheet');
     equal(await page.inputValue('#hero-input'), '11', 'Hero HP filled in from the last game');
     await fillSheet(page, { villain: 12 });
     equal(await read(page, 'hero'), { hp: 11, max: '/ 11', line: 'いくぞ!!' }, 'Hero reset');
@@ -115,7 +115,7 @@ module.exports = (scenario) => {
     await page.reload();
     await ready(page);
     equal((await read(page, 'villain')).hp, 10, 'Villain after relaunch');
-    equal((await read(page, 'hero')).max, '/ 12 (+2)', 'Hero after relaunch');
+    equal((await read(page, 'hero')).max, '/ 12(+2)', 'Hero after relaunch');
     equal(await page.getAttribute('#seal', 'aria-pressed'), 'true', 'Seal after relaunch');
     check(!(await page.isVisible('#sheet')), 'No sheet when a game is saved');
   });
@@ -157,6 +157,40 @@ module.exports = (scenario) => {
     check((await effects()).length > 0, 'and stay a moment');
     await page.clock.runFor(1200);
     equal((await effects()).length, 0, 'then go at once');
+  });
+
+  scenario('keys that can’t change anything show faint; a defeated side is drawn hollow', async (open) => {
+    const page = await open({ game: { hero: [1, 10], villain: [14, 14] } });
+    const inert = () =>
+      page.$$eval('.key', (keys) => keys.filter((k) => k.classList.contains('inert')).map((k) => `${k.dataset.side}${k.dataset.dir > 0 ? '+' : '-'}`));
+    equal(await inert(), ['villain+'], 'Full villain: + is faint');
+    await tap(page, 'hero', '-');
+    equal(await inert(), ['villain+', 'hero-'], 'Hero at 0: − is faint');
+    check(await page.$eval('#hero', (p) => p.classList.contains('down')), 'The hero is drawn defeated');
+    const hollow = await page.$eval('#hero .num', (n) => getComputedStyle(n).color !== getComputedStyle(document.querySelector('#villain .num')).color);
+    check(hollow, 'The defeated number is drawn hollow');
+    await page.click('#seal');
+    equal(await inert(), ['villain-', 'hero-'], 'Max-HP mode: − is faint with no bonus to remove');
+  });
+
+  scenario('Next stage turns solid ink when the villain is down', async (open) => {
+    const page = await open({ game: { villain: [1, 14] } });
+    const bg = () => page.$eval('#next', (b) => getComputedStyle(b).backgroundColor);
+    const before = await bg();
+    await tap(page, 'villain', '-');
+    check((await bg()) !== before, 'Next stage changes when the villain reaches 0');
+    equal(await page.$eval('#next', (b) => b.getAnimations().length), 0, 'and stays still');
+  });
+
+  scenario('a bad entry is shown in its own panel', async (open) => {
+    const page = await open();
+    equal(await page.textContent('#set'), 'New game', 'The button says New game');
+    await fillSheet(page, { hero: 10, villain: 0 });
+    equal(await page.textContent('#villain-row .narration'), 'Villain HP: 1–99', 'The villain panel says what it wants');
+    check(await page.$eval('#villain-row', (r) => r.classList.contains('invalid')), 'and is marked');
+    check(!(await page.$eval('#hero-row', (r) => r.classList.contains('invalid'))), 'The hero panel isn’t');
+    await page.fill('#villain-input', '1');
+    equal(await page.textContent('#villain-row .narration'), 'Villain HP', 'Typing clears it');
   });
 
   // ---------- Presses (lessons from Bgt-J: app/js/presses.js) ----------
@@ -211,7 +245,7 @@ module.exports = (scenario) => {
     await key(page, 'hero', '-').tap();
     equal((await read(page, 'hero')).hp, 9, 'Hero after a touch tap');
     await page.tap('#set');
-    check(await page.isVisible('#sheet'), 'Set HP opens the sheet by touch');
+    check(await page.isVisible('#sheet'), 'New game opens the sheet by touch');
     await page.tap('#hero-input');
     equal(await page.evaluate(() => document.activeElement.id), 'hero-input', 'Tapping a field focuses it');
     await page.tap('#sheet-cancel');

@@ -23,8 +23,6 @@
   --head: #a39d91; /* small print on the black page */
   --orange: #ff7a1a; /* the one spot color: the max-HP mode */
   --orange-ink: #c4500a; /* the same orange, dark enough to read as small text on paper */
-  --error: #8e2410;
-  --seal-off: #8a7b6b;
   --col-gap: 8px;
   --row-gap: 12px;
   --side: 12px;
@@ -88,7 +86,7 @@ button {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 42px;
+  height: 52px;
   font-size: 11px;
   color: var(--head);
 }
@@ -105,7 +103,7 @@ button {
   padding: 4px 10px;
 }
 button.narration {
-  min-height: 34px;
+  min-height: 44px;
   padding: 6px 12px;
 }
 button.narration.pressed { background: var(--ink); color: var(--paper); }
@@ -124,7 +122,6 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   inset: 0;
   border: 2px solid var(--ink);
   pointer-events: none;
-  filter: url(#rough);
 }
 .art-wrap {
   position: absolute;
@@ -167,29 +164,38 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
 
 /* ---------- Numbers, balloons, sound effects ---------- */
 
-.num {
+/* HP and its max together: "/ 14" sits right under the villain's number and beside the hero's. */
+.reading {
   position: absolute;
+  display: flex;
+}
+#villain .reading { right: 6cqw; top: 52%; transform: translateY(-50%); flex-direction: column; align-items: flex-end; }
+/* The hero's number breaks out over the panel's top border, as Kishimoto does for impact. */
+#hero .reading { left: 4cqw; top: 0; transform: translateY(-22%); align-items: baseline; gap: 6px; }
+
+.num {
   font-family: var(--heavy);
-  font-size: min(44cqh, 34cqw);
   line-height: 0.9;
   color: var(--ink);
   -webkit-text-stroke: 0.08em var(--paper);
   paint-order: stroke;
   font-variant-numeric: tabular-nums;
 }
-#villain .num { right: 6cqw; top: 54%; transform: translateY(-50%); font-size: min(40cqh, 30cqw); }
-/* The hero's number breaks out over the panel's top border, as Kishimoto does for impact. */
-#hero .num { left: 4cqw; top: 0; transform: translateY(-22%); font-size: min(46cqh, 29cqw); }
+#villain .num { font-size: min(38cqh, 30cqw); }
+#villain .max { margin-top: 6px; }
+#hero .num { font-size: min(46cqh, 29cqw); }
+/* Defeated: the number is left as an empty outline. */
+.down .num { color: var(--paper); -webkit-text-stroke: 0.035em var(--ink); paint-order: normal; }
 
 .max {
-  position: absolute;
-  bottom: 8px;
-  font-size: 14px;
+  font-size: 18px;
+  line-height: 1.2;
   color: var(--sub);
+  -webkit-text-stroke: 4px var(--paper);
+  paint-order: stroke;
+  white-space: nowrap;
 }
-#villain .max { right: 12px; }
-#hero .max { left: 14px; }
-.max .up { color: var(--orange-ink); }
+.max .up { display: block; color: var(--orange-ink); } /* the bonus on its own line, under the max */
 
 .balloon {
   position: absolute;
@@ -209,7 +215,7 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   left: 5cqw;
   top: 9cqh;
   width: max(84px, 27cqw);
-  height: min(62cqh, 100cqh - 9cqh - 56px);
+  height: min(62cqh, 100cqh - 9cqh - 66px); /* clear of Next stage */
 }
 .shout svg {
   position: absolute;
@@ -283,8 +289,8 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   bottom: 10px;
   z-index: 1;
 }
-#villain.down .next { animation: beckon 0.9s ease-in-out infinite alternate; }
-@keyframes beckon { to { background: var(--ink); color: var(--paper); } }
+/* The villain is down: Next stage is what to press now. */
+#villain.down .next { background: var(--ink); color: var(--paper); }
 
 /* ---------- Keys ---------- */
 
@@ -303,16 +309,8 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   align-items: center;
   justify-content: center;
 }
-.key small {
-  position: absolute;
-  right: 8px;
-  bottom: 5px;
-  font-family: var(--antique);
-  font-size: 10px;
-  color: var(--sub);
-}
 .key.pressed { background: var(--ink); color: var(--paper); }
-.key.pressed small { color: var(--tone); }
+.key.inert { color: var(--tone); }
 .boosting .key .border { border: 3px solid var(--orange); }
 
 /* ---------- The 増 seal ---------- */
@@ -328,13 +326,13 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   z-index: 2;
   width: 44px;
   height: 44px;
-  transform: translateY(-46%) rotate(-5deg);
-  border: 2.5px solid var(--seal-off);
+  transform: translateY(-46%) rotate(-2deg);
+  border: 2.5px solid var(--paper);
   border-radius: 4px;
   /* The hanko's inner rule: a thin second frame inside the first. */
-  box-shadow: inset 0 0 0 2.5px var(--black), inset 0 0 0 3.5px var(--seal-off);
+  box-shadow: inset 0 0 0 2.5px var(--black), inset 0 0 0 3.5px var(--paper);
   background: var(--black);
-  color: var(--seal-off);
+  color: var(--paper);
   font-family: var(--heavy);
   font-size: 23px;
   line-height: 1;
@@ -391,7 +389,6 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   display: block;
   flex: 1 1 0;
   min-height: 80px;
-  max-height: 170px;
   cursor: text;
 }
 .entry input {
@@ -416,19 +413,14 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   user-select: text;
 }
 .entry input::placeholder { color: var(--sub); opacity: 1; }
-/* The panel being typed in gets a heavier border. */
-.entry:focus-within .border { border-width: 4px; }
+/* The panel being typed in, or holding a bad entry, gets a heavier border. */
+.entry:focus-within .border, .entry.invalid .border { border-width: 4px; }
 
 .entry .narration {
   position: absolute;
   z-index: 1;
   left: 10px;
   top: 10px;
-}
-.error {
-  align-self: flex-start;
-  margin: 0;
-  color: var(--error);
 }
 
 /* At the bottom, under the thumb (above the keyboard while it's open). */

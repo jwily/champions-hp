@@ -76,6 +76,10 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   thicker, which the user spotted as amateurish). Balloon text is in the antique serif: the heavy
   font blots many-stroke kanji at small sizes. The 増 seal is a hanko: one centered character in a
   double-ruled frame, no furigana (it crowded the character).
+- Limits and states are designed, not left to the happy path: a key that can't change anything shows
+  faint (`.inert`), a defeated side's number is a hollow outline, Next stage turns solid ink (static:
+  no pulsing) when the villain is down. HP and max read together (`.reading`).
+- Panel borders are ruled straight (as Naruto's are); no wobble filter. Tap targets are 44px+.
 - One spot color, orange, and only for the max-HP mode (the inked 増 seal, the keys' borders, the
   bonus). Keep it meaning one thing.
 - The hero's number breaks out over its panel's top border; it must clear the villain keys and the
@@ -85,7 +89,8 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   text. Buttons on the page are narration boxes (`.narration-button`: paper, ink border).
 - The HP sheet is a page of its own: villain panel above hero panel (as on the main page), labels
   as narration boxes, the fields' numbers in the heavy font, Cancel / FIGHT!! as key panels. It
-  opens with nothing focused (the user's choice): tap a panel to type.
+  opens with nothing focused (the user's choice): tap a panel to type. A bad entry is shown in its
+  own panel (its label says "Villain HP: 1–99", heavier border), in ink: no second accent color.
 - The sheet's Cancel / FIGHT!! row sits at the bottom, under the thumb (the user's request), and
   rides above the keyboard while it's open (`js/keyboard.js` sets `--keyboard` from the visual
   viewport: iOS overlays the keyboard without resizing the page, and its number pad has no Done
