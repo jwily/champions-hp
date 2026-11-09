@@ -240,6 +240,14 @@ module.exports = (scenario) => {
     equal({ missing, extra }, { missing: [], extra: [] }, 'sw.js FILES vs app files');
   });
 
+  scenario('the page is valid HTML', async () => {
+    const { HtmlValidate, FileSystemConfigLoader } = require('html-validate');
+    const validator = new HtmlValidate(new FileSystemConfigLoader({ extends: ['html-validate:standard'] }));
+    const report = await validator.validateFile(path.join(APP, 'index.html'));
+    const problems = report.results.flatMap((r) => r.messages.map((m) => `${m.line}:${m.column} ${m.message} (${m.ruleId})`));
+    equal(problems, [], 'HTML problems');
+  });
+
   scenario('the bundled fonts cover every character the app uses', async () => {
     const covered = fs.readFileSync(path.join(APP, 'fonts', 'chars.txt'), 'utf8');
     const missing = appChars().filter((c) => !covered.includes(c));
