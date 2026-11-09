@@ -5,7 +5,7 @@
 // itself whether and where to send one (none once the thumb has strayed, a late one after a
 // gesture), so it's cancelled at the source (touchend, which also stops double-tap zoom) and stopped
 // if it comes anyway. Clicks from the keyboard or from code carry no click count, and go through.
-// Fields and labels (NATIVE) are left to the browser: iOS needs its own tap to focus them. Each
+// Fields and labels (NATIVE) aren't presses: keyboard.js focuses the HP sheet's fields itself. Each
 // finger is tracked on its own, so overlapping taps (two thumbs, or fast tapping) each count.
 // A tap in a gap between controls does nothing: between − and + a guess could pick the wrong sign.
 // Give controls ordinary `click` listeners and nothing else; don't add click-timing workarounds.
@@ -16,7 +16,7 @@ const NATIVE = 'input, textarea, select, label';
 
 export const HOLD_MS = 450; // a press held this long is a hold, not a tap
 export const REPEAT_MS = 550; // a held key repeats this often
-const HOLD_SLOP = 10; // px a held finger can drift before the hold is called off
+const HOLD_SLOP = 10; // px a finger can drift before its hold starts, and still make one
 
 const presses = new Map(); // pointerId -> { target, used, x, y }
 
@@ -46,13 +46,17 @@ export function trackPresses() {
     },
     { capture: true }
   );
+  // Drifting calls a hold off: before it starts, any move past HOLD_SLOP (a finger on its way
+  // somewhere else); once it's repeating, only leaving the control (a wiggle on the key stopped it).
   document.addEventListener(
     'pointermove',
     (event) => {
       const press = presses.get(event.pointerId);
-      if (press && Math.hypot(event.clientX - press.x, event.clientY - press.y) > HOLD_SLOP) {
-        press.target.dispatchEvent(new CustomEvent('press:drift', { detail: event.pointerId }));
-      }
+      if (!press) return;
+      const drifted = press.used
+        ? pressTarget(document.elementFromPoint(event.clientX, event.clientY) ?? document.body) !== press.target
+        : Math.hypot(event.clientX - press.x, event.clientY - press.y) > HOLD_SLOP;
+      if (drifted) press.target.dispatchEvent(new CustomEvent('press:drift', { detail: event.pointerId }));
     },
     { capture: true }
   );
@@ -109,7 +113,7 @@ export function trackPresses() {
 
 /**
  * Press and hold: `step` runs after HOLD_MS and again every REPEAT_MS while held. The press is then
- * used up, so its lift doesn't also tap. Drifting off calls the hold off.
+ * used up, so its lift doesn't also tap. Drifting calls the hold off (see pointermove above).
  */
 export function onHold(node, step) {
   const timers = new Map(); // pointerId -> timer

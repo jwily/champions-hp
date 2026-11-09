@@ -1,77 +1,82 @@
-// The on-screen keyboard. iOS lays it over the page without resizing the page, so anything pinned
-// to the bottom would sit hidden behind it. While it's open, --keyboard holds how much of the
-// screen's bottom it covers; the HP sheet keeps its buttons just above that (iOS's number pad has
-// no Done key, so they're the way out).
+// The on-screen keyboard, and taps on the HP sheet's fields.
 //
-// A field low on the screen (Hero HP) would be under the keyboard, so iOS scrolls the page to show
-// it, then the sheet shrinks and the scroll is undone: the page jolted down and slid back. So the
-// sheet makes room as the finger lands, before the field is focused, using the keyboard's height
-// from last time (or an estimate the first time): the field is already clear of the keyboard, and
-// iOS has nothing to scroll. (Playwright has no touch keyboard: tests/layout.js simulates one.)
+// iOS lays the keyboard over the page without resizing the page, so anything pinned to the bottom
+// would sit hidden behind it. While it's open, --keyboard holds how much of the screen's bottom it
+// covers (and the root has .keyboard-open); the HP sheet keeps its buttons just above that (iOS's
+// number pad has no Done key, so they're the way out).
+//
+// iOS also scrolls the page to show a field it focuses, even one already in view, and the app then
+// scrolls back: the page slid down and back up. So the app focuses the fields itself, without
+// scrolling, and a field the keyboard will cover (Hero HP) gets its room as the finger lands, from
+// the keyboard's height last time, so it's already clear when the keyboard comes. (Playwright has
+// no touch keyboard: tests/helpers.js simulates one.)
 
+import * as storage from './storage.js';
+
+const FIELD = '.entry'; // the HP sheet's field panels: a label holding its input
 const HEIGHT_KEY = 'champions-hp-keyboard'; // the keyboard's last height, in CSS px
-const SETTLE_MS = 1000; // how long a guessed height holds while the keyboard comes up
+// The first time there's no height saved: iOS's number pad and the bar over it take about 42% of
+// the screen (360px of 852 on an iPhone 16 Pro, iOS 26).
+const FIRST_GUESS = 0.42;
+const SETTLE_MS = 1000; // how long room made ahead of the keyboard waits for it to come
 
 const root = document.documentElement;
-let guessUntil = 0; // until then, the sheet keeps the guessed room even if iOS reports no keyboard yet
+let reported = 0; // the keyboard's height as iOS last reported it (0: closed)
+let guessUntil = 0; // until then, room made ahead of the keyboard holds even if iOS reports none yet
 
-function remembered() {
-  try {
-    return Number(localStorage.getItem(HEIGHT_KEY)) || 0;
-  } catch {
-    return 0;
-  }
-}
+const guessing = () => performance.now() < guessUntil;
 
-function remember(height) {
-  try {
-    localStorage.setItem(HEIGHT_KEY, height);
-  } catch {
-    // storage full or blocked: estimate again next time
-  }
-}
+/** The sheet has made room for the keyboard (it's open, or on its way). */
+export const keyboardOpen = () => root.classList.contains('keyboard-open');
 
 function makeRoom(height) {
   root.style.setProperty('--keyboard', `${height}px`);
   root.classList.toggle('keyboard-open', height > 0);
 }
 
-export function trackKeyboard() {
+// What iOS reports: the keyboard's height, not counting how far iOS has scrolled the view to show
+// a field (subtracting that scroll shrank the sheet too little for the lower field).
+function measure() {
   const view = window.visualViewport;
-  if (!view) return;
-  let last = 0;
-  const update = () => {
-    // The keyboard's height, not counting how far iOS has scrolled the view to show a field low on
-    // the screen (subtracting that scroll shrank the sheet too little for the lower field).
-    const covered = Math.max(0, Math.round(window.innerHeight - view.height));
-    if (covered === 0 && performance.now() < guessUntil) return; // the keyboard is still on its way
-    if (covered > 0 && covered !== last) remember(covered);
-    last = covered;
-    makeRoom(covered);
-    // With the sheet shrunk by the whole keyboard, the field is already in view: undo any scroll.
-    if (view.offsetTop > 0 || window.scrollY > 0) requestAnimationFrame(() => window.scrollTo(0, 0));
-  };
-  view.addEventListener('resize', update);
-  view.addEventListener('scroll', update);
+  const height = Math.max(0, Math.round(window.innerHeight - view.height));
+  if (height === 0 && guessing()) return; // the keyboard is still on its way
+  if (height > 0 && height !== reported) storage.save(HEIGHT_KEY, height);
+  reported = height;
+  makeRoom(height);
+  // With the sheet shrunk by the whole keyboard, the field is already in view: undo any scroll.
+  if (view.offsetTop > 0 || window.scrollY > 0) requestAnimationFrame(() => window.scrollTo(0, 0));
+}
 
-  // A finger landing on a field. With the keyboard closed, and the field where the keyboard will
-  // cover it, make room now. A field it won't cover (Villain HP) waits for the keyboard and changes
-  // in one step: a guess, if off, made it change twice. The first time there's nothing remembered,
-  // so guess: iOS's number pad and the bar over it take about 42% of the screen (360px of 852 on an
-  // iPhone 16 Pro, iOS 26).
+// Room made ahead of the keyboard that it doesn't need any more: back to what iOS reports.
+function dropGuess() {
+  guessUntil = 0;
+  measure();
+}
+
+// With the keyboard closed, room for it now if it will cover `field` once it comes. A field it
+// won't cover (Villain HP) waits for the keyboard and changes in one step: a guess, if off, made it
+// change twice.
+function makeRoomAhead(field) {
+  if (reported > 0) return;
+  const height = Number(storage.load(HEIGHT_KEY)) || Math.round(window.innerHeight * FIRST_GUESS);
+  if (field.getBoundingClientRect().bottom <= window.innerHeight - height) return;
+  guessUntil = performance.now() + SETTLE_MS;
+  makeRoom(height);
+}
+
+export function trackKeyboard() {
+  if (!window.visualViewport) return;
+  window.visualViewport.addEventListener('resize', measure);
+  window.visualViewport.addEventListener('scroll', measure);
+
   let pressed = null; // the field the finger came down on
   document.addEventListener('touchstart', (e) => {
-    pressed = e.target.closest?.('.entry')?.querySelector('input') ?? null;
-    if (!pressed || last > 0) return;
-    const height = remembered() || Math.round(window.innerHeight * 0.42);
-    if (pressed.closest('.entry').getBoundingClientRect().bottom <= window.innerHeight - height) return;
-    guessUntil = performance.now() + SETTLE_MS;
-    makeRoom(height);
+    const field = e.target.closest?.(FIELD);
+    pressed = field?.querySelector('input') ?? null;
+    if (pressed) makeRoomAhead(field);
   });
-  // On the lift, focus the field the finger came down on ourselves, without scrolling, and cancel
-  // the tap's own click: the fields may have moved under the finger (its lift could land on FIGHT!!),
-  // and iOS's own focus scrolls toward the field even when it's already in view (going from Villain
-  // HP straight to Hero HP slid the page down and back).
+  // On the lift, the app focuses that field itself, without scrolling, and cancels the tap's own
+  // click: the fields may have moved under the finger (its lift could land on FIGHT!!).
   document.addEventListener(
     'touchend',
     (e) => {
@@ -79,21 +84,15 @@ export function trackKeyboard() {
       e.preventDefault();
       pressed.focus({ preventScroll: true });
       pressed = null;
-      if (last > 0) return; // the keyboard was already open: there's no guess to check
-      // No keyboard came (a hardware keyboard, say): give the sheet its room back.
-      setTimeout(() => {
-        if (last > 0) return;
-        guessUntil = 0;
-        update();
-      }, SETTLE_MS);
+      // If no keyboard comes (a hardware keyboard, say), the sheet gets its room back.
+      if (guessing()) setTimeout(() => reported === 0 && dropGuess(), SETTLE_MS);
     },
     { passive: false }
   );
   document.addEventListener('touchcancel', () => {
     if (!pressed) return;
     pressed = null;
-    guessUntil = 0;
-    update();
+    dropGuess();
   });
-  update();
+  measure();
 }

@@ -2,6 +2,7 @@
 // stage (their HP only).
 
 import { MAX_HP, state, started, newGame, nextStage } from './store.js';
+import { keyboardOpen } from './keyboard.js';
 import { $ } from './dom.js';
 
 const sheet = $('#sheet');
@@ -40,7 +41,7 @@ export function openSheet(forWhat) {
 
 // Each panel's art is sized for the panel with the keyboard closed, so the keyboard only crops it.
 function frameArt() {
-  if (document.documentElement.classList.contains('keyboard-open')) return;
+  if (keyboardOpen()) return;
   for (const row of sheet.querySelectorAll('.entry')) {
     row.style.removeProperty('--art-h');
     if (!row.hidden) row.style.setProperty('--art-h', `${row.clientHeight}px`);

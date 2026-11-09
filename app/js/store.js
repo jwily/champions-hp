@@ -1,5 +1,7 @@
-// The game's state: one JSON object in localStorage. Every change goes through a function here,
+// The game's state: one JSON object saved on the phone. Every change goes through a function here,
 // which saves and fires `hp:change`; app.js redraws on that event.
+
+import * as storage from './storage.js';
 
 const KEY = 'champions-hp';
 const VERSION = 4;
@@ -38,25 +40,23 @@ const valid = (s) =>
   validSide(s.hero) &&
   validSide(s.villain);
 
-function load() {
+// The saved game, upgraded to this version, or a fresh one if there's none or it's unreadable.
+function restore() {
   try {
-    let saved = JSON.parse(localStorage.getItem(KEY));
+    let saved = JSON.parse(storage.load(KEY));
     while (saved && MIGRATIONS[saved.version]) saved = MIGRATIONS[saved.version](saved);
     if (valid(saved)) return saved;
   } catch {
-    // Unreadable or blocked storage: start fresh.
+    // Not JSON: start fresh.
   }
   return fresh();
 }
 
-export const state = load(); // after load's helpers: they're consts
+export const state = restore(); // after restore's helpers: they're consts
 
+// Saves (if it can't, play carries on from memory) and tells the page to redraw.
 function save() {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(state));
-  } catch {
-    // Storage full or blocked: keep playing from memory.
-  }
+  storage.save(KEY, JSON.stringify(state));
   document.dispatchEvent(new Event('hp:change'));
 }
 

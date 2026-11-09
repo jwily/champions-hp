@@ -440,6 +440,24 @@ module.exports = (scenario) => {
     equal((await read(page, 'villain')).hp, 13, 'A tap, not a hold');
   });
 
+  scenario('a repeating hold keeps going through a wiggle, and stops off the key', async (open) => {
+    const page = await open({ clock: true, game: { villain: [60, 60, 0] } });
+    const { HOLD_MS, REPEAT_MS } = await holdTimes(page);
+    const box = await key(page, 'villain', '-').boundingBox();
+    const [x, y] = [box.x + box.width / 2, box.y + box.height / 2];
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.clock.runFor(HOLD_MS + 50);
+    equal((await read(page, 'villain')).hp, 55, 'The hold starts');
+    await page.mouse.move(x + 25, y + 12, { steps: 3 }); // well past the slop, still on the key
+    await page.clock.runFor(REPEAT_MS);
+    equal((await read(page, 'villain')).hp, 50, 'Still repeating after a wiggle on the key');
+    await page.mouse.move(x, box.y + box.height + 40, { steps: 3 }); // off the key
+    await page.clock.runFor(REPEAT_MS * 2);
+    await page.mouse.up();
+    equal((await read(page, 'villain')).hp, 50, 'Stopped once the finger left the key');
+  });
+
   scenario('the offline manifest covers the app’s files', async () => {
     const listed = Object.keys(manifest().files);
     // The icons, under whatever versioned names the page and the web app manifest give them.

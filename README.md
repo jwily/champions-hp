@@ -62,14 +62,18 @@ npm test           # every check on WebKit (Safari's engine) and Chromium
 
 - `main.js`: starting a game, taps and holds, the 増 seal, stages, saving, saves from every older
   version, bad saved data, the HP sheet lining up with the page, presses
-  (sliding off, gutter taps, two fingers, stray browser clicks, touch, fields taking focus), the
+  (sliding off, gutter taps, two fingers, stray browser clicks, touch, fields taking focus, a hold
+  through a wiggle), the
   offline file list, launch screens, and font coverage
 - `layout.js`: on an iPhone SE, 13 mini, 14 Pro and 16 Pro Max, with the widest numbers and the
-  longest lines: nothing spills out or overlaps, nothing scrolls, every control is big enough to tap
+  longest lines: nothing spills out or overlaps, nothing scrolls, every control is big enough to
+  tap; the HP sheet with the keyboard open (its art cropped, the cursor inside its panel, taps on
+  the fields that don't jolt the page)
 - `updates.js` (Chromium only): opening offline, and a deploy arriving on the launch after with
   "App updated"
 
-Tools: `npm run screens` screenshots each phone size into `tests/output/screens/`. `npm run fonts`
+Tools: `npm run screens` screenshots the page and the HP sheet on each phone size into
+`tests/output/screens/`. `npm run fonts`
 re-cuts the bundled fonts after you add text. `npm run icons` redraws the icon and launch screens. When the icon changes, bump `ICON_VERSION` in `tests/tools/make-icons.js` first: iOS keeps its own copy of a home-screen icon by file name, so a changed icon needs a new name to show.
 
 ## Credits

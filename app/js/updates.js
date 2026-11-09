@@ -3,6 +3,7 @@
 // mostly resumes the app rather than relaunching it, so coming back from the background checks too.
 
 import { $ } from './dom.js';
+import * as storage from './storage.js';
 
 const VERSION_KEY = 'champions-hp-app-version'; // the version the last launch ran (sw.js names them)
 const NOTICE_MS = 4000;
@@ -31,15 +32,10 @@ function showCaption(shown) {
 function heard({ data }) {
   const { version } = data ?? {};
   if (!version) return;
-  let seen;
-  try {
-    seen = localStorage.getItem(VERSION_KEY);
-    if (seen === version) return;
-    localStorage.setItem(VERSION_KEY, version);
-  } catch {
-    return; // storage full or blocked: rather say nothing than say it at every launch
-  }
-  if (seen) notice('App updated');
+  const seen = storage.load(VERSION_KEY);
+  if (seen === version) return;
+  // Storage full or blocked: rather say nothing than say it at every launch.
+  if (storage.save(VERSION_KEY, version) && seen) notice('App updated');
 }
 
 /** Registers the service worker (it only can on HTTPS or localhost), and checks on every return. */

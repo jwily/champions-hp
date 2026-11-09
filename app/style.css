@@ -138,8 +138,9 @@ button.narration.pressed,
   color: var(--paper);
 }
 
-/* Lettering over the art (the numbers, max HP, sound effects, VICTORY): a paper outline painted
-   under each letter, so it reads clear of the tone and lines behind it. Each sets its width. */
+/* Lettering over the art (the numbers, the sheet's fields, max HP, sound effects, VICTORY): a paper
+   outline painted under each letter, so it reads clear of the tone and lines behind it. Each sets
+   its width. */
 .num, .max, .sfx, .victory, .entry input {
   -webkit-text-stroke-color: var(--paper);
   paint-order: stroke;
@@ -181,14 +182,6 @@ button.narration.pressed,
   background-image: radial-gradient(var(--tone) 1px, transparent 1.25px);
   background-size: 4px 4px;
 }
-/* In the HP sheet the keyboard shrinks the panels. The art keeps the size it has with the keyboard
-   closed (--art-h, set by js/sheet.js) and the panel crops it (.entry clips), rather than rescaling
-   it: scaled to cover, a lone tall panel (Next stage) zoomed out as it shrank. It stays centered,
-   cropped top and bottom alike, so the number (centered too) keeps its place against the art. */
-.entry .art-wrap {
-  inset: calc(50% - var(--art-h, 100%) / 2) 0 auto; /* not a translate: as its own layer it slipped past the border */
-  height: var(--art-h, 100%);
-}
 /* The tone fades away from the panel's outer edge: down from the top for the villain, up from
    the bottom for the hero (the same in the HP sheet as on the page). */
 .fade {
@@ -199,7 +192,6 @@ button.narration.pressed,
   -webkit-mask: linear-gradient(0deg, #000, transparent 60%);
   mask: linear-gradient(0deg, #000, transparent 60%);
 }
-
 
 /* ---------- Numbers, balloons, sound effects ---------- */
 
@@ -325,8 +317,7 @@ button.narration.pressed,
   z-index: 1;
 }
 /* The villain is down: Next stage turns solid ink (Inked, above), still: a pulse was distracting
-   (the user's call, after trying a fade and a blink). */
-/* On the last stage it's a caption, "Final stage": nothing to press. Captions are compact boxes
+   (the user's call, after trying a fade and a blink). On the last stage it's a caption, "Final stage": nothing to press. Captions are compact boxes
    (like the sheet's labels) and buttons tall ones, so it reads as a label, not a dead button, and
    keeps its ink rather than looking greyed out (the user's pick). */
 .next:disabled {
@@ -450,7 +441,10 @@ button.narration.pressed,
   align-items: center;
   justify-content: center;
 }
-.key { font-size: 46px; }
+.key {
+  font-size: 46px;
+  touch-action: none; /* a held key: no pan or zoom gesture may take the finger (and end the hold) */
+}
 .sheet-key { font-size: 20px; }
 /* − and + are drawn as bars, not text: the heavy font has no − of its own, so browsers drew it
    from different fallback fonts at different heights. Bars sit exactly at the key's center, at
@@ -508,7 +502,6 @@ button.narration.pressed,
   color: var(--ink);
 }
 
-
 /* ---------- Sheet ---------- */
 /* A page of its own over the main one: black gutters, the fields as panels (villain above hero, as
    on the main page), the buttons as key panels. Text on paper only: the antique serif reads as
@@ -551,6 +544,15 @@ button.narration.pressed,
   min-height: 80px;
   overflow: hidden; /* the art keeps its keyboard-closed size: the panel crops it */
   cursor: text;
+}
+/* The keyboard shrinks the panels. The art keeps the size it has with the keyboard closed (--art-h,
+   set by js/sheet.js) and the panel crops it, rather than rescaling it: scaled to cover, a lone tall
+   panel (Next stage) zoomed out as it shrank. It stays centered, cropped top and bottom alike, so
+   the number (centered too) keeps its place against the art. Placed with `inset`, not a translate:
+   as its own layer, its edge slipped past the panel's border in Safari. */
+.entry .art-wrap {
+  inset: calc(50% - var(--art-h, 100%) / 2) 0 auto;
+  height: var(--art-h, 100%);
 }
 .entry input {
   position: absolute;

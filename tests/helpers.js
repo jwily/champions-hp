@@ -101,6 +101,28 @@ async function open(browser, { phone = 'iPhone 14 Pro', storage, game, clock = f
       }
     }, raw);
   }
+  // Stand-ins for what Playwright can't do on a phone, as `window.testing` in the page:
+  // - keyboard(height): iOS's on-screen keyboard as the page sees it, the visual viewport that much
+  //   shorter (0 closes it); scrolled(top) is iOS scrolling that view to show a field.
+  // - touch(el, type): a bare touchstart / touchend on an element (desktop WebKit can't make Touch
+  //   objects); returns whether the page cancelled it, as a cancelled touchend stops iOS's own tap.
+  await context.addInitScript(() => {
+    window.testing = {
+      keyboard(height) {
+        Object.defineProperty(visualViewport, 'height', { value: innerHeight - height, configurable: true });
+        visualViewport.dispatchEvent(new Event('resize'));
+      },
+      scrolled(top) {
+        Object.defineProperty(visualViewport, 'offsetTop', { value: top, configurable: true });
+        visualViewport.dispatchEvent(new Event('scroll'));
+      },
+      touch(el, type) {
+        const event = new Event(type, { bubbles: true, cancelable: true });
+        el.dispatchEvent(event);
+        return event.defaultPrevented;
+      },
+    };
+  });
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));

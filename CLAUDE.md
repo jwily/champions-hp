@@ -22,6 +22,14 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   an extra repeat.
 - Layout checks measure the big numbers' actual glyphs (canvas text metrics), not their line boxes,
   which reach far above the digits.
+- Playwright has no on-screen keyboard and desktop WebKit can't make Touch objects: tests use
+  `window.testing` (set up in `open()`): `keyboard(height)` shrinks the visual viewport as iOS does,
+  `scrolled(top)` is iOS scrolling it, `touch(el, 'touchstart' | 'touchend')` returns whether the
+  page cancelled it. A check of how something looks needs the screen, not just sizes: the sheet's
+  art kept its size in a test while spilling over the gutters on the phone.
+- `npm run screens` covers the page and the HP sheet (typing too) on every phone; screenshots
+  before and after a change that shouldn't look different should match byte for byte (they're
+  repeatable: the cursor is hidden).
 - Run `npm test` before every commit; `.githooks/pre-push` runs it before a push that touches `app/`
   or `tests/` (`git config core.hooksPath .githooks`). Never bypass it unless the user says so.
   When behavior changes, update or add checks in the same commit; when fixing a bug, add a check
@@ -32,8 +40,10 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
 - Modules (`app/js/`): `app.js` is the game page (builds both sides from `#villain` / `#hero`,
   draws on `hp:change`, wires the controls, runs startup); `store.js` the state; `sheet.js` the HP
   sheet; `lines.js` balloon lines and sound-effect words; `sfx.js` letters the effects; `art.js`
-  the panel art; `presses.js` taps and holds; `keyboard.js` the on-screen keyboard; `wake.js` the
-  screen wake lock; `updates.js` the service worker and "App updated"; `dom.js` two helpers.
+  the panel art; `presses.js` taps and holds; `keyboard.js` the on-screen keyboard and taps on the
+  sheet's fields; `wake.js` the screen wake lock; `updates.js` the service worker and "App
+  updated"; `storage.js` saving on the phone (never throws: full or blocked storage carries on
+  from memory); `dom.js` two helpers.
   Startup is the list at the end of app.js.
 - `js/store.js` owns `state` (one JSON object in localStorage under `champions-hp`, version 4).
   Every change goes through a store function, which saves and fires `hp:change`; `app.js` redraws.
@@ -86,9 +96,12 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
 - **Presses** (`js/presses.js`, lessons from Bgt-J's presses.js, not a copy): a control activates
   (its `click()`) when a press lifts still over it; the browser's own click never counts (cancelled
   at touchend on the touched element only, and stopped if it comes: any click with a click count);
-  each finger is tracked on its own; fields and labels are left native so iOS can focus them. Give
-  controls plain `click` listeners. Holds use `onHold` (450 ms, repeating every 550 ms; drifting
-  10px calls a hold off). Deliberately not taken from Bgt-J: sending a tap in a gap to the nearest
+  each finger is tracked on its own; fields and labels aren't presses (`keyboard.js` focuses the
+  sheet's fields itself). Give controls plain `click` listeners. Holds use `onHold` (450 ms,
+  repeating every 550 ms). Before a hold starts, drifting 10px calls it off (a finger on its way
+  elsewhere); once it's repeating, only leaving the key does (a wiggle on the key stopped it). The
+  keys take no pan or zoom gestures (`touch-action: none`), so iOS can't end a hold by starting
+  one. Deliberately not taken from Bgt-J: sending a tap in a gap to the nearest
   control (between − and + that would guess the sign). No double-tap detection (it would misread
   fast taps).
 - The sealing tag's 封印 is Potta One (brush lettering, cut to just those two characters): the
@@ -166,10 +179,16 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   rides above the keyboard while it's open (`js/keyboard.js` sets `--keyboard` from the visual
   viewport: iOS overlays the keyboard without resizing the page, and its number pad has no Done
   key). The field panels shrink to share what's left, in one step: a padding transition stuttered
-  (it relaid the sheet every frame and lagged the keyboard). The room is made as the finger lands
-  on a field, from the keyboard's last height, so iOS never scrolls to a low field (Hero HP jolted
-  down and back); the lift then focuses that field itself. The panels' art keeps its
-  keyboard-closed size and is cropped, not rescaled (Next stage's lone panel zoomed out).
+  (it relaid the sheet every frame and lagged the keyboard). iOS scrolls toward any field it
+  focuses, even one in view, and the scroll back made the page slide down and up: so the app
+  focuses the fields itself on the lift, without scrolling, and cancels the tap's click. A field
+  the keyboard will cover (Hero HP) gets its room as the finger lands, from the keyboard's last
+  saved height (first time: 42% of the screen); one it won't (Villain HP) waits for the keyboard,
+  so the sheet changes once (a wrong guess made it change twice). The keyboard's own up/down
+  arrows still go through iOS. The panels' art keeps its keyboard-closed size and the panel crops
+  it, centered so the number keeps its place against the art (rescaled, Next stage's lone panel
+  zoomed out). The number is at most 50% of the panel's height: iOS's cursor is the font's full
+  height (~1.45×) and ran off a short panel. Only a bad entry gets the heavier border.
 - Never put the manga's artwork, logos or village symbols in the app.
 
 ## Working with this user

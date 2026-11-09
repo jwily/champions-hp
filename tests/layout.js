@@ -44,8 +44,7 @@ module.exports = (scenario) => {
     });
   }
 
-  // The HP sheet, with the keyboard closed and open. Playwright has no on-screen keyboard, so an
-  // open one is simulated as iOS reports it: the visual viewport shrinks by its height.
+  // The HP sheet, with the keyboard closed and open (simulated by window.testing: see helpers.js).
   const KEYBOARD = 291; // iOS's number pad on an iPhone 14 Pro, in CSS px
   for (const phone of Object.keys(PHONES)) {
     for (const mode of ['#set', '#next']) {
@@ -54,22 +53,15 @@ module.exports = (scenario) => {
         scenario(name, async (open) => {
           const page = await open({ phone, game: {} });
           await page.click(mode);
-          if (keyboard) {
-            await page.evaluate((h) => {
-              const view = window.visualViewport;
-              Object.defineProperty(view, 'height', { value: innerHeight - h, configurable: true });
-              view.dispatchEvent(new Event('resize'));
-            }, keyboard);
-          }
           // iOS scrolls the view to show a field low on the screen (Hero HP): the sheet must still make
           // room for the whole keyboard, not the keyboard less that scroll.
           if (keyboard) {
-            await page.evaluate(() => {
-              Object.defineProperty(window.visualViewport, 'offsetTop', { value: 120, configurable: true });
-              window.visualViewport.dispatchEvent(new Event('scroll'));
-            });
+            await page.evaluate((h) => {
+              testing.keyboard(h);
+              testing.scrolled(120);
+            }, keyboard);
             equal(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--keyboard').trim()), `${keyboard}px`, 'Room for the whole keyboard while iOS has the view scrolled');
-            await page.evaluate(() => Object.defineProperty(window.visualViewport, 'offsetTop', { value: 0, configurable: true }));
+            await page.evaluate(() => testing.scrolled(0));
           }
           // The sheet changes in one step, with nothing animating.
           equal(await page.evaluate(() => document.getElementById('sheet').getAnimations({ subtree: true }).length), 0, 'Nothing animating');
@@ -114,10 +106,7 @@ module.exports = (scenario) => {
           })
         );
       const before = await arts();
-      await page.evaluate(() => {
-        Object.defineProperty(window.visualViewport, 'height', { value: innerHeight - 291, configurable: true });
-        window.visualViewport.dispatchEvent(new Event('resize'));
-      });
+      await page.evaluate((h) => testing.keyboard(h), KEYBOARD);
       const after = await arts();
       for (const [i, a] of after.entries()) {
         const b = before[i];
@@ -135,10 +124,9 @@ module.exports = (scenario) => {
     scenario(`the cursor fits the field on ${phone}, keyboard open`, async (open) => {
       const page = await open({ phone, game: {} });
       await page.click('#set');
-      for (const keyboard of [291, 400]) {
+      for (const keyboard of [KEYBOARD, 400]) {
         const problems = await page.evaluate((kb) => {
-          Object.defineProperty(window.visualViewport, 'height', { value: innerHeight - kb, configurable: true });
-          window.visualViewport.dispatchEvent(new Event('resize'));
+          testing.keyboard(kb);
           const out = [];
           for (const input of document.querySelectorAll('.entry input')) {
             const panel = input.closest('.entry').getBoundingClientRect();
@@ -168,10 +156,7 @@ module.exports = (scenario) => {
       await page.click('#set');
       const hero = await page.locator('#hero-row').boundingBox();
       const [x, y] = [hero.x + hero.width / 2, hero.y + hero.height - 6];
-      await page.evaluate(([x, y]) => {
-        const target = document.elementFromPoint(x, y);
-        target.dispatchEvent(new Event('touchstart', { bubbles: true, cancelable: true })); // (desktop WebKit can't make Touch objects)
-      }, [x, y]);
+      await page.evaluate(([x, y]) => testing.touch(document.elementFromPoint(x, y), 'touchstart'), [x, y]);
       const during = await page.evaluate(([x, y]) => ({
         open: document.documentElement.classList.contains('keyboard-open'),
         heroBottom: document.getElementById('hero-row').getBoundingClientRect().bottom,
@@ -182,9 +167,7 @@ module.exports = (scenario) => {
       check(during.heroBottom <= during.visible + 1, `Hero HP is clear of the keyboard (bottom ${Math.round(during.heroBottom)}, keyboard at ${Math.round(during.visible)})`);
       await page.evaluate(([x, y]) => {
         const target = document.elementFromPoint(x, y) ?? document.body;
-        const end = new Event('touchend', { bubbles: true, cancelable: true });
-        target.dispatchEvent(end);
-        if (!end.defaultPrevented) target.click(); // what iOS does after an uncancelled touch
+        if (!testing.touch(target, 'touchend')) target.click(); // what iOS does after an uncancelled touch
       }, [x, y]);
       equal(await page.evaluate(() => document.activeElement?.id), 'hero-input', `Focused (the finger lifted over ${during.under ?? 'nothing'})`);
       check(await page.locator('#sheet').isVisible(), 'The sheet is still open');
@@ -193,15 +176,13 @@ module.exports = (scenario) => {
       check(!(await page.evaluate(() => document.documentElement.classList.contains('keyboard-open'))), 'Room given back when no keyboard came');
       // With the keyboard open, going straight to the other field: focused by the app, without iOS's
       // own focus (which scrolled toward it, sliding the page down and back).
-      const switched = await page.evaluate(() => {
-        Object.defineProperty(window.visualViewport, 'height', { value: innerHeight - 291, configurable: true });
-        window.visualViewport.dispatchEvent(new Event('resize'));
+      const switched = await page.evaluate((h) => {
+        testing.keyboard(h);
         const target = document.getElementById('villain-row');
-        target.dispatchEvent(new Event('touchstart', { bubbles: true, cancelable: true }));
-        const end = new Event('touchend', { bubbles: true, cancelable: true });
-        target.dispatchEvent(end);
-        return { prevented: end.defaultPrevented, focused: document.activeElement?.id };
-      });
+        testing.touch(target, 'touchstart');
+        const prevented = testing.touch(target, 'touchend');
+        return { prevented, focused: document.activeElement?.id };
+      }, KEYBOARD);
       equal(switched, { prevented: true, focused: 'villain-input' }, 'Switching fields with the keyboard open');
     });
   }
@@ -214,9 +195,9 @@ module.exports = (scenario) => {
       await page.click('#set');
       const result = await page.evaluate(() => {
         const target = document.getElementById('villain-row');
-        target.dispatchEvent(new Event('touchstart', { bubbles: true, cancelable: true }));
+        testing.touch(target, 'touchstart');
         const early = document.documentElement.classList.contains('keyboard-open');
-        target.dispatchEvent(new Event('touchend', { bubbles: true, cancelable: true }));
+        testing.touch(target, 'touchend');
         return { early, focused: document.activeElement?.id };
       });
       equal(result, { early: false, focused: 'villain-input' }, 'No room made ahead of the keyboard, and Villain HP focused');
