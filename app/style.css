@@ -182,8 +182,9 @@ button.narration.pressed,
   background-size: 4px 4px;
 }
 /* In the HP sheet the keyboard shrinks the panels. The art keeps the size it has with the keyboard
-   closed (--art-h, set by js/sheet.js) and is cropped, not rescaled: scaled to cover, a lone tall
-   panel (Next stage) zoomed out as it shrank. It holds to the panel's outer edge, where the tone is. */
+   closed (--art-h, set by js/sheet.js) and the panel crops it (.entry clips), rather than rescaling
+   it: scaled to cover, a lone tall panel (Next stage) zoomed out as it shrank. It holds to the
+   panel's outer edge, where the tone is. */
 .entry .art-wrap { height: var(--art-h, 100%); }
 .entry .art-wrap[data-art='villain'] { inset: 0 0 auto; }
 .entry .art-wrap[data-art='hero'] { inset: auto 0 0; }
@@ -547,6 +548,7 @@ button.narration.pressed,
   display: block;
   flex: 1 1 0;
   min-height: 80px;
+  overflow: hidden; /* the art keeps its keyboard-closed size: the panel crops it */
   cursor: text;
 }
 .entry input {

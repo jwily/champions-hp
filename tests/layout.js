@@ -108,7 +108,9 @@ module.exports = (scenario) => {
           [...document.querySelectorAll('.entry:not([hidden])')].map((row) => {
             const art = row.querySelector('.art').getBoundingClientRect();
             const panel = row.getBoundingClientRect();
-            return { side: row.id, width: Math.round(art.width), height: Math.round(art.height), top: Math.round(art.top - panel.top), bottom: Math.round(panel.bottom - art.bottom), panel: Math.round(panel.height) };
+            // What shows of the art: the panel clips it (unclipped, it spilled over the gutters and buttons).
+            const clipped = getComputedStyle(row).overflow === 'hidden';
+            return { side: row.id, clipped, width: Math.round(art.width), height: Math.round(art.height), top: Math.round(art.top - panel.top), bottom: Math.round(panel.bottom - art.bottom), panel: Math.round(panel.height) };
           })
         );
       const before = await arts();
@@ -120,6 +122,7 @@ module.exports = (scenario) => {
       for (const [i, a] of after.entries()) {
         const b = before[i];
         check(a.panel < b.panel, `${a.side}: the panel shrinks (${b.panel} to ${a.panel})`);
+        check(a.clipped, `${a.side}: the panel crops its art`);
         equal([a.width, a.height], [b.width, b.height], `${a.side}: the art's size`);
         if (a.side === 'villain-row') equal(a.top, 0, `${a.side}: the art holds to the top`);
         else equal(a.bottom, 0, `${a.side}: the art holds to the bottom`);
