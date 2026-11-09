@@ -14,9 +14,8 @@ const pick = (list) => list[Math.floor(Math.random() * list.length)];
 // left by the number, the balloon and the corner boxes (checked in tests/layout.js).
 const ZONES = {
   villain: [
-    [36, 50, 13, 26, 'across'], // above the number, beside the stage box (it reaches ~54% on an SE)
+    [40, 51, 13, 26, 'across'], // above the number, between the balloon and the stage box (~54% on an SE)
     [42, 80, 79, 90, 'across'], // below the number
-    [35, 39, 30, 62, 'down'], // between the balloon and the number
   ],
   hero: [
     [36, 64, 64, 84, 'across'], // below the number, left of the balloon
