@@ -351,8 +351,10 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   color: transparent;
 }
 .power .kanji::before { z-index: -1; -webkit-text-stroke: 0.24em var(--blue); }
-.power .kanji::after { z-index: -2; -webkit-text-stroke: 0.38em color-mix(in srgb, var(--blue) 35%, transparent); }
-.power .glow { z-index: -3; }
+.power .kanji::after { z-index: -2; -webkit-text-stroke: 0.38em color-mix(in srgb, var(--blue) 35%, transparent); filter: blur(1px); }
+/* The bands are blurred: at full width they traced every bump of the character's top into two
+   pointed "ears" (a bat-mask silhouette). Blurred, they read as a soft glow. */
+.power .glow { z-index: -3; filter: blur(2.5px); }
 .power .glow::before { content: attr(data-glyph); -webkit-text-stroke: 0.52em color-mix(in srgb, var(--blue) 14%, transparent); }
 .power[aria-pressed='true'] .kanji::before,
 .power[aria-pressed='true'] .kanji::after,
