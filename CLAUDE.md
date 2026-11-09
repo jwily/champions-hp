@@ -88,7 +88,9 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   (`--row-gap` 12px, `--col-gap` 8px), solid black gutters and margins on flashback pages, flat dot
   tone and line work rather than heavy tone, vertical lettering with "!!" set upright, heavy
   hand-lettered katakana sound effects, the chapter-title format "[mark with ruby]1：TITLE!!", and the
-  running head "NARUTO—ナルト—1". Spirals (uzumaki) recur everywhere.
+  running head "NARUTO—ナルト—1" (here "MC—マーベル・チャンピオンズ—" and the game count; マーベル・
+  チャンピオンズ is the game's Japanese title). Spirals (uzumaki) recur everywhere. "!!!" appears too
+  (なっ!!!, chapter 1 p. 24), which VICTORY!!! uses.
 - Shared values are tokens on `:root`: `--inset` (10px, anything tucked into a panel corner),
   `--line` / `--line-fine` (2px / 1.5px ink), `--text-s/m/l` (11 / 13 / 14px serif sizes). 術 is
   the one deliberate exception to `--inset` (the user wanted more room; the tag needs clearance).

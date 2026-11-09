@@ -8,7 +8,7 @@ no build step, no dependencies.
 ## Using it
 
 - **New game** (top right) starts a game: type the villain's and the hero's HP. The number beside
-  "HP—ヒットポイント—" counts games.
+  "MC—マーベル・チャンピオンズ—" (the game's Japanese title) counts games.
 - **− / +** under each panel: tap for 1, hold for 5 (and another 5 every half second while held).
   Fast taps all count, so tapping − three times is 3 damage. + heals up to max HP. A key shows
   faint when it can't change anything (− at 0, + at max), and a defeated side's number is hollow.
