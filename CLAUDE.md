@@ -44,8 +44,8 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   (across in wide gaps, down in narrow ones, so a word never stands over the digits). A burst
   spreads out, three at most per panel. tests/layout.js fires many and checks each center.
 - **The 術 toggle** (`powerUsed`, state version 3; `MIGRATIONS` upgrades v1 and v2): one toggle
-  for the hero's special ability: the bare character, white with a black outline that turns blue
-  when used (no box). It replaced round / phase tracking with
+  for the hero's special ability: the bare character, no box; off-white with a black outline, and
+  filled blue with a deep navy outline when used (an outline-only change wasn't noticeable). It replaced round / phase tracking with
   per-period ability tokens (v2), which the user found to be more than they needed. 術 ("jutsu")
   was the user's pick over 力 ("power").
 - `js/lines.js`: balloon lines and sound-effect words. `js/art.js`: the inked spirals and rays.
@@ -61,16 +61,15 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
 - **Fonts are subsets.** `npm run fonts` downloads Dela Gothic One and Zen Antique cut to the
   characters the app uses (Google Fonts `text=`), and writes `fonts/chars.txt`. After adding any
   text, run it; a test fails if a character isn't covered.
-- **Offline and updates** (`sw.js`, lessons from Bgt-J's, simplified since this app loads every file
-  at startup): launches are served from a saved complete version; each launch, and each return from
-  the background, downloads FILES past the browser cache (GitHub Pages sends max-age=600) and saves
-  a new version only if all arrived and some bytes changed, so nothing needs bumping. A new version
-  is switched to only at a launch, so a running app never mixes files. The first launch on a new
-  version shows "App updated" for 4 s in a caption over the running head (`notice()` in app.js).
-  Add new files to FILES (a test checks).
-
-## Design rules
-
+- **Offline and updates** (`sw.js`): launches are served from a saved complete version; each
+  launch, and each return from the background, downloads `files.json` past the browser cache
+  (GitHub Pages sends max-age=600), then every file it lists, and saves a new version only if
+  every file matches its SHA-256 fingerprint. That stops a deploy still spreading across GitHub's
+  servers from being saved as a mix (it happened once: new page, old stylesheet). `files.json` is
+  built at deploy by the workflow (`node tests/tools/manifest.js`), not committed; the test server
+  builds it on the fly. Its LEFT_OUT list, not a hand-kept list, decides what's offline. A new
+  version is switched to only at a launch, so a running app never mixes files. The first launch on
+  a new version shows "App updated" for 4 s in a caption over the running head (`notice()`).
 - Researched from chapter 1 on Shueisha's Jump+ reader (Nov 2026): straight-edged panels with thin
   ink borders (slanted cuts are rare in Naruto), rows a bit further apart than columns
   (`--row-gap` 12px, `--col-gap` 8px), solid black gutters and margins on flashback pages, flat dot
@@ -86,8 +85,9 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   non-scaling stroke (even line): a symmetrical 12-point star and a plain oval. Tried and reverted
   by the user: a many-spiked shout and a lumpy oval with a tail, both cut off by the panel edge.
 - Limits and states are designed, not left to the happy path: a key that can't change anything shows
-  faint (`.inert`), a defeated side's number is a hollow outline, Next stage turns solid ink (static:
-  no pulsing) when the villain is down. HP and max read together (`.reading`).
+  faint (`.inert`), a defeated side's number is a hollow outline, Next stage blinks (paper / solid
+  ink, a hard `steps(1)` switch: a fade passed through a grey that read as disabled) when the
+  villain is down; the user likes it animated. HP and max read together (`.reading`).
 - Panel borders are ruled straight (as Naruto's are); no wobble filter. Tap targets are 44px+.
 - Two spot colors, each with one job: blue for the 術 toggle when used, and orange only for the max-HP mode (the inked 増 seal, the keys' borders, the
   bonus). Keep it meaning one thing.

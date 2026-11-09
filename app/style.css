@@ -24,7 +24,7 @@
   --orange: #ff7a1a; /* the one spot color: the max-HP mode */
   --orange-ink: #c4500a; /* the same orange, dark enough to read as small text on paper */
   --blue: #2b62c9; /* the second spot color: the hero's special ability, used */
-  --white: #fbf8f1; /* lettering that stands out from the paper (the 術 toggle) */
+  --blue-ink: #13295e; /* the same blue, deep enough to outline it */
   --col-gap: 8px;
   --row-gap: 12px;
   --side: 12px;
@@ -289,14 +289,19 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   bottom: 10px;
   z-index: 1;
 }
-/* The villain is down: Next stage is what to press now. */
-#villain.down .next { background: var(--ink); color: var(--paper); }
+/* The villain is down: Next stage is what to press now, so it blinks between paper and solid ink
+   (a hard switch: a fade would pass through a muddy grey that reads as disabled). */
+#villain.down .next { animation: beckon 1.6s steps(1) infinite; }
+@keyframes beckon {
+  0% { background: var(--ink); color: var(--paper); }
+  50% { background: var(--paper); color: var(--ink); }
+}
 
 /* ---------- Hero extras: the 術 ("jutsu") toggle for a special ability ---------- */
 
-/* Bottom-left of the hero panel: the character itself, white with a black outline, no box. Once
-   the ability is used the outline turns blue (blue marks this and nothing else, as orange marks
-   the max-HP mode). The button keeps a 44px tap area around it. */
+/* Bottom-left of the hero panel: the character itself, no box. Off: off-white with a black outline.
+   Used: filled blue with a deep navy outline, so the state reads at a glance (blue marks this and
+   nothing else, as orange marks the max-HP mode). The button keeps a 48px tap area. */
 .power {
   position: absolute;
   left: 8px;
@@ -309,11 +314,11 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   font-family: var(--heavy);
   font-size: 34px;
   line-height: 1;
-  color: var(--white);
+  color: var(--paper);
   -webkit-text-stroke: 0.1em var(--ink);
   paint-order: stroke;
 }
-.power[aria-pressed='true'] { -webkit-text-stroke-color: var(--blue); }
+.power[aria-pressed='true'] { color: var(--blue); -webkit-text-stroke-color: var(--blue-ink); }
 
 /* ---------- Keys ---------- */
 

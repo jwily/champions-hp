@@ -1,8 +1,9 @@
 // Behavior: starting a game, taps and holds, the max-HP seal, stages, saving.
 
 const fs = require('fs');
+const { appFiles, manifest } = require('./tools/manifest');
 const path = require('path');
-const { APP, appChars, appFiles, key, tap, hold, holdTimes, read, stored, fillSheet, check, equal, ready } = require('./helpers');
+const { APP, appChars, key, tap, hold, holdTimes, read, stored, fillSheet, check, equal, ready } = require('./helpers');
 
 module.exports = (scenario) => {
   scenario('first launch asks for HP and can’t be cancelled', async (open) => {
@@ -187,13 +188,14 @@ module.exports = (scenario) => {
     equal(await inert(), ['villain-', 'hero-'], 'Max-HP mode: − is faint with no bonus to remove');
   });
 
-  scenario('Next stage turns solid ink when the villain is down', async (open) => {
+  scenario('Next stage blinks when the villain is down', async (open) => {
     const page = await open({ game: { villain: [1, 14] } });
-    const bg = () => page.$eval('#next', (b) => getComputedStyle(b).backgroundColor);
-    const before = await bg();
+    const blinking = () => page.$eval('#next', (b) => b.getAnimations().length > 0);
+    check(!(await blinking()), 'Still while the villain stands');
     await tap(page, 'villain', '-');
-    check((await bg()) !== before, 'Next stage changes when the villain reaches 0');
-    equal(await page.$eval('#next', (b) => b.getAnimations().length), 0, 'and stays still');
+    check(await blinking(), 'Blinking at 0');
+    const timing = await page.$eval('#next', (b) => getComputedStyle(b).animationTimingFunction);
+    equal(timing, 'steps(1)', 'A hard switch, never a grey in between');
   });
 
   scenario('a bad entry is shown in its own panel', async (open) => {
@@ -212,12 +214,12 @@ module.exports = (scenario) => {
   scenario('the 術 toggle marks the special ability used, and a new game clears it', async (open) => {
     const page = await open({ game: {} });
     const used = () => page.getAttribute('#power', 'aria-pressed');
-    const color = () => page.$eval('#power', (b) => getComputedStyle(b).webkitTextStrokeColor);
+    const color = () => page.$eval('#power', (b) => getComputedStyle(b).color);
     equal(await used(), 'false', 'Not used to start');
     const plain = await color();
     await page.click('#power');
     equal(await used(), 'true', 'Tapped: used');
-    check((await color()) !== plain, 'and its outline colored');
+    check((await color()) !== plain, 'and filled with color');
     await page.reload();
     await ready(page);
     equal(await used(), 'true', 'Saved across a relaunch');
@@ -321,15 +323,14 @@ module.exports = (scenario) => {
     equal((await read(page, 'villain')).hp, 13, 'A tap, not a hold');
   });
 
-  scenario('offline list covers every app file', async () => {
-    const sw = fs.readFileSync(path.join(APP, 'sw.js'), 'utf8');
-    const listed = JSON.parse(sw.match(/const FILES = (\[[\s\S]*?\]);/)[1].replace(/'/g, '"').replace(/,\s*\]/, ']'));
-    // Not listed: the worker itself, the fonts' character list (a build note), and the launch
-    // screens (iOS reads those when the app is added to the home screen).
-    const files = appFiles().filter((f) => f !== 'sw.js' && f !== 'fonts/chars.txt' && !f.startsWith('icons/launch-'));
-    const missing = files.filter((f) => !listed.includes(f) && !(f === 'index.html' && listed.includes('./')));
-    const extra = listed.filter((f) => f !== './' && !files.includes(f));
-    equal({ missing, extra }, { missing: [], extra: [] }, 'sw.js FILES vs app files');
+  scenario('the offline manifest covers the app’s files', async () => {
+    const listed = Object.keys(manifest().files);
+    const wanted = ['./', 'index.html', 'style.css', 'manifest.json', 'fonts/OFL.txt', 'icons/icon-180.png', 'icons/icon-512.png'];
+    const js = appFiles().filter((f) => f.startsWith('js/'));
+    const fonts = appFiles().filter((f) => f.endsWith('.woff2'));
+    const missing = [...wanted, ...js, ...fonts].filter((f) => !listed.includes(f));
+    const leftOut = ['sw.js', 'files.json', 'fonts/chars.txt', 'icons/launch-750x1334.png'].filter((f) => listed.includes(f));
+    equal({ missing, leftOut }, { missing: [], leftOut: [] }, 'Manifest');
   });
 
   scenario('the page is valid HTML', async () => {
