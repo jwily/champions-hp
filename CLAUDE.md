@@ -86,6 +86,9 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
 - **Fonts are subsets.** `npm run fonts` downloads Dela Gothic One and Zen Antique cut to the
   characters the app uses (Google Fonts `text=`), and writes `fonts/chars.txt`. After adding any
   text, run it; a test fails if a character isn't covered.
+- **Screen wake lock** (app.js, `stayAwake`): asked for at launch, on every return from the
+  background (iOS drops it there), and on a tap if it isn't held; silently does without where
+  unavailable or refused. The user used to turn off Auto-Lock for their old counter app.
 - **Offline and updates** (`sw.js`): launches are served from a saved complete version; each
   launch, and each return from the background, downloads `files.json` past the browser cache
   (GitHub Pages sends max-age=600), then every file it lists, and saves a new version only if

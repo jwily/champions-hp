@@ -437,6 +437,37 @@ module.exports = (scenario) => {
     equal(short.map(([n, r]) => `${n} ${r.toFixed(2)}`), [], 'Below minimum contrast');
   });
 
+  scenario('the screen is kept awake, and again after coming back', async (open) => {
+    const page = await open({ game: {} });
+    // A stand-in for the browser's wake lock, counting requests and able to drop the lock as iOS
+    // does when the app goes to the background.
+    const requests = () => page.evaluate(() => window.__wakeRequests);
+    await page.evaluate(() => {
+      window.__wakeRequests = 0;
+      Object.defineProperty(navigator, 'wakeLock', {
+        configurable: true,
+        value: {
+          request: async () => {
+            window.__wakeRequests += 1;
+            const lock = new EventTarget();
+            window.__dropLock = () => lock.dispatchEvent(new Event('release'));
+            return lock;
+          },
+        },
+      });
+    });
+    await page.click('#villain'); // the app asks again on a tap when it holds no lock
+    equal(await requests(), 1, 'Asked for on a tap');
+    await page.click('#villain');
+    equal(await requests(), 1, 'Not asked again while held');
+    await page.evaluate(() => {
+      window.__dropLock(); // iOS drops it in the background
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    await page.waitForFunction(() => window.__wakeRequests === 2);
+    equal(await requests(), 2, 'Asked for again on coming back');
+  });
+
   scenario('the page is valid HTML', async () => {
     const { HtmlValidate, FileSystemConfigLoader } = require('html-validate');
     const validator = new HtmlValidate(new FileSystemConfigLoader({ extends: ['html-validate:standard'] }));

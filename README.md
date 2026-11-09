@@ -28,6 +28,9 @@ no build step, no dependencies.
 - The balloons' lines change with HP (フン… "hmph" → バ…バカな…!! "im-impossible!" for the
   villain; いくぞ!! "here I go!" → くっ…まだだ…!! "ngh… not yet!" for the hero).
 
+The screen stays awake while the app is open (a screen wake lock), so the phone doesn't lock between
+turns; you don't need to turn off Auto-Lock. Low Power Mode may refuse it.
+
 ## Run it locally
 
 ```sh
