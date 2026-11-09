@@ -1,38 +1,21 @@
 // Makes the app launch instantly and work offline, and brings deploys in without mixing versions:
 // - Launches are served entirely from a saved copy on the phone, so starting never waits on the
 //   network.
-// - Each launch (and each return from the background) downloads the files again in the background,
+// - Each launch (and each return from the background) checks for a new version in the background,
 //   past the browser's cache: GitHub Pages lets browsers reuse files for 10 minutes unchecked.
-// - A version is saved only when every file arrived (marked complete last), and only if some file's
-//   bytes changed, so nothing needs bumping on a deploy.
+// - Each deploy publishes files.json (tests/tools/manifest.js): every file the app needs, with a
+//   SHA-256 fingerprint. A new version is saved only when every file downloads and matches its
+//   fingerprint, so a deploy still spreading across GitHub's servers (the new page with the old
+//   stylesheet, say) is never saved as a version: it's tried again next time. The manifest also
+//   says which files there are, so nothing here lists them.
 // - A new version is switched to only when the app launches (the app loads every file at startup),
 //   so a running app never mixes old and new files. The page then asks which version it runs;
 //   app.js says "App updated" when it changed.
-// Add any new app file to FILES (a test checks).
 
 const PREFIX = 'champions-hp-'; // saved versions are caches named champions-hp-<time saved>
 const COMPLETE = '__complete__'; // written last: a version without it is unfinished and never used
 const CURRENT = 'champions-hp-current'; // which version launches use (kept in a cache: iOS stops idle workers)
-const FILES = [
-  './',
-  'index.html',
-  'style.css',
-  'manifest.json',
-  'js/app.js',
-  'js/art.js',
-  'js/dom.js',
-  'js/keyboard.js',
-  'js/lines.js',
-  'js/presses.js',
-  'js/sfx.js',
-  'js/sheet.js',
-  'js/store.js',
-  'fonts/dela-gothic-one.woff2',
-  'fonts/zen-antique.woff2',
-  'fonts/OFL.txt',
-  'icons/icon-180.png',
-  'icons/icon-512.png',
-];
+const MANIFEST = 'files.json';
 
 const versions = async () => (await caches.keys()).filter((n) => n.startsWith(PREFIX) && n !== CURRENT).sort();
 
@@ -58,38 +41,35 @@ async function switchAtLaunch() {
   return newest;
 }
 
-const sameBytes = (a, b) => {
-  if (a.byteLength !== b.byteLength) return false;
-  const [x, y] = [new Uint8Array(a), new Uint8Array(b)];
-  return x.every((byte, i) => byte === y[i]);
-};
+const hex = (buffer) => [...new Uint8Array(buffer)].map((b) => b.toString(16).padStart(2, '0')).join('');
+const fresh = (file) => fetch(new Request(file, { cache: 'no-cache' }));
 
-// Downloads every file; if all arrived and any differs from the newest saved version, saves them as
-// a new complete version for the next launch. A failure (offline, say) changes nothing.
+// Downloads the manifest, then every file in it; if the manifest is new and every file matches its
+// fingerprint, saves them all as a new complete version for the next launch. Anything else (offline,
+// a missing file, a file from another deploy) changes nothing.
 async function checkForUpdate() {
   try {
+    const listed = await fresh(MANIFEST);
+    if (!listed.ok) return;
+    const manifestText = await listed.text();
+    const { files } = JSON.parse(manifestText);
+    const savedName = await newestComplete();
+    if (savedName) {
+      const saved = await (await caches.open(savedName)).match(MANIFEST);
+      if (saved && (await saved.text()) === manifestText) return; // nothing new
+    }
     const downloads = await Promise.all(
-      FILES.map(async (file) => {
-        const response = await fetch(new Request(file, { cache: 'no-cache' }));
+      Object.entries(files).map(async ([file, fingerprint]) => {
+        const response = await fresh(file);
         if (!response.ok) throw new Error(`${file}: ${response.status}`);
+        const bytes = await response.clone().arrayBuffer();
+        if (hex(await crypto.subtle.digest('SHA-256', bytes)) !== fingerprint) throw new Error(`${file}: not this deploy's`);
         return [file, response];
       })
     );
-    const savedName = await newestComplete();
-    if (savedName) {
-      const saved = await caches.open(savedName);
-      let changed = false;
-      for (const [file, response] of downloads) {
-        const old = await saved.match(file);
-        if (!old || !sameBytes(await old.arrayBuffer(), await response.clone().arrayBuffer())) {
-          changed = true;
-          break;
-        }
-      }
-      if (!changed) return;
-    }
     const next = await caches.open(`${PREFIX}${Date.now()}`);
     await Promise.all(downloads.map(([file, response]) => next.put(file, response)));
+    await next.put(MANIFEST, new Response(manifestText));
     await next.put(COMPLETE, new Response('ok'));
   } catch {
     // Keep what's saved; try again next launch.

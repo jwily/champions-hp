@@ -37,6 +37,48 @@ module.exports = (scenario, { engine, browser }) => {
     equal((await read(page, 'villain')).hp, 11, 'Offline: and works');
   });
 
+  scenario('a deploy still spreading (manifest new, a file old) is never saved', async () => {
+    let fileVersion = 'old';
+    let manifestVersion = 'old';
+    const stamp = (version) => (urlPath, data) => (urlPath === '/js/lines.js' ? `${data}\n// deploy: ${version}\n` : null);
+    const server = await serve({
+      port: 8768,
+      change: (u, d) => stamp(fileVersion)(u, d),
+      manifestChange: (u, d) => stamp(manifestVersion)(u, d),
+    });
+    const context = await browser.newContext({ viewport: { width: 393, height: 852 }, serviceWorkers: 'allow' });
+    try {
+      const page = await context.newPage();
+      const launch = async () => {
+        await page.reload();
+        await ready(page);
+      };
+      const running = () => page.evaluate(() => fetch('js/lines.js').then((r) => r.text()).then((t) => t.match(/deploy: (\w+)/)?.[1]));
+      const versions = () => page.evaluate(async () => (await caches.keys()).filter((n) => /^champions-hp-\d+$/.test(n)).length);
+      await page.goto('http://127.0.0.1:8768/');
+      await ready(page);
+      await page.evaluate(() => navigator.serviceWorker.ready);
+      check(await savedVersion(page, 'old'), 'The first version is saved');
+      await launch();
+
+      manifestVersion = 'new'; // the manifest has arrived, js/lines.js hasn't
+      await launch();
+      await page.evaluate(() => new Promise((r) => setTimeout(r, 1500))); // the background check's time: the point is that nothing comes of it
+      equal(await versions(), 1, 'Nothing saved from a half-spread deploy');
+      await launch();
+      equal(await running(), 'old', 'The app keeps running its whole old version');
+
+      fileVersion = 'new'; // now everything matches
+      await launch();
+      check(await savedVersion(page, 'new'), 'Saved once every file matches');
+      await launch();
+      equal(await running(), 'new', 'and run from the launch after');
+    } finally {
+      await context.close();
+      server.close();
+    }
+  });
+
   scenario('a deploy arrives on the launch after, and says "App updated" once', async () => {
     let version = 'old';
     const server = await serve({

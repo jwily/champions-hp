@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
+const { appFiles, manifest } = require('./tools/manifest');
 
 const APP = path.join(__dirname, '..', 'app');
 const PORT = 8766;
@@ -32,28 +33,29 @@ function appChars() {
   return [...new Set([...text].filter((c) => c.charCodeAt(0) > 126))];
 }
 
-/** Every file the app serves, as paths relative to app/. */
-function appFiles(dir = APP) {
-  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
-    const full = path.join(dir, e.name);
-    if (e.isDirectory()) return appFiles(full);
-    return e.name.startsWith('.') ? [] : [path.relative(APP, full)];
-  });
-}
-
 const TYPES = {
   '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json',
   '.png': 'image/png', '.woff2': 'font/woff2', '.txt': 'text/plain',
 };
 
 /**
- * Serves ../app. Options, for tests of updates: port; extra response headers; and
- * change(urlPath, data), which can return different file contents (to simulate a deploy).
+ * Serves ../app, and the file manifest at /files.json. Options, for tests of updates: port; extra
+ * response headers; and change(urlPath, data), which can return different file contents (to
+ * simulate a deploy).
  * Resolves to the server; stop it with server.close().
  */
-function serve({ port = PORT, headers = {}, change = null } = {}) {
+function serve({ port = PORT, headers = {}, change = null, manifestChange = change } = {}) {
   const server = http.createServer((req, res) => {
     const urlPath = decodeURIComponent(new globalThis.URL(req.url, 'http://x').pathname);
+    // The manifest, as the deploy workflow would build it from the files being served. A test can
+    // give it its own `manifestChange` to describe a deploy the files haven't caught up with.
+    if (urlPath === '/files.json') {
+      const read = (file) => {
+        const data = fs.readFileSync(path.join(APP, file));
+        return manifestChange?.(`/${file}`, data) ?? data;
+      };
+      return res.writeHead(200, { 'Content-Type': 'application/json', ...headers }).end(JSON.stringify(manifest(read)));
+    }
     const file = path.join(APP, urlPath.endsWith('/') ? `${urlPath}index.html` : urlPath);
     if (!file.startsWith(APP)) return res.writeHead(403).end();
     fs.readFile(file, (err, data) => {
@@ -63,6 +65,16 @@ function serve({ port = PORT, headers = {}, change = null } = {}) {
         .end(change?.(urlPath, data) ?? data);
     });
   });
+  // Keep idle connections well past a test run: Node's default closes them after 5 s, and a browser
+  // reusing one just as it closes loses that request (a page that never loads, a missing
+  // stylesheet), which made runs fail now and then.
+  server.keepAliveTimeout = 120000;
+  server.headersTimeout = 121000;
+  const close = server.close.bind(server);
+  server.close = () => {
+    server.closeAllConnections(); // the kept-alive ones too, so closing doesn't wait on them
+    return close();
+  };
   return new Promise((resolve) => server.listen(port, '127.0.0.1', () => resolve(server)));
 }
 

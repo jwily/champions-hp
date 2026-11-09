@@ -25,6 +25,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      # The file manifest the service worker checks each update against (fingerprints of this deploy).
+      - run: node tests/tools/manifest.js
       - uses: actions/upload-pages-artifact@v3
         with:
           path: app
