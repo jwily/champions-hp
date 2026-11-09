@@ -479,7 +479,9 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
     max(var(--side), env(safe-area-inset-right))
     max(10px, env(safe-area-inset-bottom), var(--keyboard, 0px))
     max(var(--side), env(safe-area-inset-left));
-  transition: padding-bottom 0.25s ease-out; /* follows the keyboard up and down */
+  /* No transition: animating this padding relaid the whole sheet every frame (the fields' numbers
+     resize with their panels) and started only once iOS reported the keyboard, so it stuttered
+     behind it. The sheet takes its new layout in one step as the keyboard settles. */
 }
 .sheet-page {
   width: min(420px, 100%);

@@ -1,7 +1,7 @@
 // Layout: on every phone size, with the widest numbers and longest lines, everything fits, nothing
 // that should stay apart overlaps, and every control is big enough to tap.
 
-const { PHONES, check } = require('./helpers');
+const { PHONES, check, equal } = require('./helpers');
 
 const CASES = {
   'widest numbers': { hero: [99, 90, 9], villain: [99, 99, 0], stage: 3, powerUsed: true },
@@ -59,11 +59,20 @@ module.exports = (scenario) => {
               const view = window.visualViewport;
               Object.defineProperty(view, 'height', { value: innerHeight - h, configurable: true });
               view.dispatchEvent(new Event('resize'));
-              getComputedStyle(document.getElementById('sheet')).paddingBottom; // starts the glide now, so the wait below sees it
             }, keyboard);
           }
-          // The buttons glide with the keyboard: wait until nothing on the sheet is still moving.
-          await page.waitForFunction(() => document.getElementById('sheet').getAnimations({ subtree: true }).length === 0);
+          // iOS scrolls the view to show a field low on the screen (Hero HP): the sheet must still make
+          // room for the whole keyboard, not the keyboard less that scroll.
+          if (keyboard) {
+            await page.evaluate(() => {
+              Object.defineProperty(window.visualViewport, 'offsetTop', { value: 120, configurable: true });
+              window.visualViewport.dispatchEvent(new Event('scroll'));
+            });
+            equal(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--keyboard').trim()), `${keyboard}px`, 'Room for the whole keyboard while iOS has the view scrolled');
+            await page.evaluate(() => Object.defineProperty(window.visualViewport, 'offsetTop', { value: 0, configurable: true }));
+          }
+          // The sheet changes in one step, with nothing animating.
+          equal(await page.evaluate(() => document.getElementById('sheet').getAnimations({ subtree: true }).length), 0, 'Nothing animating');
           const problems = await page.evaluate((kb) => {
             const out = [];
             const box = (sel) => document.querySelector(sel).getBoundingClientRect();

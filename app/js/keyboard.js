@@ -7,8 +7,12 @@ export function trackKeyboard() {
   const view = window.visualViewport;
   if (!view) return;
   const update = () => {
-    const covered = Math.max(0, Math.round(window.innerHeight - view.height - view.offsetTop));
+    // The keyboard's height, not counting how far iOS has scrolled the view to show a field low on
+    // the screen (subtracting that scroll shrank the sheet too little for the lower field).
+    const covered = Math.max(0, Math.round(window.innerHeight - view.height));
     document.documentElement.style.setProperty('--keyboard', `${covered}px`);
+    // With the sheet shrunk by the whole keyboard, the field is already in view: undo iOS's scroll.
+    if (view.offsetTop > 0 || window.scrollY > 0) requestAnimationFrame(() => window.scrollTo(0, 0));
     document.documentElement.classList.toggle('keyboard-open', covered > 0);
   };
   view.addEventListener('resize', update);

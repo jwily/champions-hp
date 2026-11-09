@@ -137,7 +137,8 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
 - The sheet's Cancel / FIGHT!! row sits at the bottom, under the thumb (the user's request), and
   rides above the keyboard while it's open (`js/keyboard.js` sets `--keyboard` from the visual
   viewport: iOS overlays the keyboard without resizing the page, and its number pad has no Done
-  key). The field panels shrink to share what's left.
+  key). The field panels shrink to share what's left, in one step: a padding transition stuttered
+  (it relaid the sheet every frame and lagged the keyboard).
 - Never put the manga's artwork, logos or village symbols in the app.
 
 ## Working with this user
