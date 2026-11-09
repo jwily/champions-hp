@@ -20,6 +20,7 @@ const FILES = [
   'manifest.json',
   'js/app.js',
   'js/art.js',
+  'js/keyboard.js',
   'js/lines.js',
   'js/presses.js',
   'js/sheet.js',

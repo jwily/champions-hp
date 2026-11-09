@@ -9,23 +9,47 @@ const CASES = {
 };
 
 module.exports = (scenario) => {
+  // The HP sheet, with the keyboard closed and open. Playwright has no on-screen keyboard, so an
+  // open one is simulated as iOS reports it: the visual viewport shrinks by its height.
+  const KEYBOARD = 291; // iOS's number pad on an iPhone 14 Pro, in CSS px
   for (const phone of Object.keys(PHONES)) {
     for (const mode of ['#set', '#next']) {
-      scenario(`the HP sheet fits on ${phone} (${mode === '#set' ? 'new game' : 'next stage'})`, async (open) => {
-        const page = await open({ phone, game: {} });
-        await page.click(mode);
-        const problems = await page.evaluate(() => {
-          const out = [];
-          const page = document.querySelector('.sheet-page').getBoundingClientRect();
-          if (page.bottom > innerHeight) out.push('The sheet runs off the screen');
-          for (const sel of ['#sheet-ok', '#sheet-cancel', '#villain-input']) {
-            const r = document.querySelector(sel).getBoundingClientRect();
-            if (r.height < 44 || r.width < 60) out.push(`${sel} is too small to tap (${Math.round(r.width)}×${Math.round(r.height)})`);
+      for (const keyboard of [0, KEYBOARD]) {
+        const name = `the HP sheet fits on ${phone} (${mode === '#set' ? 'new game' : 'next stage'}, keyboard ${keyboard ? 'open' : 'closed'})`;
+        scenario(name, async (open) => {
+          const page = await open({ phone, game: {} });
+          await page.click(mode);
+          if (keyboard) {
+            await page.evaluate((h) => {
+              const view = window.visualViewport;
+              Object.defineProperty(view, 'height', { value: innerHeight - h, configurable: true });
+              view.dispatchEvent(new Event('resize'));
+              getComputedStyle(document.getElementById('sheet')).paddingBottom; // starts the glide now, so the wait below sees it
+            }, keyboard);
           }
-          return out;
+          // The buttons glide with the keyboard: wait until nothing on the sheet is still moving.
+          await page.waitForFunction(() => document.getElementById('sheet').getAnimations({ subtree: true }).length === 0);
+          const problems = await page.evaluate((kb) => {
+            const out = [];
+            const box = (sel) => document.querySelector(sel).getBoundingClientRect();
+            const visible = innerHeight - kb;
+            const actions = box('.sheet-actions');
+            if (actions.bottom > visible + 1) out.push(`The buttons are under the keyboard (bottom ${Math.round(actions.bottom)}, keyboard at ${visible})`);
+            if (actions.bottom < visible - 40) out.push(`The buttons aren't at the bottom (bottom ${Math.round(actions.bottom)} of ${visible})`);
+            const entries = [...document.querySelectorAll('.entry')].filter((e) => !e.hidden).map((e) => e.getBoundingClientRect());
+            for (const e of entries) {
+              if (e.height < 79) out.push(`A field's panel is squeezed to ${Math.round(e.height)}px`);
+              if (e.bottom > actions.top) out.push('A field panel runs into the buttons');
+            }
+            for (const sel of ['#sheet-ok', '#sheet-cancel']) {
+              const r = box(sel);
+              if (r.height < 44 || r.width < 60) out.push(`${sel} is too small to tap (${Math.round(r.width)}×${Math.round(r.height)})`);
+            }
+            return out;
+          }, keyboard);
+          check(problems.length === 0, problems.join('; '));
         });
-        check(problems.length === 0, problems.join('; '));
-      });
+      }
     }
   }
 

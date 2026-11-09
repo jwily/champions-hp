@@ -5,6 +5,7 @@ import { VILLAIN_LINES, HERO_LINES, lineFor, SFX } from './lines.js';
 import { trackPresses, onHold } from './presses.js';
 import { spirals, rays } from './art.js';
 import { openSheet } from './sheet.js';
+import { trackKeyboard } from './keyboard.js';
 
 const $ = (s, root = document) => root.querySelector(s);
 
@@ -87,6 +88,7 @@ for (const key of document.querySelectorAll('.key')) {
   onHold(key, () => apply(5));
 }
 
+trackKeyboard();
 $('#seal').addEventListener('click', toggleBoost);
 $('#set').addEventListener('click', () => openSheet('new'));
 $('#next').addEventListener('click', () => openSheet('next'));

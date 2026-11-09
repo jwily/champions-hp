@@ -74,6 +74,10 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
 - The HP sheet is a page of its own: villain panel above hero panel (as on the main page), labels
   as narration boxes, the fields' numbers in the heavy font, Cancel / FIGHT!! as key panels. It
   opens with nothing focused (the user's choice): tap a panel to type.
+- The sheet's Cancel / FIGHT!! row sits at the bottom, under the thumb (the user's request), and
+  rides above the keyboard while it's open (`js/keyboard.js` sets `--keyboard` from the visual
+  viewport: iOS overlays the keyboard without resizing the page, and its number pad has no Done
+  key). The field panels shrink to share what's left.
 - Never put the manga's artwork, logos or village symbols in the app.
 
 ## Working with this user

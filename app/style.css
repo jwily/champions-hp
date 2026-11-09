@@ -371,17 +371,18 @@ button {
   background: var(--black);
   display: flex;
   justify-content: center;
-  align-items: flex-start;
   padding:
     max(8px, env(safe-area-inset-top))
     max(var(--side), env(safe-area-inset-right))
-    16px
+    max(10px, env(safe-area-inset-bottom), var(--keyboard, 0px))
     max(var(--side), env(safe-area-inset-left));
+  transition: padding-bottom 0.25s ease-out; /* follows the keyboard up and down */
 }
 .sheet[hidden] { display: none; }
 .sheet-page {
   width: min(420px, 100%);
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: var(--row-gap);
 }
 /* Heavy lettering, the one kind of type that sits well on the black. */
@@ -395,9 +396,12 @@ button {
   font-weight: 400;
   color: var(--paper);
 }
+/* The panels share the room above the buttons, shrinking when the keyboard takes some. */
 .entry {
   display: block;
-  height: clamp(120px, 21vh, 170px);
+  flex: 1 1 0;
+  min-height: 80px;
+  max-height: 170px;
   cursor: text;
 }
 .entry[hidden] { display: none; }
@@ -441,16 +445,19 @@ button {
 }
 .error {
   position: static;
-  justify-self: start;
+  align-self: flex-start;
   margin: 0;
   color: #8e2410;
 }
 .error[hidden] { display: none; }
 
+/* At the bottom, under the thumb (above the keyboard while it's open). */
 .sheet-actions {
   display: grid;
   grid-template-columns: 1fr 1.55fr;
   gap: var(--col-gap);
+  flex: none;
+  margin-top: auto;
   height: clamp(60px, 10.5vh, 86px);
 }
 .sheet-key[hidden] { display: none; }
