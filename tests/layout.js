@@ -206,6 +206,23 @@ module.exports = (scenario) => {
     });
   }
 
+  // Villain HP sits above where the keyboard will be: tapping it first makes no room ahead of the
+  // keyboard, so the sheet changes once, when the keyboard arrives (a guess, if off, made it twice).
+  for (const phone of Object.keys(PHONES)) {
+    scenario(`tapping Villain HP waits for the keyboard on ${phone}`, async (open) => {
+      const page = await open({ phone, game: {} });
+      await page.click('#set');
+      const result = await page.evaluate(() => {
+        const target = document.getElementById('villain-row');
+        target.dispatchEvent(new Event('touchstart', { bubbles: true, cancelable: true }));
+        const early = document.documentElement.classList.contains('keyboard-open');
+        target.dispatchEvent(new Event('touchend', { bubbles: true, cancelable: true }));
+        return { early, focused: document.activeElement?.id };
+      });
+      equal(result, { early: false, focused: 'villain-input' }, 'No room made ahead of the keyboard, and Villain HP focused');
+    });
+  }
+
   for (const phone of Object.keys(PHONES)) {
     for (const [label, game] of Object.entries(CASES)) {
       scenario(`fits on ${phone} (${label})`, async (open) => {

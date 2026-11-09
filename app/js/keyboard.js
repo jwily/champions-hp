@@ -54,14 +54,19 @@ export function trackKeyboard() {
   view.addEventListener('resize', update);
   view.addEventListener('scroll', update);
 
-  // A finger landing on a field. With the keyboard closed, make room now; the first time, guess
-  // about a third of the screen (iOS's number pad is 260–300px tall on current iPhones).
+  // A finger landing on a field. With the keyboard closed, and the field where the keyboard will
+  // cover it, make room now. A field it won't cover (Villain HP) waits for the keyboard and changes
+  // in one step: a guess, if off, made it change twice. The first time there's nothing remembered,
+  // so guess: iOS's number pad and the bar over it take about 42% of the screen (360px of 852 on an
+  // iPhone 16 Pro, iOS 26).
   let pressed = null; // the field the finger came down on
   document.addEventListener('touchstart', (e) => {
     pressed = e.target.closest?.('.entry')?.querySelector('input') ?? null;
     if (!pressed || last > 0) return;
+    const height = remembered() || Math.round(window.innerHeight * 0.42);
+    if (pressed.closest('.entry').getBoundingClientRect().bottom <= window.innerHeight - height) return;
     guessUntil = performance.now() + SETTLE_MS;
-    makeRoom(remembered() || Math.max(260, Math.round(window.innerHeight * 0.34)));
+    makeRoom(height);
   });
   // On the lift, focus the field the finger came down on ourselves, without scrolling, and cancel
   // the tap's own click: the fields may have moved under the finger (its lift could land on FIGHT!!),
