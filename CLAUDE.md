@@ -35,8 +35,9 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   by X (RR v1.8 p. 22); heals stop at max (p. 21). In state, `max` is the printed/typed value and
   `up` the bonus; `total()` is the current maximum.
 - `js/sfx.js` letters the sound effects (the user asked for variety): a random word (holds get the
-  `big` ones), spot, tilt and ink style (solid / hollow / speed; max-HP changes tremble), with a
-  per-character wobble. Spots come from ZONES, the gaps left by the number, balloon and corner
+  `big` ones), spot, tilt and ink style (solid / hollow / speed), with a per-character wobble. No
+  animation (the user's choice): an effect appears at once, stays 1 s, and goes at once. Spots
+  come from ZONES, the gaps left by the number, balloon and corner
   boxes; each zone sets the direction (across in wide gaps, down in narrow ones, so a word never
   stands up over the digits). A burst spreads out (farthest open spot), three at most per panel.
   tests/layout.js fires many and checks each center stays clear.

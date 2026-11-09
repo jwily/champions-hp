@@ -141,8 +141,7 @@ module.exports = (scenario) => {
     equal(shown.length, 1, 'One effect per tap');
     check(SMALL.includes(shown[0].text), `A small hit word: ${shown[0].text}`);
     check(/\bsfx (solid|hollow|speed)\b/.test(shown[0].classes), `A style: ${shown[0].classes}`);
-    // Four quick taps (clicks from code, all at once: the fade runs on real time, and a busy machine
-    // could let one fade between taps).
+    // Four quick taps (clicks from code, all at once).
     await page.evaluate(() => { for (let i = 0; i < 4; i++) document.querySelector('.key[data-side="villain"][data-dir="-1"]').click(); });
     shown = await effects();
     equal(shown.length, 3, 'Fast taps stack, three at most');
@@ -151,9 +150,11 @@ module.exports = (scenario) => {
     await hold(page, 'villain', '-', HOLD_MS + 50);
     shown = await effects();
     check(BIG.includes(shown.at(-1).text), `A hold gets a big word: ${shown.at(-1).text}`);
-    // The fade is a CSS animation, which runs on real time, not the test's clock.
-    const gone = await page.waitForFunction(() => !document.querySelector('#villain > .sfx'), null, { timeout: 5000 }).then(() => true, () => false);
-    check(gone, 'They fade and go');
+    check(await page.$eval('#villain > .sfx', (e) => e.getAnimations().length === 0), 'No animation: they appear at once');
+    await page.clock.runFor(900);
+    check((await effects()).length > 0, 'and stay a moment');
+    await page.clock.runFor(1200);
+    equal((await effects()).length, 0, 'then go at once');
   });
 
   // ---------- Presses (lessons from Bgt-J: app/js/presses.js) ----------

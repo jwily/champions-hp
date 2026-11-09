@@ -248,7 +248,8 @@ button {
 }
 .round .line { max-height: 72%; }
 
-/* Sound effects (js/sfx.js): each one placed, tilted and styled at random. */
+/* Sound effects (js/sfx.js): each one placed, tilted and styled at random. No animation: they
+   appear and go at once (the user's choice). */
 .sfx {
   position: absolute;
   z-index: 2;
@@ -261,7 +262,6 @@ button {
   -webkit-text-stroke: 0.12em var(--paper);
   paint-order: stroke;
   transform: translate(-50%, -50%) rotate(var(--tilt));
-  animation: sfx-pop 0.75s ease-out forwards;
 }
 .sfx.vertical { writing-mode: vertical-rl; }
 .sfx .ch {
@@ -274,17 +274,6 @@ button {
 .sfx.speed .ch {
   transform: rotate(var(--r)) scale(var(--k)) translateX(var(--d)) skewX(-14deg);
   text-shadow: -0.12em 0.05em 0 var(--tone), -0.24em 0.1em 0 var(--tone);
-}
-/* Max HP rising or falling: the letters tremble (ゴゴゴ). */
-.sfx.tremble .ch { animation: tremble 0.09s steps(2) infinite alternate; }
-@keyframes tremble {
-  to { transform: rotate(var(--r)) scale(var(--k)) translateX(var(--d)) translate(1.5px, -1px); }
-}
-@keyframes sfx-pop {
-  0% { opacity: 1; transform: translate(-50%, -50%) rotate(var(--tilt)) scale(1.35); }
-  14% { transform: translate(-50%, -50%) rotate(var(--tilt)) scale(1); }
-  70% { opacity: 1; }
-  100% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--tilt)) scale(1.04); }
 }
 
 /* ---------- Villain extras ---------- */

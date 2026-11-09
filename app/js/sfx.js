@@ -30,7 +30,7 @@ const ZONES = {
 const LOOKS = {
   hit: { styles: ['solid', 'solid', 'hollow', 'speed'], tilt: 22, size: 1 },
   heal: { styles: ['hollow', 'hollow', 'solid'], tilt: 8, size: 0.85 },
-  boost: { styles: ['solid', 'hollow'], tilt: 6, size: 1, tremble: true },
+  boost: { styles: ['solid', 'hollow'], tilt: 6, size: 1 },
   unboost: { styles: ['hollow', 'speed'], tilt: 12, size: 0.9 },
 };
 
@@ -56,13 +56,14 @@ function openSpot(panel, side) {
 
 const BIG = 1.45; // holds (5 at once) are louder
 const MAX_AT_ONCE = 3; // per panel
+const SHOW_MS = 1000; // how long an effect stays: it appears and goes at once, like a drawn panel (the user's choice)
 
 export function soundEffect(panel, side, kind, amount) {
   const look = LOOKS[kind];
   const big = Math.abs(amount) > 1;
   const el = document.createElement('div');
   const [x, y, down] = openSpot(panel, side);
-  el.className = ['sfx', pick(look.styles), down && 'vertical', look.tremble && 'tremble'].filter(Boolean).join(' ');
+  el.className = ['sfx', pick(look.styles), down && 'vertical'].filter(Boolean).join(' ');
   el.setAttribute('aria-hidden', 'true');
   el.style.left = `${x.toFixed(1)}%`;
   el.style.top = `${y.toFixed(1)}%`;
@@ -80,6 +81,6 @@ export function soundEffect(panel, side, kind, amount) {
   }
   const shown = panel.querySelectorAll(':scope > .sfx');
   if (shown.length >= MAX_AT_ONCE) shown[0].remove();
-  el.addEventListener('animationend', (e) => e.target === el && el.remove());
   panel.append(el);
+  setTimeout(() => el.remove(), SHOW_MS);
 }
