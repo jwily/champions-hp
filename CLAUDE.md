@@ -47,7 +47,8 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
 - **The 術 toggle** (`powerUsed`, state version 3; `MIGRATIONS` upgrades v1 and v2): one toggle
   for the hero's special ability, as a seal (the user's pick over an unrolling scroll): ready = the
   bare 術 in white with a blue outline; used = a paper sealing tag (封印) slaps on across it
-  (only when tapped, not at launch) and the character fades. Blue means ready. It starts sealed
+  (only when tapped, not at launch) and the character fades to the paper color with a faint outline
+  (bright white is only for the ready state). Blue means ready. It starts sealed
   (the user: most heroes have no limited ability).
 - **Standard / Expert** (`mode`, state version 4): `STAGES` in store.js (I → II, or II → III, RR
   p. 28), chosen in the New game sheet and kept. On the last stage Next stage is a disabled "Final stage" caption.

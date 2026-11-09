@@ -331,7 +331,8 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   -webkit-text-stroke: 0.1em var(--blue);
   paint-order: stroke;
 }
-.power[aria-pressed='true'] .kanji { -webkit-text-stroke-color: var(--tone); }
+/* Sealed: the character settles back to the paper color, outlined faintly, under the tag. */
+.power[aria-pressed='true'] .kanji { color: var(--paper); -webkit-text-stroke-color: var(--tone); }
 
 /* The sealing tag: a strip of paper with a ruled border and 封印 written down it, with room around
    the characters. */
