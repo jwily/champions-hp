@@ -2,14 +2,14 @@
 // tests/tools/fonts.js reads the app's files to cut the bundled fonts down to the characters used:
 // after adding text, run `npm run fonts` (a test checks every character is covered).
 
-// Balloon lines by share of max HP left: the first entry whose limit the share is at or under.
-// "\n" marks where a line breaks into its next column, at a phrase, as a letterer would. Keep each
-// phrase to 5 characters at most ("!!" counts as one): that's what fits in the iPhone SE's balloons
-// (a layout test checks no line wraps mid-phrase).
+// Balloon lines, by share of max HP left: lineFor() picks the first entry whose limit the share is
+// at or under. "\n" marks where a line breaks into its next column, at a phrase, as a letterer
+// would. Keep each phrase to 5 characters at most ("!!" counts as one): that's what fits in the
+// iPhone SE's balloons (a layout test checks no line wraps mid-phrase).
 
-// The villain's lines, for each of their two stages, by share of max HP left: the first entry whose
-// limit the share is at or under. The first stage is confident; at 0 they aren't beaten, they're
-// about to stop holding back. The final stage opens with the reveal of their true power.
+// The villain's lines, for each of their two stages. The first stage is confident; at 0 they aren't
+// beaten, they're about to stop holding back. The final stage opens with the reveal of their true
+// power.
 export const VILLAIN_LINES = {
   first: [
     [0, '遊びは\n終わりだ…'], // "Playtime's over…" (not defeated: about to transform)

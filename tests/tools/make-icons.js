@@ -9,7 +9,7 @@ const { chromium } = require('playwright');
 
 const ICONS = path.join(__dirname, '..', '..', 'app', 'icons');
 const FONT = fs.readFileSync(path.join(__dirname, '..', '..', 'app', 'fonts', 'dela-gothic-one.woff2')).toString('base64');
-// Launch screen sizes, matching the apple-touch-startup-image links in index.html.
+// Launch screen sizes, matching the apple-touch-startup-image links in index.html (a test checks).
 const LAUNCH = ['750x1334', '1125x2436', '1170x2532', '1179x2556', '1206x2622', '828x1792', '1242x2688', '1284x2778', '1290x2796', '1320x2868'];
 
 // A small seeded random, so the irregularity is the same on every run.

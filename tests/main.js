@@ -126,7 +126,8 @@ module.exports = (scenario) => {
   });
 
   scenario('unreadable saved data starts fresh', async (open) => {
-    for (const storage of ['{not json', { version: 1, hero: { hp: 'x' }, villain: null }, { version: 99 }]) {
+    const broken = { version: 4, game: 'x', stage: 1, mode: 'standard', boost: false, hero: null, villain: null, powerUsed: true };
+    for (const storage of ['{not json', { version: 1, hero: { hp: 'x' }, villain: null }, { version: 99 }, broken]) {
       const page = await open({ storage });
       check(await page.isVisible('#sheet'), `Fresh start for ${JSON.stringify(storage)}`);
     }
@@ -327,6 +328,33 @@ module.exports = (scenario) => {
     const saved = await stored(page);
     equal(Object.keys(saved).sort(), ['boost', 'game', 'hero', 'mode', 'powerUsed', 'stage', 'version', 'villain'], 'Saved in the new shape');
     equal(saved.mode, 'standard', 'as a Standard game');
+  });
+
+  scenario('a game saved before Standard / Expert carries over as Standard', async (open) => {
+    const v3 = { version: 3, game: 4, stage: 2, boost: false, hero: { hp: 6, max: 10, up: 0 }, villain: { hp: 8, max: 15, up: 0 }, powerUsed: false };
+    const page = await open({ storage: v3 });
+    check(!(await page.isVisible('#sheet')), 'The game is still there');
+    equal(await page.getAttribute('#power', 'aria-pressed'), 'false', '術 as it was');
+    equal(await page.textContent('#next'), 'Final stage', 'Standard: stage II is the last');
+  });
+
+  scenario('the HP sheet’s panels open where the page’s are, with the same art', async (open) => {
+    const page = await open({ game: {} });
+    const top = () => page.$eval('#villain', (p) => p.getBoundingClientRect().top);
+    const pageTop = await top();
+    await page.click('#set');
+    equal(await page.$eval('#villain-row', (p) => p.getBoundingClientRect().top), pageTop, 'Villain panel top, sheet vs page');
+    const art = (sel) => page.$eval(sel, (w) => ({ art: w.dataset.art, mask: getComputedStyle(w.querySelector('.fade')).maskImage || getComputedStyle(w.querySelector('.fade')).webkitMaskImage, drawn: !!w.querySelector('svg.art') }));
+    for (const side of ['villain', 'hero']) {
+      equal(await art(`#${side}-row .art-wrap`), await art(`#${side} .art-wrap`), `${side} art and tone, sheet vs page`);
+    }
+  });
+
+  scenario('the launch screens in index.html are the ones drawn', async () => {
+    const html = fs.readFileSync(path.join(APP, 'index.html'), 'utf8');
+    const linked = [...html.matchAll(/apple-touch-startup-image" href="(icons\/[^"]+)"/g)].map((m) => m[1]).sort();
+    const drawn = appFiles().filter((f) => f.startsWith('icons/launch-')).sort();
+    equal(linked, drawn, 'Launch screens linked vs in app/icons');
   });
 
   // ---------- Presses (lessons from Bgt-J: app/js/presses.js) ----------

@@ -60,9 +60,10 @@ npm run setup      # downloads the test browsers (once)
 npm test           # every check on WebKit (Safari's engine) and Chromium
 ```
 
-- `main.js`: starting a game, taps and holds, the 増 seal, stages, saving, bad saved data, presses
+- `main.js`: starting a game, taps and holds, the 増 seal, stages, saving, saves from every older
+  version, bad saved data, the HP sheet lining up with the page, presses
   (sliding off, gutter taps, two fingers, stray browser clicks, touch, fields taking focus), the
-  offline file list, and font coverage
+  offline file list, launch screens, and font coverage
 - `layout.js`: on an iPhone SE, 13 mini, 14 Pro and 16 Pro Max, with the widest numbers and the
   longest lines: nothing spills out or overlaps, nothing scrolls, every control is big enough to tap
 - `updates.js` (Chromium only): opening offline, and a deploy arriving on the launch after with

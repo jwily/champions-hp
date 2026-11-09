@@ -1,30 +1,30 @@
-// Startup and drawing. The page is a manga "flashback" page: paper panels on black gutters.
+// The game page: a manga "flashback" page, paper panels on black gutters. Builds the two sides,
+// draws them from the store's state on every change, and wires up the controls.
 
-import { state, started, total, change, toggleBoost, togglePower, won, MAX_HP, STAGES } from './store.js';
+import { state, started, total, change, toggleBoost, togglePower, won, finalStage, MAX_HP } from './store.js';
 import { VILLAIN_LINES, HERO_LINES, HERO_WIN, lineFor } from './lines.js';
 import { soundEffect } from './sfx.js';
 import { trackPresses, onHold } from './presses.js';
-import { spirals, rays } from './art.js';
+import { drawArt } from './art.js';
 import { openSheet } from './sheet.js';
 import { trackKeyboard } from './keyboard.js';
+import { keepAwake } from './wake.js';
+import { watchForUpdates } from './updates.js';
 import { $, make } from './dom.js';
 
-// The villain's lines depend on the stage (first or final), so they're looked up when drawn.
-const villainLines = () => VILLAIN_LINES[state.stage >= STAGES[state.mode].at(-1) ? 'final' : 'first'];
-
-const SIDES = [
-  ['villain', 'Villain', villainLines, spirals],
-  ['hero', 'Hero', () => HERO_LINES, rays],
-];
+// Each side's panel and keys, and its balloon lines (the villain's depend on the stage).
+const LINES = {
+  villain: () => VILLAIN_LINES[finalStage() ? 'final' : 'first'],
+  hero: () => HERO_LINES,
+};
 
 const sides = Object.fromEntries(
-  SIDES.map(([key, name, lines, art]) => {
+  Object.entries(LINES).map(([key, lines]) => {
     const panel = $(`#${key}`);
-    $('.art-wrap', panel).prepend(art());
     return [
       key,
       {
-        name,
+        name: panel.getAttribute('aria-label'),
         panel,
         lines,
         num: $('.num', panel),
@@ -39,6 +39,10 @@ const sides = Object.fromEntries(
   })
 );
 
+const power = $('#power');
+const next = $('#next');
+const seal = $('#seal');
+
 // Vertical text: "!" and "!!" set upright inside the column as manga lettering does, and a new
 // column wherever the line marks a break ("\n", between phrases).
 function setVertical(el, text) {
@@ -50,38 +54,37 @@ function setVertical(el, text) {
   );
 }
 
+function drawSide(el, c) {
+  el.num.textContent = c.hp;
+  el.max.textContent = `/ ${total(c)}`;
+  if (c.up) el.max.append(make('span', 'up', ` (+${c.up})`));
+  el.status.textContent = `${el.name} ${c.hp} of ${total(c)}`;
+  setVertical(el.line, lineFor(el.lines(), c.hp / total(c)));
+  el.panel.classList.toggle('down', c.hp === 0);
+  // A key that can't change anything right now shows faint (it stays pressable: nothing happens).
+  const [canLower, canRaise] = state.boost ? [c.up > 0, total(c) < MAX_HP] : [c.hp > 0, c.hp < total(c)];
+  el.minus.classList.toggle('inert', !canLower);
+  el.plus.classList.toggle('inert', !canRaise);
+}
+
 function draw() {
-  for (const [key, el] of Object.entries(sides)) {
-    const c = state[key];
-    if (!c) continue;
-    el.num.textContent = c.hp;
-    el.max.textContent = `/ ${total(c)}`;
-    if (c.up) el.max.append(make('span', 'up', ` (+${c.up})`));
-    el.status.textContent = `${el.name} ${c.hp} of ${total(c)}`;
-    setVertical(el.line, lineFor(el.lines(), c.hp / total(c)));
-    el.panel.classList.toggle('down', c.hp === 0);
-    // A key that can't change anything right now shows faint (it stays pressable: nothing happens).
-    const [canLower, canRaise] = state.boost ? [c.up > 0, total(c) < MAX_HP] : [c.hp > 0, c.hp < total(c)];
-    el.minus.classList.toggle('inert', !canLower);
-    el.plus.classList.toggle('inert', !canRaise);
-  }
-  $('#power').setAttribute('aria-pressed', state.powerUsed);
-  $('#power').setAttribute('aria-label', state.powerUsed ? 'Special ability used (sealed)' : 'Special ability ready');
+  for (const [key, el] of Object.entries(sides)) if (state[key]) drawSide(el, state[key]);
+  power.setAttribute('aria-pressed', state.powerUsed);
+  power.setAttribute('aria-label', state.powerUsed ? 'Special ability used (sealed)' : 'Special ability ready');
   // On the villain's last stage, Next stage is just a caption: "Final stage", not pressable.
-  const final = state.stage >= STAGES[state.mode].at(-1);
-  $('#next').disabled = final;
-  $('#next').textContent = final ? 'Final stage' : 'Next stage ▸';
+  next.disabled = finalStage();
+  next.textContent = finalStage() ? 'Final stage' : 'Next stage ▸';
   // The villain's last stage is down: VICTORY!!! where Next stage was, and the hero cheers.
   const victory = won();
   sides.villain.panel.classList.toggle('won', victory);
-  $('#next').hidden = victory;
+  next.hidden = victory;
   if (victory) {
     setVertical(sides.hero.line, HERO_WIN);
     sides.villain.status.textContent = 'Villain defeated: you win';
   }
   $('#stage-num').textContent = state.stage;
   $('#game-num').textContent = Math.max(1, state.game);
-  $('#seal').setAttribute('aria-pressed', state.boost);
+  seal.setAttribute('aria-pressed', state.boost);
   document.body.classList.toggle('boosting', state.boost);
 }
 
@@ -96,20 +99,18 @@ const SHAKE = [
 function effect(key, kind, amount) {
   const el = sides[key];
   soundEffect(el.panel, key, kind, amount);
-  if (kind === 'hit') {
-    // Only a hit shakes the panel and flashes focus lines: a heal, or max HP changing (フッ…,
-    // something fading), isn't an impact.
-    el.focus.animate([{ opacity: 0.6 }, { opacity: 0 }], { duration: 350, easing: 'ease-out' }); // focus lines
-    el.panel.animate(SHAKE, { duration: 220 });
-  }
+  // Only a hit shakes the panel and flashes focus lines: a heal, or max HP changing (フッ…,
+  // something fading), isn't an impact.
+  if (kind !== 'hit') return;
+  el.focus.animate([{ opacity: 0.6 }, { opacity: 0 }], { duration: 350, easing: 'ease-out' });
+  el.panel.animate(SHAKE, { duration: 220 });
 }
 
 // − / +: a tap is 1, a hold 5 (and 5 more each repeat). Fast taps all count: there's no double-tap
 // detection, which would misread three quick taps as a double tap and a tap.
-trackPresses();
 for (const key of document.querySelectorAll('.key')) {
-  const side = key.dataset.side;
-  const dir = +key.dataset.dir;
+  const { side } = key.dataset;
+  const dir = Number(key.dataset.dir);
   const apply = (n) => {
     const kind = change(side, n * dir);
     if (kind) effect(side, kind, n);
@@ -118,16 +119,22 @@ for (const key of document.querySelectorAll('.key')) {
   onHold(key, () => apply(5));
 }
 
-trackKeyboard();
-$('#seal').addEventListener('click', toggleBoost);
-$('#power').addEventListener('click', () => {
-  $('#power').classList.add('tapped'); // the seal slaps on when tapped, not at launch
+seal.addEventListener('click', toggleBoost);
+power.addEventListener('click', () => {
+  power.classList.add('tapped'); // the seal slaps on when tapped, not at launch
   togglePower();
 });
 $('#set').addEventListener('click', () => openSheet('new'));
-$('#next').addEventListener('click', () => openSheet('next'));
-
+next.addEventListener('click', () => openSheet('next'));
 document.addEventListener('hp:change', draw);
+
+// ---------- Startup ----------
+
+trackPresses();
+trackKeyboard();
+keepAwake();
+watchForUpdates();
+drawArt();
 draw();
 if (!started()) openSheet('new');
 
@@ -137,76 +144,3 @@ const FONT_WAIT_MS = 1500;
 Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, FONT_WAIT_MS))]).then(() =>
   document.body.classList.remove('starting')
 );
-
-// ---------- Keeping the screen awake ----------
-// A game is played with the phone lying on the table: the screen shouldn't lock between turns. The
-// Screen Wake Lock keeps it on while the app is showing. iOS drops it whenever the app goes to the
-// background, so it's asked for again on every return, and on a tap in case it needs one first.
-// Where it isn't available or is refused (Low Power Mode, say), the phone locks as usual.
-
-let wakeLock = null;
-
-async function stayAwake() {
-  if (wakeLock || document.hidden || !navigator.wakeLock) return;
-  try {
-    wakeLock = await navigator.wakeLock.request('screen');
-    wakeLock.addEventListener('release', () => (wakeLock = null));
-  } catch {
-    // Refused for now: tried again on the next tap or return.
-  }
-}
-
-stayAwake();
-document.addEventListener('pointerdown', stayAwake, { capture: true, passive: true });
-
-// ---------- Updates ----------
-// New versions download in the background (sw.js) and run from the next launch. The first launch
-// running a new one says "App updated" briefly, in a caption over the running head. iOS mostly
-// resumes the app rather than relaunching it, so coming back from the background checks too.
-
-const VERSION_KEY = 'champions-hp-app-version'; // the version the last launch ran (sw.js names them)
-const NOTICE_MS = 4000;
-let noticeTimer = null;
-
-function notice(text) {
-  $('#notice').textContent = text;
-  $('#notice').hidden = false;
-  $('.running').hidden = true;
-  clearTimeout(noticeTimer);
-  noticeTimer = setTimeout(endNotice, NOTICE_MS);
-}
-
-function endNotice() {
-  clearTimeout(noticeTimer);
-  noticeTimer = null;
-  $('#notice').hidden = true;
-  $('.running').hidden = false;
-}
-
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) {
-    if (noticeTimer) endNotice(); // not a stale message hours later
-    return;
-  }
-  stayAwake();
-  navigator.serviceWorker?.controller?.postMessage('check-for-update');
-});
-
-// The service worker lets the app open offline. It only registers on HTTPS or localhost.
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
-  navigator.serviceWorker.addEventListener('message', (event) => {
-    const { version } = event.data ?? {};
-    if (!version) return;
-    let seen;
-    try {
-      seen = localStorage.getItem(VERSION_KEY);
-      if (seen === version) return;
-      localStorage.setItem(VERSION_KEY, version);
-    } catch {
-      return; // storage full or blocked: rather say nothing than say it at every launch
-    }
-    if (seen) notice('App updated');
-  });
-  navigator.serviceWorker.controller?.postMessage('which-version');
-}

@@ -1,5 +1,7 @@
 // Panel backgrounds drawn in ink: spirals behind the villain (after the swirls on Naruto's first
-// chapter title spread) and focus lines fanning up behind the hero. Plain SVG, scaled to cover the panel.
+// chapter title spread) and focus lines fanning up behind the hero: curved against straight. Plain
+// SVG, scaled to cover the panel. drawArt() fills every `.art-wrap[data-art]`, on the page and in the
+// HP sheet alike.
 
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -31,7 +33,7 @@ function spiral(cx, cy, radius, turns) {
   return d;
 }
 
-export function spirals() {
+function spirals() {
   const el = svg(300, 200);
   for (const [cx, cy, r, turns, w] of [
     [235, 120, 78, 3.2, 9],
@@ -53,7 +55,7 @@ function seeded(seed) {
 // Focus lines (集中線) fanning up from below the panel. Kept irregular so they don't read as the
 // Rising Sun flag: uneven spacing, each line starting at its own distance from the point they aim
 // at (so the middle is hollow and the point is never drawn), each tapering to a point toward it.
-export function rays() {
+function fan() {
   const el = svg(300, 200);
   const random = seeded(3);
   const [cx, cy, count] = [150, 205, 46];
@@ -71,4 +73,10 @@ export function rays() {
   p.classList.add('ink');
   el.append(p);
   return el;
+}
+
+const ART = { villain: spirals, hero: fan };
+
+export function drawArt() {
+  for (const wrap of document.querySelectorAll('.art-wrap[data-art]')) wrap.prepend(ART[wrap.dataset.art]());
 }

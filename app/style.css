@@ -1,7 +1,8 @@
 /* Champions HP: a manga "flashback" page (Naruto's black-gutter pages): paper panels on black.
    Measured from chapter 1 of the manga: straight-edged panels with thin ink borders, rows
    separated a little more than columns, vertical lettering in balloons, hand-lettered katakana
-   sound effects. One spot color, orange, marks the max-HP toggle and nothing else. */
+   sound effects. Two spot colors, each with one job: orange for the max-HP mode, blue for the
+   hero's special ability while it's ready. */
 
 @font-face {
   font-family: 'Dela Gothic One';
@@ -37,9 +38,16 @@
   --text-s: 11px; /* the running head */
   --text-m: 13px; /* labels and buttons in the serif */
   --text-l: 14px; /* balloon lines, max HP */
+  --pad-x: 10px; /* a narration box's text from its border */
   --col-gap: 8px;
   --row-gap: 12px;
-  --side: 12px;
+  --side: 12px; /* the page's side margins */
+  --head-h: 52px; /* the running head's row; the sheet's title row lines its panels up with it */
+  /* The page's margins, clear of the notch and home bar (the page and the sheet share them). */
+  --page-top: max(8px, env(safe-area-inset-top));
+  --page-right: max(var(--side), env(safe-area-inset-right));
+  --page-bottom: max(10px, env(safe-area-inset-bottom));
+  --page-left: max(var(--side), env(safe-area-inset-left));
   --key-row-h: clamp(60px, 10.5dvh, 86px); /* the − / + rows and the sheet's button row */
   --key-ratio: 1.55fr; /* the bigger key's share: − on the page, FIGHT!! on the sheet */
   --heavy: 'Dela Gothic One', 'Hiragino Kaku Gothic StdN', sans-serif;
@@ -89,11 +97,7 @@ button {
   /* head, villain, keys, seal gutter, hero, keys: the villain's panel is busier (balloon, stage box,
      Next stage), so it gets a little more of the height. */
   grid-template-rows: auto 1.15fr auto auto 1fr auto;
-  padding:
-    max(8px, env(safe-area-inset-top))
-    max(var(--side), env(safe-area-inset-right))
-    max(10px, env(safe-area-inset-bottom))
-    max(var(--side), env(safe-area-inset-left));
+  padding: var(--page-top) var(--page-right) var(--page-bottom) var(--page-left);
 }
 
 /* ---------- Page furniture ---------- */
@@ -102,7 +106,7 @@ button {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 52px;
+  height: var(--head-h);
   font-size: var(--text-s);
   color: var(--head);
 }
@@ -116,13 +120,30 @@ button {
   color: var(--ink);
   font-size: var(--text-m);
   line-height: 1.2;
-  padding: 4px 10px;
+  padding: 4px var(--pad-x);
 }
 button.narration {
   min-height: 44px;
   padding: 6px 12px;
 }
-button.narration.pressed { background: var(--ink); color: var(--paper); }
+
+/* Inked: paper turns to ink for a control being pressed, a choice that's on, and Next stage once
+   it's the thing to press (the villain is down). */
+.key.pressed,
+.sheet-key.pressed,
+button.narration.pressed,
+.mode-setup button[aria-pressed='true'],
+#villain.down .next {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* Lettering over the art (the numbers, max HP, sound effects, VICTORY): a paper outline painted
+   under each letter, so it reads clear of the tone and lines behind it. Each sets its width. */
+.num, .max, .sfx, .victory, .entry input {
+  -webkit-text-stroke-color: var(--paper);
+  paint-order: stroke;
+}
 
 /* ---------- Panels ---------- */
 
@@ -160,11 +181,13 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   background-image: radial-gradient(var(--tone) 1px, transparent 1.25px);
   background-size: 4px 4px;
 }
+/* The tone fades away from the panel's outer edge: down from the top for the villain, up from
+   the bottom for the hero (the same in the HP sheet as on the page). */
 .fade {
   -webkit-mask: linear-gradient(180deg, #000, transparent 75%);
   mask: linear-gradient(180deg, #000, transparent 75%);
 }
-#hero .fade {
+[data-art='hero'] .fade {
   -webkit-mask: linear-gradient(0deg, #000, transparent 60%);
   mask: linear-gradient(0deg, #000, transparent 60%);
 }
@@ -187,8 +210,7 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   font-family: var(--heavy);
   line-height: 0.9;
   color: var(--ink);
-  -webkit-text-stroke: 0.08em var(--paper);
-  paint-order: stroke;
+  -webkit-text-stroke-width: 0.08em;
   font-variant-numeric: tabular-nums;
 }
 #villain .num { right: 6cqw; top: 52%; transform: translateY(-50%); font-size: min(38cqh, 30cqw); }
@@ -204,8 +226,7 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   bottom: var(--inset);
   font-size: var(--text-l);
   color: var(--sub);
-  -webkit-text-stroke: 3px var(--paper);
-  paint-order: stroke;
+  -webkit-text-stroke-width: 3px;
   white-space: nowrap;
 }
 .max .up { color: var(--orange-ink); }
@@ -221,8 +242,9 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   color: var(--ink);
 }
 .balloon .line {
+  position: relative;
   writing-mode: vertical-rl;
-  max-height: 100%;
+  max-height: 72%; /* clear of the oval's narrowing ends */
   /* Centered both ways: each column centered along its length, and a line that wraps into two
      columns broken evenly (a short last column hung from the top and looked off-center). */
   text-align: center;
@@ -244,7 +266,6 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   stroke: var(--ink);
   stroke-width: var(--line-fine);
 }
-.balloon .line { position: relative; }
 
 /* The villain's oval: wider than the hero's, for its longer two-column lines. */
 #villain .balloon {
@@ -253,7 +274,6 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   width: max(88px, 31cqw);
   height: min(62cqh, 100cqh - 9cqh - 66px); /* clear of Next stage */
 }
-#villain .balloon .line { max-height: 72%; }
 
 /* The hero's oval. */
 #hero .balloon {
@@ -262,7 +282,6 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   width: max(76px, 24cqw);
   height: 54cqh;
 }
-#hero .balloon .line { max-height: 72%; }
 
 /* Sound effects (js/sfx.js): heavy katakana, solid for a change of 1, outlined for a hold. No
    animation: they appear and go at once. */
@@ -276,8 +295,7 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   letter-spacing: -0.04em;
   white-space: nowrap;
   color: var(--ink);
-  -webkit-text-stroke: 0.12em var(--paper);
-  paint-order: stroke;
+  -webkit-text-stroke-width: 0.12em;
   transform: translate(-50%, -50%) rotate(var(--tilt));
 }
 .sfx.outlined { color: var(--paper); -webkit-text-stroke: 0.16em var(--ink); }
@@ -294,7 +312,7 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   border: var(--line) solid var(--ink);
   box-shadow: 0 0 0 6px var(--black);
   font-family: var(--heavy);
-  font-size: 13px;
+  font-size: var(--text-m);
   line-height: 1;
   color: var(--ink);
 }
@@ -307,9 +325,8 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   bottom: var(--inset);
   z-index: 1;
 }
-/* The villain is down: Next stage is what to press now, so it turns solid ink. Still: a pulse
-   was distracting (the user's call, after trying a fade and a blink). */
-#villain.down .next { background: var(--ink); color: var(--paper); }
+/* The villain is down: Next stage turns solid ink (Inked, above), still: a pulse was distracting
+   (the user's call, after trying a fade and a blink). */
 /* On the last stage it's a plain caption, "Final stage": nothing to press. */
 .next:disabled { cursor: default; }
 
@@ -332,6 +349,8 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   place-items: center;
 }
 .power .kanji {
+  position: relative;
+  isolation: isolate;
   font-family: var(--heavy);
   font-size: 48px;
   line-height: 1;
@@ -339,10 +358,8 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   -webkit-text-stroke: 0.1em var(--blue);
   paint-order: stroke;
 }
-/* Sealed: the character settles back to the paper color, outlined faintly, under the tag. */
 /* Ready, it looks charged: a heavier blue outline behind the character's own, and two wider,
    fainter bands beyond it, so the blue falls off softly like a glow (the user's pick of several). */
-.power .kanji { position: relative; isolation: isolate; }
 .power .kanji::before,
 .power .kanji::after,
 .power .glow {
@@ -361,6 +378,7 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
 .power[aria-pressed='true'] .kanji::before,
 .power[aria-pressed='true'] .kanji::after,
 .power[aria-pressed='true'] .glow { display: none; }
+/* Sealed: the character settles back to the paper color, outlined faintly, under the tag. */
 .power[aria-pressed='true'] .kanji { color: var(--paper); -webkit-text-stroke-color: var(--tone); }
 
 /* The sealing tag: a strip of paper with a ruled border and 封印 written down it, with room around
@@ -403,8 +421,7 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   font-size: min(13cqh, 34px);
   line-height: 1;
   color: var(--ink);
-  -webkit-text-stroke: 0.12em var(--paper);
-  paint-order: stroke;
+  -webkit-text-stroke-width: 0.12em;
   transform: rotate(-4deg);
   transform-origin: left bottom;
 }
@@ -419,15 +436,17 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   height: var(--key-row-h);
   margin-top: var(--row-gap);
 }
-.key {
+/* Key panels: the − / + keys, and the sheet's Cancel / FIGHT!!. */
+.key,
+.sheet-key {
   font-family: var(--heavy);
-  font-size: 46px;
   color: var(--ink);
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.key.pressed { background: var(--ink); color: var(--paper); }
+.key { font-size: 46px; }
+.sheet-key { font-size: 20px; }
 /* − and + are drawn as bars, not text: the heavy font has no − of its own, so browsers drew it
    from different fallback fonts at different heights. Bars sit exactly at the key's center, at
    the heavy lettering's weight, and take the key's color (faint when inert, paper when pressed). */
@@ -497,11 +516,7 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   background: var(--black);
   display: flex;
   justify-content: center;
-  padding:
-    max(8px, env(safe-area-inset-top))
-    max(var(--side), env(safe-area-inset-right))
-    max(10px, env(safe-area-inset-bottom), var(--keyboard, 0px))
-    max(var(--side), env(safe-area-inset-left));
+  padding: var(--page-top) var(--page-right) max(var(--page-bottom), var(--keyboard, 0px)) var(--page-left);
   /* No transition: animating this padding relaid the whole sheet every frame (the fields' numbers
      resize with their panels) and started only once iOS reported the keyboard, so it stuttered
      behind it. The sheet takes its new layout in one step as the keyboard settles. */
@@ -512,10 +527,11 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   flex-direction: column;
   gap: var(--row-gap);
 }
-/* Heavy lettering, the one kind of type that sits well on the black. */
+/* Heavy lettering, the one kind of type that sits well on the black. With the gap below it, its row
+   is the running head's height, so the panels open exactly where the page's are. */
 .sheet-title {
   margin: 0;
-  height: 42px;
+  height: calc(var(--head-h) - var(--row-gap));
   display: flex;
   align-items: center;
   font-family: var(--heavy);
@@ -546,8 +562,7 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   color: var(--ink);
   caret-color: var(--ink);
   outline: none;
-  -webkit-text-stroke: 0.08em var(--paper);
-  paint-order: stroke;
+  -webkit-text-stroke-width: 0.08em;
   -webkit-user-select: text;
   user-select: text;
 }
@@ -573,15 +588,6 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
 }
 /* The first game has no Cancel: Fight takes the row. */
 .sheet-actions:has(#sheet-cancel[hidden]) { grid-template-columns: 1fr; }
-.sheet-key {
-  font-family: var(--heavy);
-  font-size: 20px;
-  color: var(--ink);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.sheet-key.pressed { background: var(--ink); color: var(--paper); }
 
 /* Standard / Expert: a small panel under the fields. Hidden while the keyboard is open (it isn't
    needed while typing a number). */
@@ -592,10 +598,9 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   gap: 6px;
   /* "Mode" is bare text, so it lines up with the text inside the narration boxes above (the box's
      inset, border and padding), not with the boxes' edges: at 10px it looked cramped. */
-  padding: 10px 10px 10px calc(var(--inset) + var(--line-fine) + 10px);
+  padding: 10px 10px 10px calc(var(--inset) + var(--line-fine) + var(--pad-x));
   container-type: normal;
 }
 .keyboard-open .mode-setup { display: none; }
 .setup-label { flex: 1; font-size: var(--text-m); }
 .mode-setup button { min-width: 92px; }
-.mode-setup button[aria-pressed='true'] { background: var(--ink); color: var(--paper); }

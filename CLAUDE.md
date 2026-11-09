@@ -29,9 +29,20 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
 
 ## How the code fits together
 
-- `js/store.js` owns `state` (one JSON object in localStorage under `champions-hp`, version 1).
+- Modules (`app/js/`): `app.js` is the game page (builds both sides from `#villain` / `#hero`,
+  draws on `hp:change`, wires the controls, runs startup); `store.js` the state; `sheet.js` the HP
+  sheet; `lines.js` balloon lines and sound-effect words; `sfx.js` letters the effects; `art.js`
+  the panel art; `presses.js` taps and holds; `keyboard.js` the on-screen keyboard; `wake.js` the
+  screen wake lock; `updates.js` the service worker and "App updated"; `dom.js` two helpers.
+  Startup is the list at the end of app.js.
+- `js/store.js` owns `state` (one JSON object in localStorage under `champions-hp`, version 4).
   Every change goes through a store function, which saves and fires `hp:change`; `app.js` redraws.
-  Changing the saved shape: bump `VERSION` and migrate old data rather than dropping it.
+  Changing the saved shape: bump `VERSION`, add one migration step from the old version
+  (`MIGRATIONS` upgrade one version at a time), and extend `valid()`. A save that isn't valid after
+  migrating starts fresh. Rules questions about the state (`finalStage()`, `won()`, `total()`) live
+  in the store, not in the drawing code.
+- Panel art is keyed by side: `.art-wrap[data-art="villain|hero"]`, on the page and in the sheet
+  alike; `drawArt()` fills them all, and the tone's fade follows the side.
 - Max HP follows the rules: "gets +X hit points" raises the dial by X and, when it ends, lowers it
   by X (RR v1.8 p. 22); heals stop at max (p. 21). In state, `max` is the printed/typed value and
   `up` the bonus; `total()` is the current maximum.
@@ -70,8 +81,6 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
 - Sound-effect words and tilts are dealt from shuffled bags (`deal()` in sfx.js): every option once
   before any repeats, never the same twice in a row (the user wanted "iPod shuffle" randomness that
   feels random). Positions use best-of-8 candidates for the same reason.
-- `js/lines.js`: balloon lines and sound-effect words. `js/art.js`: the inked spirals (villain) and focus lines (hero).
-  `js/sheet.js`: the HP entry sheet.
 - **Presses** (`js/presses.js`, lessons from Bgt-J's presses.js, not a copy): a control activates
   (its `click()`) when a press lifts still over it; the browser's own click never counts (cancelled
   at touchend on the touched element only, and stopped if it comes: any click with a click count);
@@ -85,7 +94,7 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
 - **Fonts are subsets.** `npm run fonts` downloads Dela Gothic One and Zen Antique cut to the
   characters the app uses (Google Fonts `text=`), and writes `fonts/chars.txt`. After adding any
   text, run it; a test fails if a character isn't covered.
-- **Screen wake lock** (app.js, `stayAwake`): asked for at launch, on every return from the
+- **Screen wake lock** (`wake.js`): asked for at launch, on every return from the
   background (iOS drops it there), and on a tap if it isn't held; silently does without where
   unavailable or refused. The user used to turn off Auto-Lock for their old counter app.
 - **Offline and updates** (`sw.js`): launches are served from a saved complete version; each
@@ -96,7 +105,7 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   built at deploy by the workflow (`node tests/tools/manifest.js`), not committed; the test server
   builds it on the fly. Its LEFT_OUT list, not a hand-kept list, decides what's offline. A new
   version is switched to only at a launch, so a running app never mixes files. The first launch on
-  a new version shows "App updated" for 4 s in a caption over the running head (`notice()`).
+  a new version shows "App updated" for 4 s in a caption over the running head (`updates.js`).
 - Researched from chapter 1 on Shueisha's Jump+ reader (Nov 2026): straight-edged panels with thin
   ink borders (slanted cuts are rare in Naruto), rows a bit further apart than columns
   (`--row-gap` 12px, `--col-gap` 8px), solid black gutters and margins on flashback pages, flat dot
@@ -115,7 +124,12 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
 - The villain's panel gets a little more height than the hero's (1.15 : 1): it holds more (balloon,
   stage box, Next stage). Layout tests check both still fit on the SE.
 - Shared values are tokens on `:root`: `--inset` (10px, anything tucked into a panel corner),
-  `--line` / `--line-fine` (2px / 1.5px ink), `--text-s/m/l` (11 / 13 / 14px serif sizes). Boxes
+  `--line` / `--line-fine` (2px / 1.5px ink), `--text-s/m/l` (11 / 13 / 14px sizes), `--pad-x`
+  (a narration box's text from its border), `--head-h` (the running head's row; the sheet's title
+  row plus its gap match it, so the sheet's panels open exactly over the page's: tested), and
+  `--page-top/right/bottom/left` (safe-area margins, shared by the page and the sheet). Repeated
+  looks are one rule each: "Inked" (pressed, chosen, or Next stage when it's the thing to press)
+  and the paper outline under lettering over art (each element sets only its width). Boxes
   sit at `--inset`; bare text lines up with the text inside the boxes instead (the Mode label). 術
   is the one exception: its blue outline sits about 20px from both the left and bottom edges (the
   user found less cramped; the tag needs clearance below).
@@ -133,13 +147,13 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   faint (`.inert`), a defeated side's number is a hollow outline, Next stage turns solid ink, still,
   when the villain is down (a fade and a blink were both tried; the user found motion distracting).
 - Panel borders are ruled straight (as Naruto's are); no wobble filter. Tap targets are 44px+.
-- Two spot colors, each with one job: blue for the 術 toggle when used, and orange only for the max-HP mode (the inked 増 seal, the keys' borders, the
-  bonus). Keep it meaning one thing.
+- Two spot colors, each with one job: blue for the 術 toggle while it's ready, and orange only for
+  the max-HP mode (the inked 増 seal, the keys' borders, the bonus). Keep each meaning one thing.
 - The hero's number breaks out over its panel's top border; it must clear the villain keys and the
   seal (layout test).
 - The antique serif goes only on paper (ink on paper reads as manga lettering; on black it read as
   a missing-font fallback, the user's note). On the black, use the heavy font or small running-head
-  text. Buttons on the page are narration boxes (`.narration-button`: paper, ink border).
+  text. Buttons on the page are narration boxes (`button.narration`: paper, ink border).
 - The HP sheet is a page of its own: villain panel above hero panel (as on the main page), labels
   as narration boxes, the fields' numbers in the heavy font, Cancel / FIGHT!! as key panels. It
   opens with nothing focused (the user's choice): tap a panel to type. A bad entry is shown in its

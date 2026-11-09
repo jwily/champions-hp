@@ -15,11 +15,12 @@ function fresh() {
   return { version: VERSION, game: 0, stage: 1, mode: 'standard', boost: false, hero: null, villain: null, powerUsed: true };
 }
 
-// Older saved shapes, upgraded to this one. Version 2 also tracked rounds, phases and limited
-// abilities, since replaced by the single 術 toggle; version 3 had no mode.
+// Older saved shapes, each upgraded one version at a time (a new version adds one step here).
+// Version 2 also tracked rounds, phases and limited abilities, since replaced by the single 術
+// toggle; version 3 added that toggle, version 4 the mode.
 const MIGRATIONS = {
-  1: (s) => ({ ...s, version: 4, mode: 'standard', powerUsed: true }),
-  2: ({ round, phase, abilities, used, ...s }) => ({ ...s, version: 4, mode: 'standard', powerUsed: true }),
+  1: (s) => ({ ...s, version: 3, powerUsed: true }),
+  2: ({ round, phase, abilities, used, ...s }) => ({ ...s, version: 3, powerUsed: true }),
   3: (s) => ({ ...s, version: 4, mode: 'standard' }),
 };
 
@@ -27,20 +28,21 @@ const validSide = (c) =>
   c === null ||
   (c && [c.hp, c.max, c.up].every(Number.isInteger) && c.hp >= 0 && c.max >= 1 && c.up >= 0);
 
+const valid = (s) =>
+  s?.version === VERSION &&
+  Number.isInteger(s.game) &&
+  Number.isInteger(s.stage) &&
+  typeof s.boost === 'boolean' &&
+  typeof s.powerUsed === 'boolean' &&
+  s.mode in STAGES &&
+  validSide(s.hero) &&
+  validSide(s.villain);
+
 function load() {
   try {
     let saved = JSON.parse(localStorage.getItem(KEY));
     while (saved && MIGRATIONS[saved.version]) saved = MIGRATIONS[saved.version](saved);
-    if (
-      saved &&
-      saved.version === VERSION &&
-      validSide(saved.hero) &&
-      validSide(saved.villain) &&
-      typeof saved.powerUsed === 'boolean' &&
-      saved.mode in STAGES
-    ) {
-      return { ...fresh(), ...saved };
-    }
+    if (valid(saved)) return saved;
   } catch {
     // Unreadable or blocked storage: start fresh.
   }
@@ -65,6 +67,9 @@ export const total = (c) => c.max + c.up;
 
 export const started = () => state.hero !== null && state.villain !== null;
 
+/** The villain is on their last stage for this mode (stage II in Standard, III in Expert). */
+export const finalStage = () => state.stage >= STAGES[state.mode].at(-1);
+
 export function newGame(heroHp, villainHp, mode = state.mode) {
   state.game += 1;
   state.mode = mode;
@@ -77,7 +82,7 @@ export function newGame(heroHp, villainHp, mode = state.mode) {
 }
 
 /** The villain's last stage is down: the player wins. */
-export const won = () => state.villain !== null && state.villain.hp === 0 && state.stage >= STAGES[state.mode].at(-1);
+export const won = () => finalStage() && state.villain?.hp === 0;
 
 export function nextStage(villainHp) {
   state.stage += 1;
