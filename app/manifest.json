@@ -1,6 +1,6 @@
 {
-  "name": "Champions HP",
-  "short_name": "Champions HP",
+  "name": "MC/HP",
+  "short_name": "MC/HP",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
