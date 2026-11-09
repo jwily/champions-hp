@@ -58,7 +58,7 @@ function draw() {
   }
   $('#power').setAttribute('aria-pressed', state.powerUsed);
   $('#power').setAttribute('aria-label', state.powerUsed ? 'Special ability used (sealed)' : 'Special ability ready');
-  // The villain's last stage is down: VICTORY!! where Next stage was, and the hero cheers.
+  // The villain's last stage is down: VICTORY!!! where Next stage was, and the hero cheers.
   const victory = won();
   sides.villain.panel.classList.toggle('won', victory);
   $('#next').hidden = victory;

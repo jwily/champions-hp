@@ -155,7 +155,7 @@ module.exports = (scenario) => {
           apart(box('#villain .max'), box('#villain .shout'));
           if (hNum.bottom > hero.bottom) out.push('The hero number spills out of the bottom of its panel');
           within(ink('#hero .line'), box('#hero .round'));
-          // VICTORY!! (the longest-lines case is a won game): inside the panel, clear of the rest.
+          // VICTORY!!! (the longest-lines case is a won game): inside the panel, clear of the rest.
           if (document.getElementById('villain').classList.contains('won')) {
             const victory = box('#villain .victory');
             within(victory, villain);

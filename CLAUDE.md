@@ -46,11 +46,11 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   spreads out, three at most per panel. tests/layout.js fires many and checks each center.
 - **The 術 toggle** (`powerUsed`, state version 3; `MIGRATIONS` upgrades v1 and v2): one toggle
   for the hero's special ability, as a seal (the user's pick over an unrolling scroll): ready = the
-  bare 術 in off-white with a blue outline; used = a paper sealing tag (封印) slaps on across it
+  bare 術 in white with a blue outline; used = a paper sealing tag (封印) slaps on across it
   (only when tapped, not at launch) and the character fades. Blue means ready. It starts sealed
   (the user: most heroes have no limited ability).
 - **Standard / Expert** (`mode`, state version 4): `STAGES` in store.js (I → II, or II → III, RR
-  p. 28), chosen in the New game sheet and kept. `won()`: the last stage at 0 shows VICTORY!!
+  p. 28), chosen in the New game sheet and kept. `won()`: the last stage at 0 shows VICTORY!!!
   (where Next stage was) and the hero's line やった!!. It replaced round / phase tracking with
   per-period ability tokens (v2), which the user found to be more than they needed. 術 ("jutsu")
   was the user's pick over 力 ("power").
@@ -104,10 +104,10 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   a missing-font fallback, the user's note). On the black, use the heavy font or small running-head
   text. Buttons on the page are narration boxes (`.narration-button`: paper, ink border).
 - The HP sheet is a page of its own: villain panel above hero panel (as on the main page), labels
-  as narration boxes, the fields' numbers in the heavy font, Cancel / FIGHT!! as key panels. It
+  as narration boxes, the fields' numbers in the heavy font, Cancel / FIGHT as key panels. It
   opens with nothing focused (the user's choice): tap a panel to type. A bad entry is shown in its
   own panel (its label says "Villain HP: 1–99", heavier border), in ink: no second accent color.
-- The sheet's Cancel / FIGHT!! row sits at the bottom, under the thumb (the user's request), and
+- The sheet's Cancel / FIGHT row sits at the bottom, under the thumb (the user's request), and
   rides above the keyboard while it's open (`js/keyboard.js` sets `--keyboard` from the visual
   viewport: iOS overlays the keyboard without resizing the page, and its number pad has no Done
   key). The field panels shrink to share what's left.

@@ -223,7 +223,7 @@ module.exports = (scenario) => {
     equal(await page.textContent('#sheet-title'), 'STAGE 3!!', 'Next is stage III');
     await fillSheet(page, { villain: 1 });
     await tap(page, 'villain', '-');
-    check(await page.isVisible('#villain .victory'), 'VICTORY!! once stage III is down');
+    check(await page.isVisible('#villain .victory'), 'VICTORY!!! once stage III is down');
     check(!(await page.isVisible('#next')), 'No Next stage after the last one');
     equal((await read(page, 'hero')).line, 'やった!!', 'The hero cheers');
     await tap(page, 'villain', '+');
@@ -240,7 +240,7 @@ module.exports = (scenario) => {
     await page.click('#next');
     await fillSheet(page, { villain: 1 });
     await tap(page, 'villain', '-');
-    check(await page.isVisible('#villain .victory'), 'VICTORY!! at stage II');
+    check(await page.isVisible('#villain .victory'), 'VICTORY!!! at stage II');
   });
 
   // ---------- The 術 toggle ----------

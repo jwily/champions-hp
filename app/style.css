@@ -30,11 +30,12 @@
   --orange-ink: #c4500a; /* the same orange, dark enough to read as small text on paper */
   --blue: #1a6cff; /* the second spot color: the hero's special ability, ready */
   --tag: #efe9dc; /* a sealing tag's paper, a shade lighter than the page's */
+  --white: #fbf8f1; /* lettering that stands out from the paper (術) */
   --col-gap: 8px;
   --row-gap: 12px;
   --side: 12px;
   --key-row-h: clamp(60px, 10.5dvh, 86px); /* the − / + rows and the sheet's button row */
-  --key-ratio: 1.55fr; /* the bigger key's share: − on the page, FIGHT!! on the sheet */
+  --key-ratio: 1.55fr; /* the bigger key's share: − on the page, FIGHT on the sheet */
   --heavy: 'Dela Gothic One', 'Hiragino Kaku Gothic StdN', sans-serif;
   --antique: 'Zen Antique', 'Hiragino Mincho ProN', serif;
 }
@@ -307,12 +308,12 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
 
 /* ---------- Hero extras: the 術 ("jutsu") toggle for a special ability ---------- */
 
-/* Bottom-left of the hero panel, no box. Ready: the character in off-white with a blue outline (blue
+/* Bottom-left of the hero panel, no box. Ready: the character in white with a blue outline (blue
    marks this and nothing else, as orange marks the max-HP mode). Used: a paper sealing tag slaps
    on across it and the character fades to a faint outline. */
 .power {
   position: absolute;
-  left: 6px;
+  left: 14px;
   bottom: 18px; /* room below for the tilted tag's lower corner */
   z-index: 1;
   width: 64px;
@@ -324,7 +325,7 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   font-family: var(--heavy);
   font-size: 48px;
   line-height: 1;
-  color: var(--paper);
+  color: var(--white);
   -webkit-text-stroke: 0.1em var(--blue);
   paint-order: stroke;
 }

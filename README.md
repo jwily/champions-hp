@@ -14,7 +14,7 @@ no build step, no dependencies.
   faint when it can't change anything (− at 0, + at max), and a defeated side's number is hollow.
 - **Standard / Expert** (in the New game sheet, remembered): Standard plays villain stages I → II,
   Expert II → III (Rules Reference v1.8 p. 28). When the last stage hits 0, the villain panel says
-  **VICTORY!!** and the hero cheers. Healing the villain (a mistap) takes it back.
+  **VICTORY!!!** and the hero cheers. Healing the villain (a mistap) takes it back.
 - **Next stage ▸** asks for the villain's HP for the next stage. It turns solid black when the villain is at 0.
 - **術** (*jutsu*, bottom-left of the hero panel): it starts sealed under a sealing tag (封印), since
   most heroes have no limited ability. For a hero who does, tap to release it (blue outline: ready);

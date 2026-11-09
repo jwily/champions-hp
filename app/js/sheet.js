@@ -35,7 +35,7 @@ for (const panel of sheet.querySelectorAll('[data-art]')) {
 export function openSheet(next) {
   mode = next;
   const fresh = mode === 'new';
-  $('#sheet-title').textContent = fresh ? 'NEW GAME!!' : `STAGE ${state.stage + 1}!!`;
+  $('#sheet-title').textContent = fresh ? 'NEW GAME' : `STAGE ${state.stage + 1}!!`;
   heroRow.hidden = !fresh;
   modeRow.hidden = !fresh;
   gameMode = state.mode;
