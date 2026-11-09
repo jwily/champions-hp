@@ -8,6 +8,32 @@ import { SFX } from './lines.js';
 const rand = (min, max) => min + Math.random() * (max - min);
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
 
+// Words and tilts are dealt like a shuffled deck, so they feel random rather than being random
+// (true randomness gives streaks: the same word three times in a row about one run in nine). Each
+// list is dealt in a shuffled order, every item once before any comes back, and a new round never
+// starts with the item the last one ended on. (Positions get the same treatment differently: see
+// openSpot.)
+const bags = new Map(); // list -> { left: items still to deal this round, last: the last dealt }
+
+function shuffle(items) {
+  for (let i = items.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [items[i], items[j]] = [items[j], items[i]];
+  }
+  return items;
+}
+
+function deal(list) {
+  const bag = bags.get(list) ?? { left: [], last: undefined };
+  if (!bag.left.length) {
+    bag.left = shuffle([...list]);
+    if (bag.left.length > 1 && bag.left[0] === bag.last) bag.left.push(bag.left.shift()); // no repeat across the seam
+  }
+  bag.last = bag.left.shift();
+  bags.set(list, bag);
+  return bag.last;
+}
+
 // Where an effect's center may land, as [x from, x to, y from, y to] in % of the panel, and which
 // way it's lettered there: across in the wide gaps above and below the numbers, down in the tall
 // narrow ones (a vertical word in a wide gap would reach up over the digits). The gaps are the room
@@ -29,8 +55,8 @@ const CANDIDATES = 8; // spots tried for each effect
 const MAX_AT_ONCE = 3; // per panel
 const SHOW_MS = 1000; // it appears and goes at once: no animation
 
-// A random spot in the panel's zones, as far as it can find from the effects already showing, so a
-// burst of taps spreads out rather than piling up. Returns [x, y, vertical].
+// A random spot in the panel's zones, as far as it can find from the effects already showing
+// (best of CANDIDATES tries), so a burst of taps spreads out rather than piling up. Returns [x, y, vertical].
 function openSpot(panel, side) {
   const showing = [...panel.querySelectorAll(':scope > .sfx')].map((e) => [parseFloat(e.style.left), parseFloat(e.style.top)]);
   let best = null;
@@ -55,11 +81,11 @@ export function soundEffect(panel, side, kind, amount) {
   el.setAttribute('aria-hidden', 'true');
   el.style.left = `${x.toFixed(1)}%`;
   el.style.top = `${y.toFixed(1)}%`;
-  el.style.setProperty('--tilt', `${pick(TILTS)}deg`);
+  el.style.setProperty('--tilt', `${deal(TILTS)}deg`);
   el.style.setProperty('--size', big ? BIG : 1);
   // Vertical lettering: "!" and "!!" stay upright, and "…" becomes the vertical ellipsis "︙"
   // (the heavy font draws "…" sideways, hugging the left of the column).
-  let word = pick(SFX[kind][big ? 'big' : 'small']);
+  let word = deal(SFX[kind][big ? 'big' : 'small']);
   if (vertical) word = word.replaceAll('…', '︙');
   for (const part of word.split(/(!+)/).filter(Boolean)) {
     const span = document.createElement('span');

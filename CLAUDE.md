@@ -68,6 +68,9 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   stage opens with the reveal of true power (これが真の力だ!!), a Naruto staple. Lines break into
   columns at marked phrases (\n); each phrase is 5 characters at most to fit the SE's balloon at
   14px (the user preferred shorter lines over smaller text). A layout test checks no mid-phrase wrap.
+- Sound-effect words and tilts are dealt from shuffled bags (`deal()` in sfx.js): every option once
+  before any repeats, never the same twice in a row (the user wanted "iPod shuffle" randomness that
+  feels random). Positions use best-of-8 candidates for the same reason.
 - `js/lines.js`: balloon lines and sound-effect words. `js/art.js`: the inked spirals and rays.
   `js/sheet.js`: the HP entry sheet.
 - **Presses** (`js/presses.js`, lessons from Bgt-J's presses.js, not a copy): a control activates

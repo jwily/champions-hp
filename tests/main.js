@@ -264,6 +264,25 @@ module.exports = (scenario) => {
     equal((await read(page, 'villain')).line, 'バ…バカな…!!', 'The final stage’s defeat line');
   });
 
+  scenario('sound effects feel random: dealt like a shuffled deck, never back to back', async (open) => {
+    const page = await open({ game: { villain: [99, 99] } });
+    const dealt = await page.evaluate(() => {
+      const key = document.querySelector('.key[data-side="villain"][data-dir="-1"]');
+      const out = [];
+      for (let i = 0; i < 30; i++) {
+        key.click();
+        const effect = [...document.querySelectorAll('#villain > .sfx')].at(-1);
+        out.push({ word: effect.textContent.replace('︙', '…'), tilt: effect.style.getPropertyValue('--tilt') });
+      }
+      return out;
+    });
+    const repeats = (key) => dealt.filter((d, i) => i && d[key] === dealt[i - 1][key]).length;
+    equal([repeats('word'), repeats('tilt')], [0, 0], 'Back-to-back repeats (word, tilt)');
+    const counts = {};
+    for (const { word } of dealt) counts[word] = (counts[word] ?? 0) + 1;
+    equal(Object.values(counts), [10, 10, 10], 'Each of the three tap words, once per round of three');
+  });
+
   // ---------- The 術 toggle ----------
 
   scenario('術 starts sealed; tapping releases and seals it; a new game seals it again', async (open) => {
