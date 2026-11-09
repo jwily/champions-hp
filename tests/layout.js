@@ -149,30 +149,30 @@ module.exports = (scenario) => {
           const vNum = glyphs('#villain .num');
           const hNum = glyphs('#hero .num');
           within(vNum, villain);
-          apart(vNum, box('#villain .shout'));
+          apart(vNum, box('#villain .balloon'));
           apart(vNum, box('#villain .inset'));
           apart(vNum, box('#next'));
           apart(vNum, glyphs('#villain .max'));
-          within(ink('#villain .line'), box('#villain .shout'));
-          apart(box('#villain .shout'), box('#next'));
-          apart(box('#villain .shout'), box('#villain .inset'));
+          within(ink('#villain .line'), box('#villain .balloon'));
+          apart(box('#villain .balloon'), box('#next'));
+          apart(box('#villain .balloon'), box('#villain .inset'));
 
           // The hero's number breaks out upward, but must clear the villain's keys and the seal.
           const vKeys = box(document.querySelectorAll('.keys')[0]);
           if (hNum.top < vKeys.bottom) out.push('The hero number reaches the villain keys');
           apart(hNum, box('#seal'));
-          apart(hNum, box('#hero .round'));
+          apart(hNum, box('#hero .balloon'));
           apart(hNum, glyphs('#hero .max'));
-          apart(box('#hero .max'), box('#hero .round'));
-          apart(box('#villain .max'), box('#villain .shout'));
+          apart(box('#hero .max'), box('#hero .balloon'));
+          apart(box('#villain .max'), box('#villain .balloon'));
           if (hNum.bottom > hero.bottom) out.push('The hero number spills out of the bottom of its panel');
-          within(ink('#hero .line'), box('#hero .round'));
+          within(ink('#hero .line'), box('#hero .balloon'));
           // VICTORY!!! (the longest-lines case is a won game): inside the panel, clear of the rest.
           if (document.getElementById('villain').classList.contains('won')) {
             const victory = box('#villain .victory');
             within(victory, villain);
             apart(victory, vNum);
-            apart(victory, box('#villain .shout'));
+            apart(victory, box('#villain .balloon'));
             apart(victory, glyphs('#villain .max'));
           }
           // The 術 toggle: inside the panel, clear of the number and balloon.
@@ -184,7 +184,7 @@ module.exports = (scenario) => {
           }
           // Each balloon line breaks only where it's marked (at phrases), never mid-phrase: as many
           // columns as marked phrases.
-          for (const sel of ['#villain .shout .line', '#hero .round .line']) {
+          for (const sel of ['#villain .balloon .line', '#hero .balloon .line']) {
             const line = document.querySelector(sel);
             const phrases = line.querySelectorAll('br').length + 1;
             const range = document.createRange();
@@ -204,14 +204,14 @@ module.exports = (scenario) => {
             if (off > 1) out.push(`A sign is ${off.toFixed(1)}px off center in its key`);
           }
           // Balloon text centered in its balloon, both ways (a wrapped line once hung off-center).
-          for (const sel of ['#villain .shout', '#hero .round']) {
+          for (const sel of ['#villain .balloon', '#hero .balloon']) {
             const b = box(sel);
             const t = ink(`${sel} .line`);
             const off = Math.max(Math.abs((t.left + t.right - b.left - b.right) / 2), Math.abs((t.top + t.bottom - b.top - b.bottom) / 2));
             if (off > 2) out.push(`${sel}'s text is ${Math.round(off)}px off center`);
           }
           apart(power, hNum);
-          apart(power, box('#hero .round'));
+          apart(power, box('#hero .balloon'));
 
           for (const sel of ['#set', '#next', '#seal', '#power', ...[0, 1, 2, 3].map((i) => document.querySelectorAll('.key')[i])]) {
             const b = box(sel);

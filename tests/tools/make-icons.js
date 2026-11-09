@@ -12,13 +12,21 @@ const FONT = fs.readFileSync(path.join(__dirname, '..', '..', 'app', 'fonts', 'd
 // Launch screen sizes, matching the apple-touch-startup-image links in index.html.
 const LAUNCH = ['750x1334', '1125x2436', '1170x2532', '1179x2556', '1206x2622', '828x1792', '1242x2688', '1284x2778', '1290x2796', '1320x2868'];
 
-// Focus lines (集中線): wedges from a ring around (cx, cy) out past the edges, every fourth heavier.
+// A small seeded random, so the irregularity is the same on every run.
+function seeded(seed) {
+  return () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+}
+
+// Focus lines (集中線): wedges from around (cx, cy) out past the edges, drawn like the hero panel's
+// (js/art.js), irregular so they don't read as the Rising Sun flag: uneven spacing, each starting at
+// its own distance (a hollow middle, no meeting point drawn), every third heavier.
 function focusLines(cx, cy, count, inner) {
+  const random = seeded(5);
   let d = '';
   for (let i = 0; i < count; i++) {
-    const a = (i / count) * 2 * Math.PI;
-    const r = inner * (0.85 + ((i * 37) % 10) / 40);
-    const w = i % 4 ? 0.8 : 2;
+    const a = ((i + random() * 0.8) / count) * 2 * Math.PI;
+    const r = inner * (0.75 + random() * 0.9);
+    const w = i % 3 ? 0.7 + random() * 0.6 : 1.8 + random() * 0.7;
     const [x2, y2] = [cx + 120 * Math.cos(a), cy + 120 * Math.sin(a)];
     const [nx, ny] = [-Math.sin(a) * w, Math.cos(a) * w];
     d += `M${(cx + r * Math.cos(a)).toFixed(1)} ${(cy + r * Math.sin(a)).toFixed(1)}`;

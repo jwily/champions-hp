@@ -115,18 +115,20 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
 - The villain's panel gets a little more height than the hero's (1.15 : 1): it holds more (balloon,
   stage box, Next stage). Layout tests check both still fit on the SE.
 - Shared values are tokens on `:root`: `--inset` (10px, anything tucked into a panel corner),
-  `--line` / `--line-fine` (2px / 1.5px ink), `--text-s/m/l` (11 / 13 / 14px serif sizes). 術 is
-  the one deliberate exception to `--inset` (the user wanted more room; the tag needs clearance).
+  `--line` / `--line-fine` (2px / 1.5px ink), `--text-s/m/l` (11 / 13 / 14px serif sizes). Boxes
+  sit at `--inset`; bare text lines up with the text inside the boxes instead (the Mode label). 術
+  is the one exception: its blue outline sits about 20px from both the left and bottom edges (the
+  user found less cramped; the tag needs clearance below).
 - Contrast is tested: small text 4.5:1, the 術 outline 3:1 (graphics). Faint `.inert` keys are
   deliberately low (an "inactive" state).
 - Paper is dimmed (`--paper` #d8d1c1) so the panels don't glare in a dim room; ink is near-black.
-- Ink lines must be even: the villain's shout balloon is an SVG polygon with a non-scaling 1.5px
-  stroke (a paper shape clipped inside an ink one made the long spikes' line several times
-  thicker, which the user spotted as amateurish). Balloon text is in the antique serif: the heavy
-  font blots many-stroke kanji at small sizes. The 増 seal is a hanko: one centered character in a
-  double-ruled frame, no furigana (it crowded the character). Both balloons are SVG outlines with a
-  non-scaling stroke (even line): a symmetrical 12-point star and a plain oval. Tried and reverted
-  by the user: a many-spiked shout and a lumpy oval with a tail, both cut off by the panel edge.
+- Ink lines must be even: balloons are SVG outlines with a non-scaling 1.5px stroke (a paper shape
+  clipped inside an ink one made a spiky balloon's line several times thicker, which the user
+  spotted as amateurish). Balloon text is in the antique serif: the heavy font blots many-stroke
+  kanji at small sizes. The 増 seal is a hanko: one centered character in a double-ruled frame, no
+  furigana (it crowded the character). Both balloons are plain ovals (the user's call; the villain's
+  is wider, for its two-column lines). Tried and dropped: a symmetrical 12-point star for the
+  villain, a many-spiked shout and a lumpy oval with a tail (both cut off by the panel edge).
 - Limits and states are designed, not left to the happy path: a key that can't change anything shows
   faint (`.inert`), a defeated side's number is a hollow outline, Next stage turns solid ink, still,
   when the villain is down (a fade and a blink were both tried; the user found motion distracting).

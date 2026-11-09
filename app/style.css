@@ -239,33 +239,30 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   height: 100%;
   overflow: visible;
 }
-.balloon polygon,
 .balloon ellipse {
   fill: var(--paper);
   stroke: var(--ink);
   stroke-width: var(--line-fine);
-  stroke-linejoin: miter;
-  stroke-miterlimit: 12;
 }
 .balloon .line { position: relative; }
 
-/* The villain's spiky shout. */
-.shout {
+/* The villain's oval: wider than the hero's, for its longer two-column lines. */
+#villain .balloon {
   left: 5cqw;
   top: 9cqh;
   width: max(88px, 31cqw);
   height: min(62cqh, 100cqh - 9cqh - 66px); /* clear of Next stage */
 }
-.shout .line { max-height: 72%; } /* the star's inner area */
+#villain .balloon .line { max-height: 72%; }
 
 /* The hero's oval. */
-.round {
+#hero .balloon {
   right: 6cqw;
   top: 26cqh;
   width: max(76px, 24cqw);
   height: 54cqh;
 }
-.round .line { max-height: 72%; }
+#hero .balloon .line { max-height: 72%; }
 
 /* Sound effects (js/sfx.js): heavy katakana, solid for a change of 1, outlined for a hold. No
    animation: they appear and go at once. */
@@ -323,8 +320,11 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
    on across it and the character fades to a faint outline. */
 .power {
   position: absolute;
-  left: 14px;
-  bottom: 18px; /* room below for the tilted tag's lower corner */
+  /* The blue outline reaches 10px past the box, so these put it about 20px from both the panel's
+     left and bottom edges: even on both sides (at 14px the left looked cramped), and room below
+     for the tilted tag's lower corner. */
+  left: 22px;
+  bottom: 18px;
   z-index: 1;
   width: 64px;
   height: 64px;
@@ -590,7 +590,9 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 10px;
+  /* "Mode" is bare text, so it lines up with the text inside the narration boxes above (the box's
+     inset, border and padding), not with the boxes' edges: at 10px it looked cramped. */
+  padding: 10px 10px 10px calc(var(--inset) + var(--line-fine) + 10px);
   container-type: normal;
 }
 .keyboard-open .mode-setup { display: none; }
