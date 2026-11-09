@@ -102,6 +102,13 @@ button {
   line-height: 1.2;
 }
 .caption.pressed { background: var(--paper); color: var(--black); }
+/* On the page, buttons are narration boxes: ink on paper, like the manga's caption boxes. */
+.narration-button {
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--ink);
+}
+.narration-button.pressed { background: var(--ink); color: var(--paper); }
 
 /* ---------- Panels ---------- */
 
@@ -286,11 +293,7 @@ button {
   left: 10px;
   bottom: 10px;
   z-index: 1;
-  background: var(--paper);
-  color: var(--ink);
-  border-color: var(--ink);
 }
-.next.pressed { background: var(--ink); color: var(--paper); }
 #villain.down .next { animation: beckon 0.9s ease-in-out infinite alternate; }
 @keyframes beckon { to { background: var(--ink); color: var(--paper); } }
 
@@ -357,59 +360,108 @@ button {
 #villain { margin-top: 2px; }
 
 /* ---------- Sheet ---------- */
+/* A page of its own over the main one: black gutters, the fields as panels (villain above hero, as
+   on the main page), the buttons as key panels. Text on paper only: the antique serif reads as
+   manga lettering in ink on paper, but as a missing-font fallback on black. */
 
 .sheet {
   position: fixed;
   inset: 0;
   z-index: 10;
-  background: rgba(0, 0, 0, 0.86);
+  background: var(--black);
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: max(14vh, env(safe-area-inset-top)) 16px 16px;
+  padding:
+    max(8px, env(safe-area-inset-top))
+    max(var(--side), env(safe-area-inset-right))
+    16px
+    max(var(--side), env(safe-area-inset-left));
 }
 .sheet[hidden] { display: none; }
-.card {
-  width: min(300px, 100%);
-  background: var(--paper);
-  color: var(--ink);
-  border: 2px solid var(--ink);
-  box-shadow: 0 0 0 6px var(--black), 0 0 0 7.5px var(--paper);
-  padding: 18px;
+.sheet-page {
+  width: min(420px, 100%);
+  display: grid;
+  gap: var(--row-gap);
 }
-.card h1 {
-  margin: 0 0 6px;
+/* Heavy lettering, the one kind of type that sits well on the black. */
+.sheet-title {
+  margin: 0;
+  height: 42px;
+  display: flex;
+  align-items: center;
   font-family: var(--heavy);
   font-size: 22px;
   font-weight: 400;
+  color: var(--paper);
 }
-.card label { display: block; margin-top: 12px; font-size: 13px; color: var(--sub); }
-.card label[hidden] { display: none; }
-.card input {
+.entry {
   display: block;
+  height: clamp(120px, 21vh, 170px);
+  cursor: text;
+}
+.entry[hidden] { display: none; }
+.entry input {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  margin-top: 4px;
-  font-family: var(--heavy);
-  font-size: 32px;
-  color: var(--ink);
-  background: #e9e3d6;
-  border: 2px solid var(--ink);
+  height: 100%;
+  padding: 18px 7cqw 0 0;
+  border: 0;
   border-radius: 0;
-  padding: 6px 10px;
+  background: transparent;
+  text-align: right;
+  font-family: var(--heavy);
+  font-size: min(58cqh, 26cqw);
+  line-height: 1;
+  color: var(--ink);
+  caret-color: var(--ink);
+  outline: none;
+  -webkit-text-stroke: 0.08em var(--paper);
+  paint-order: stroke;
   -webkit-user-select: text;
   user-select: text;
 }
-.card input:focus { outline: 3px solid var(--orange); outline-offset: 0; }
-.error { min-height: 18px; margin: 8px 0 0; font-size: 13px; color: #9b2a12; }
-.sheet-actions { display: flex; gap: 8px; margin-top: 8px; }
-.sheet-actions .caption {
-  flex: 1;
-  padding: 10px;
-  font-size: 15px;
+.entry input::placeholder { color: var(--sub); opacity: 1; }
+/* The panel being typed in gets a heavier border. */
+.entry:focus-within .border { border-width: 4px; }
+
+/* Narration box: paper, ink border, the antique serif (as Next stage). */
+.narration {
+  position: absolute;
+  z-index: 1;
+  left: 10px;
+  top: 10px;
   background: var(--paper);
+  border: 1.5px solid var(--ink);
   color: var(--ink);
-  border-color: var(--ink);
+  font-size: 13px;
+  padding: 4px 10px;
+  line-height: 1.2;
 }
-.sheet-actions .caption[hidden] { display: none; }
-.sheet-actions .primary,
-.sheet-actions .caption.pressed { background: var(--ink); color: var(--paper); }
+.error {
+  position: static;
+  justify-self: start;
+  margin: 0;
+  color: #8e2410;
+}
+.error[hidden] { display: none; }
+
+.sheet-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.55fr;
+  gap: var(--col-gap);
+  height: clamp(60px, 10.5vh, 86px);
+}
+.sheet-key[hidden] { display: none; }
+/* The first game has no Cancel: Fight takes the row. */
+.sheet-actions:has(#sheet-cancel[hidden]) { grid-template-columns: 1fr; }
+.sheet-key {
+  font-family: var(--heavy);
+  font-size: 20px;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sheet-key.pressed { background: var(--ink); color: var(--paper); }

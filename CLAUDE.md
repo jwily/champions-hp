@@ -68,6 +68,12 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   bonus). Keep it meaning one thing.
 - The hero's number breaks out over its panel's top border; it must clear the villain keys and the
   seal (layout test).
+- The antique serif goes only on paper (ink on paper reads as manga lettering; on black it read as
+  a missing-font fallback, the user's note). On the black, use the heavy font or small running-head
+  text. Buttons on the page are narration boxes (`.narration-button`: paper, ink border).
+- The HP sheet is a page of its own: villain panel above hero panel (as on the main page), labels
+  as narration boxes, the fields' numbers in the heavy font, Cancel / FIGHT!! as key panels. It
+  opens with nothing focused (the user's choice): tap a panel to type.
 - Never put the manga's artwork, logos or village symbols in the app.
 
 ## Working with this user

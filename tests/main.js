@@ -12,6 +12,9 @@ module.exports = (scenario) => {
     const page = await open();
     check(await page.isVisible('#sheet'), 'The new-game sheet shows on first launch');
     check(!(await page.isVisible('#sheet-cancel')), 'No Cancel before the first game');
+    equal(await page.evaluate(() => document.activeElement === document.body), true, 'Nothing focused when the sheet opens');
+    const [villainTop, heroTop] = await page.evaluate(() => ['#villain-input', '#hero-input'].map((s) => document.querySelector(s).getBoundingClientRect().top));
+    check(villainTop < heroTop, 'Villain HP above hero HP, as on the page');
     await fillSheet(page, { hero: '', villain: 14 });
     equal(await page.textContent('#sheet-error'), 'Enter hero HP from 1 to 99.', 'Empty hero HP');
     await fillSheet(page, { hero: 0, villain: 14 });
@@ -96,6 +99,7 @@ module.exports = (scenario) => {
     const page = await open({ game: { hero: [4, 11], villain: [3, 15], stage: 2, game: 3 } });
     await page.click('#set');
     check(await page.isVisible('#sheet-cancel'), 'Cancel available mid-game');
+    equal(await page.evaluate(() => document.activeElement === document.body), true, 'Nothing focused when Set HP opens the sheet');
     equal(await page.inputValue('#hero-input'), '11', 'Hero HP filled in from the last game');
     await fillSheet(page, { villain: 12 });
     equal(await read(page, 'hero'), { hp: 11, max: '/ 11', line: 'いくぞ!!' }, 'Hero reset');

@@ -10,6 +10,26 @@ const CASES = {
 
 module.exports = (scenario) => {
   for (const phone of Object.keys(PHONES)) {
+    for (const mode of ['#set', '#next']) {
+      scenario(`the HP sheet fits on ${phone} (${mode === '#set' ? 'new game' : 'next stage'})`, async (open) => {
+        const page = await open({ phone, game: {} });
+        await page.click(mode);
+        const problems = await page.evaluate(() => {
+          const out = [];
+          const page = document.querySelector('.sheet-page').getBoundingClientRect();
+          if (page.bottom > innerHeight) out.push('The sheet runs off the screen');
+          for (const sel of ['#sheet-ok', '#sheet-cancel', '#villain-input']) {
+            const r = document.querySelector(sel).getBoundingClientRect();
+            if (r.height < 44 || r.width < 60) out.push(`${sel} is too small to tap (${Math.round(r.width)}×${Math.round(r.height)})`);
+          }
+          return out;
+        });
+        check(problems.length === 0, problems.join('; '));
+      });
+    }
+  }
+
+  for (const phone of Object.keys(PHONES)) {
     for (const [label, game] of Object.entries(CASES)) {
       scenario(`fits on ${phone} (${label})`, async (open) => {
         const page = await open({ phone, game });

@@ -39,7 +39,7 @@
     <header class="head">
       <span class="running"><b>HP</b>—ヒットポイント—<b id="game-num">1</b></span>
       <span id="notice" class="notice" role="status" hidden></span>
-      <button id="set" class="caption">Set HP</button>
+      <button id="set" class="caption narration-button">Set HP</button>
     </header>
 
     <section id="villain" class="panel" aria-label="Villain">
@@ -50,7 +50,7 @@
       <div class="sfx" aria-hidden="true"></div>
       <!-- Inset panel in the corner, after the chapter titles ("ナンバー1：うずまきナルト!!"). -->
       <div class="inset"><ruby>◎<rt>ステージ</rt></ruby><span id="stage-num">1</span>：VILLAIN!!</div>
-      <button id="next" class="caption next">Next stage ▸</button>
+      <button id="next" class="caption narration-button next">Next stage ▸</button>
       <div class="border"></div>
     </section>
     <div class="keys">
@@ -78,20 +78,28 @@
     </div>
   </main>
 
+  <!-- The HP sheet: a page of its own, laid out like the main page (villain above hero), with the
+       fields as panels and the buttons as key panels. -->
   <div id="sheet" class="sheet" hidden>
-    <form id="sheet-form" class="card" novalidate>
-      <h1 id="sheet-title">NEW GAME!!</h1>
-      <label id="hero-row">Hero HP
-        <input id="hero-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off">
+    <form id="sheet-form" class="sheet-page" novalidate>
+      <h1 id="sheet-title" class="sheet-title">NEW GAME!!</h1>
+      <label class="panel entry" data-art="spirals">
+        <span class="narration">Villain HP</span>
+        <input id="villain-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" placeholder="?">
+        <span class="border"></span>
       </label>
-      <label><span id="villain-label">Villain HP</span>
-        <input id="villain-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off">
+      <label class="panel entry" id="hero-row" data-art="rays">
+        <span class="narration">Hero HP</span>
+        <input id="hero-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" placeholder="?">
+        <span class="border"></span>
       </label>
-      <p id="sheet-error" class="error" role="alert"></p>
+      <p id="sheet-error" class="narration error" role="alert" hidden></p>
       <div class="sheet-actions">
-        <button type="button" id="sheet-cancel" class="caption">Cancel</button>
-        <button type="submit" id="sheet-ok" class="caption primary">Fight</button>
+        <button type="button" id="sheet-cancel" class="panel sheet-key">Cancel<span class="border"></span></button>
+        <button type="submit" id="sheet-ok" class="panel sheet-key">FIGHT!!<span class="border"></span></button>
       </div>
+    </form>
+  </div>
     </form>
   </div>
 

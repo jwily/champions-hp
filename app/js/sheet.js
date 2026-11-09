@@ -1,6 +1,7 @@
-// The sheet for typing HP: a new game (hero and villain) or the villain's next stage.
+// The sheet for typing HP: a new game (villain and hero) or the villain's next stage.
 
 import { MAX_HP, state, started, newGame, nextStage } from './store.js';
+import { spirals, rays } from './art.js';
 
 const $ = (s) => document.querySelector(s);
 const sheet = $('#sheet');
@@ -11,6 +12,14 @@ const villainInput = $('#villain-input');
 const error = $('#sheet-error');
 let mode = 'new';
 
+// The fields' panels get the main page's art: spirals for the villain, rays for the hero.
+const ART = { spirals, rays };
+for (const panel of sheet.querySelectorAll('[data-art]')) {
+  const wrap = Object.assign(document.createElement('span'), { className: 'art-wrap' });
+  wrap.append(ART[panel.dataset.art](), Object.assign(document.createElement('span'), { className: 'tone fade' }));
+  panel.prepend(wrap);
+}
+
 export const sheetOpen = () => !sheet.hidden;
 
 /** mode: 'new' (hero and villain HP) or 'next' (the villain's next stage). */
@@ -18,17 +27,14 @@ export function openSheet(next) {
   mode = next;
   const fresh = mode === 'new';
   $('#sheet-title').textContent = fresh ? 'NEW GAME!!' : `STAGE ${state.stage + 1}!!`;
-  $('#villain-label').textContent = fresh ? 'Villain HP' : `Villain HP, stage ${state.stage + 1}`;
-  $('#sheet-ok').textContent = fresh ? 'Fight' : 'Next stage';
   heroRow.hidden = !fresh;
   heroInput.value = fresh && state.hero ? state.hero.max : '';
   villainInput.value = '';
   // The first game can't be cancelled: there's nothing to go back to.
   $('#sheet-cancel').hidden = !started();
-  error.textContent = '';
+  clearError();
   sheet.hidden = false;
-  // Focus inside the tap that opened the sheet, so iOS brings up the keyboard.
-  (fresh && !heroInput.value ? heroInput : villainInput).focus();
+  document.activeElement?.blur(); // nothing focused (not even the button that opened it): tap a panel to type
 }
 
 export function closeSheet() {
@@ -46,8 +52,8 @@ form.addEventListener('submit', (e) => {
   const villain = read(villainInput);
   if (mode === 'new') {
     const hero = read(heroInput);
-    if (hero === null) return fail(heroInput, 'hero');
     if (villain === null) return fail(villainInput, 'villain');
+    if (hero === null) return fail(heroInput, 'hero');
     closeSheet();
     newGame(hero, villain);
   } else {
@@ -59,10 +65,14 @@ form.addEventListener('submit', (e) => {
 
 function fail(input, who) {
   error.textContent = `Enter ${who} HP from 1 to ${MAX_HP}.`;
+  error.hidden = false;
   input.focus();
 }
 
-for (const input of [heroInput, villainInput]) {
-  input.addEventListener('input', () => (error.textContent = ''));
+function clearError() {
+  error.textContent = '';
+  error.hidden = true;
 }
+
+for (const input of [heroInput, villainInput]) input.addEventListener('input', clearError);
 $('#sheet-cancel').addEventListener('click', closeSheet);
