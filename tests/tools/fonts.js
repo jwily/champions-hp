@@ -1,5 +1,5 @@
 // Downloads the app's two fonts from Google Fonts, cut down to just the characters the app uses
-// (Google's `text=` subsetting), into app/fonts/. Both are SIL Open Font License fonts.
+// (Google's `text=` subsetting), into app/fonts/. All are SIL Open Font License fonts.
 // Also writes app/fonts/chars.txt, the characters covered; a test checks the app uses no others.
 // Run after adding any new text: npm run fonts
 
@@ -7,9 +7,11 @@ const fs = require('fs');
 const path = require('path');
 const { appChars } = require('../helpers');
 
+// [family, file, the characters it's cut to (default: everything the app uses)]
 const FONTS = [
   ['Dela Gothic One', 'dela-gothic-one.woff2'],
   ['Zen Antique', 'zen-antique.woff2'],
+  ['Potta One', 'potta-one.woff2', '封印'], // brush lettering, only for the 術 sealing tag
 ];
 const APP = path.join(__dirname, '..', '..', 'app');
 // A browser user agent, so Google serves woff2.
@@ -19,8 +21,8 @@ async function main() {
   // Every printable ASCII character too, so numbers and labels never fall back.
   const ascii = Array.from({ length: 95 }, (_, i) => String.fromCharCode(32 + i)).join('');
   const chars = [...new Set([...ascii, ...appChars()])].sort().join('');
-  for (const [family, file] of FONTS) {
-    const url = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}&text=${encodeURIComponent(chars)}`;
+  for (const [family, file, only = chars] of FONTS) {
+    const url = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}&text=${encodeURIComponent(only)}`;
     const css = await (await fetch(url, { headers: { 'User-Agent': UA } })).text();
     const src = css.match(/url\((https:[^)]+)\)\s*format\('woff2'\)/);
     if (!src) throw new Error(`No woff2 for ${family}:\n${css}`);

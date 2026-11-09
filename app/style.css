@@ -9,6 +9,11 @@
   font-display: block;
 }
 @font-face {
+  font-family: 'Potta One';
+  src: url('fonts/potta-one.woff2') format('woff2');
+  font-display: block;
+}
+@font-face {
   font-family: 'Zen Antique';
   src: url('fonts/zen-antique.woff2') format('woff2');
   font-display: block;
@@ -23,7 +28,7 @@
   --head: #a39d91; /* small print on the black page */
   --orange: #ff7a1a; /* the one spot color: the max-HP mode */
   --orange-ink: #c4500a; /* the same orange, dark enough to read as small text on paper */
-  --blue: #2b62c9; /* the second spot color: the hero's special ability, ready */
+  --blue: #1a6cff; /* the second spot color: the hero's special ability, ready */
   --tag: #efe9dc; /* a sealing tag's paper, a shade lighter than the page's */
   --col-gap: 8px;
   --row-gap: 12px;
@@ -333,7 +338,7 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   background: var(--tag);
   border: 1.5px solid var(--ink);
   box-shadow: inset 0 0 0 2px var(--tag), inset 0 0 0 3px var(--ink);
-  font-family: var(--antique);
+  font-family: 'Potta One', var(--antique); /* brush-written, as sealing tags are */
   font-size: 15px;
   line-height: 1;
   color: var(--ink);

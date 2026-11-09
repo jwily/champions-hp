@@ -64,6 +64,8 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   10px calls a hold off). Deliberately not taken from Bgt-J: sending a tap in a gap to the nearest
   control (between − and + that would guess the sign). No double-tap detection (it would misread
   fast taps).
+- The sealing tag's 封印 is Potta One (brush lettering, cut to just those two characters): the
+  user wanted it handwritten without a Comic Sans feel; marker and pen fonts were rejected for that.
 - **Fonts are subsets.** `npm run fonts` downloads Dela Gothic One and Zen Antique cut to the
   characters the app uses (Google Fonts `text=`), and writes `fonts/chars.txt`. After adding any
   text, run it; a test fails if a character isn't covered.
