@@ -289,13 +289,10 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   bottom: 10px;
   z-index: 1;
 }
-/* The villain is down: Next stage is what to press now, so it blinks between paper and solid ink
-   (a hard switch: a fade would pass through a muddy grey that reads as disabled). */
-#villain.down .next { animation: beckon 1.6s steps(1) infinite; }
-@keyframes beckon {
-  0% { background: var(--ink); color: var(--paper); }
-  50% { background: var(--paper); color: var(--ink); }
-}
+/* The villain is down: Next stage is what to press now, so it fades back and forth between paper
+   and solid ink (the user's preference over a hard blink). */
+#villain.down .next { animation: beckon 0.9s ease-in-out infinite alternate; }
+@keyframes beckon { to { background: var(--ink); color: var(--paper); } }
 
 /* ---------- Hero extras: the 術 ("jutsu") toggle for a special ability ---------- */
 

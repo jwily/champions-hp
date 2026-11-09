@@ -188,14 +188,12 @@ module.exports = (scenario) => {
     equal(await inert(), ['villain-', 'hero-'], 'Max-HP mode: − is faint with no bonus to remove');
   });
 
-  scenario('Next stage blinks when the villain is down', async (open) => {
+  scenario('Next stage pulses when the villain is down', async (open) => {
     const page = await open({ game: { villain: [1, 14] } });
     const blinking = () => page.$eval('#next', (b) => b.getAnimations().length > 0);
     check(!(await blinking()), 'Still while the villain stands');
     await tap(page, 'villain', '-');
-    check(await blinking(), 'Blinking at 0');
-    const timing = await page.$eval('#next', (b) => getComputedStyle(b).animationTimingFunction);
-    equal(timing, 'steps(1)', 'A hard switch, never a grey in between');
+    check(await blinking(), 'Pulsing at 0');
   });
 
   scenario('a bad entry is shown in its own panel', async (open) => {

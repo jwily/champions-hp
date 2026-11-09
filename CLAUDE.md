@@ -85,9 +85,9 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   non-scaling stroke (even line): a symmetrical 12-point star and a plain oval. Tried and reverted
   by the user: a many-spiked shout and a lumpy oval with a tail, both cut off by the panel edge.
 - Limits and states are designed, not left to the happy path: a key that can't change anything shows
-  faint (`.inert`), a defeated side's number is a hollow outline, Next stage blinks (paper / solid
-  ink, a hard `steps(1)` switch: a fade passed through a grey that read as disabled) when the
-  villain is down; the user likes it animated. HP and max read together (`.reading`).
+  faint (`.inert`), a defeated side's number is a hollow outline, Next stage fades back and forth
+  between paper and ink when the villain is down (the user prefers the fade to a hard blink, even
+  though mid-fade it passes through grey). HP and max read together (`.reading`).
 - Panel borders are ruled straight (as Naruto's are); no wobble filter. Tap targets are 44px+.
 - Two spot colors, each with one job: blue for the 術 toggle when used, and orange only for the max-HP mode (the inked 増 seal, the keys' borders, the
   bonus). Keep it meaning one thing.
