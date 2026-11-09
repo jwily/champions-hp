@@ -9,6 +9,37 @@ const CASES = {
 };
 
 module.exports = (scenario) => {
+  // Sound effects land at random: over many, every one's center stays clear of the numbers, the
+  // balloons and the corner boxes, inside its own panel.
+  for (const phone of Object.keys(PHONES)) {
+    scenario(`sound effects stay clear of the numbers and balloons on ${phone}`, async (open) => {
+      const page = await open({ phone, game: { hero: [50, 99], villain: [50, 99] } });
+      const problems = [];
+      for (let i = 0; i < 24; i++) {
+        const side = i % 2 ? 'hero' : 'villain';
+        await page.locator(`.key[data-side="${side}"][data-dir="${i % 4 < 2 ? -1 : 1}"]`).click();
+        const problem = await page.evaluate((s) => {
+          const panel = document.getElementById(s);
+          const effect = [...panel.querySelectorAll(':scope > .sfx')].at(-1);
+          if (!effect) return null; // already faded (a busy machine): nothing to measure
+          const r = effect.getBoundingClientRect();
+          const x = r.left + r.width / 2;
+          const y = r.top + r.height / 2;
+          const inside = (sel) => {
+            const b = panel.querySelector(sel).getBoundingClientRect();
+            return x > b.left && x < b.right && y > b.top && y < b.bottom;
+          };
+          const p = panel.getBoundingClientRect();
+          if (!(x > p.left && x < p.right && y > p.top && y < p.bottom)) return `${effect.textContent} centered outside its panel`;
+          for (const sel of ['.num', '.balloon', '.max', '.inset', '.next']) if (panel.querySelector(sel) && inside(sel)) return `${effect.textContent} centered on ${s} ${sel}`;
+          return null;
+        }, side);
+        if (problem) problems.push(problem);
+      }
+      check(problems.length === 0, problems.join('; '));
+    });
+  }
+
   // The HP sheet, with the keyboard closed and open. Playwright has no on-screen keyboard, so an
   // open one is simulated as iOS reports it: the visual viewport shrinks by its height.
   const KEYBOARD = 291; // iOS's number pad on an iPhone 14 Pro, in CSS px

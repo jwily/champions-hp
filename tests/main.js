@@ -129,18 +129,37 @@ module.exports = (scenario) => {
     }
   });
 
-  scenario('sound effects show on changes', async (open) => {
-    const page = await open({ game: {} });
+  scenario('sound effects vary, stack up to three, and holds get the big ones', async (open) => {
+    const page = await open({ clock: true, game: { villain: [40, 40] } });
+    const effects = () =>
+      page.$$eval('#villain > .sfx', (list) =>
+        list.map((e) => ({ text: e.textContent, classes: e.className, tilt: e.style.getPropertyValue('--tilt') }))
+      );
+    const { SMALL, BIG } = { SMALL: ['ドン!', 'バキ!', 'ドカッ', 'ガッ', 'バシッ', 'ズガッ', 'ゴッ'], BIG: ['ドゴォン!!', 'ズドン!!', 'バキィッ!!', 'ドドン!!', 'ドガガッ!!'] }; // app/js/lines.js
     await tap(page, 'villain', '-');
-    const sfx = await page.$eval('#villain .sfx', (s) => ({ text: s.textContent, shown: s.classList.contains('show') }));
-    check(['ドン!', 'バキ!', 'ドカッ', 'ガッ'].includes(sfx.text) && sfx.shown, `Hit effect: ${JSON.stringify(sfx)}`);
+    let shown = await effects();
+    equal(shown.length, 1, 'One effect per tap');
+    check(SMALL.includes(shown[0].text), `A small hit word: ${shown[0].text}`);
+    check(/\bsfx (solid|hollow|speed)\b/.test(shown[0].classes), `A style: ${shown[0].classes}`);
+    // Four quick taps (clicks from code, all at once: the fade runs on real time, and a busy machine
+    // could let one fade between taps).
+    await page.evaluate(() => { for (let i = 0; i < 4; i++) document.querySelector('.key[data-side="villain"][data-dir="-1"]').click(); });
+    shown = await effects();
+    equal(shown.length, 3, 'Fast taps stack, three at most');
+    check(new Set(shown.map((e) => e.tilt)).size > 1, 'Each at its own tilt');
     check(await page.$eval('#villain', (p) => p.classList.contains('shake')), 'The panel shakes on a hit');
+    await hold(page, 'villain', '-', HOLD_MS + 50);
+    shown = await effects();
+    check(BIG.includes(shown.at(-1).text), `A hold gets a big word: ${shown.at(-1).text}`);
+    // The fade is a CSS animation, which runs on real time, not the test's clock.
+    const gone = await page.waitForFunction(() => !document.querySelector('#villain > .sfx'), null, { timeout: 5000 }).then(() => true, () => false);
+    check(gone, 'They fade and go');
   });
 
   // ---------- Presses (lessons from Bgt-J: app/js/presses.js) ----------
 
   scenario('a press that slides off a key before lifting does nothing', async (open) => {
-    const page = await open({ game: {} });
+    const page = await open({ clock: true, game: {} }); // paused: a slow slide mustn't turn into a hold
     const box = await key(page, 'villain', '-').boundingBox();
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.mouse.down();

@@ -23,6 +23,7 @@ const FILES = [
   'js/keyboard.js',
   'js/lines.js',
   'js/presses.js',
+  'js/sfx.js',
   'js/sheet.js',
   'js/store.js',
   'fonts/dela-gothic-one.woff2',

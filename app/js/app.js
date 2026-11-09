@@ -1,7 +1,8 @@
 // Startup and drawing. The page is a manga "flashback" page: paper panels on black gutters.
 
 import { state, started, total, change, toggleBoost } from './store.js';
-import { VILLAIN_LINES, HERO_LINES, lineFor, SFX } from './lines.js';
+import { VILLAIN_LINES, HERO_LINES, lineFor } from './lines.js';
+import { soundEffect } from './sfx.js';
 import { trackPresses, onHold } from './presses.js';
 import { spirals, rays } from './art.js';
 import { openSheet } from './sheet.js';
@@ -24,7 +25,6 @@ const sides = Object.fromEntries(
         num: $('.num', panel),
         max: $('.max', panel),
         line: $('.line', panel),
-        sfx: $('.sfx', panel),
         focus: $('.focus', panel),
       },
     ];
@@ -57,14 +57,9 @@ function draw() {
   document.body.classList.toggle('boosting', state.boost);
 }
 
-const pick = (list) => list[Math.floor(Math.random() * list.length)];
-
-function effect(key, kind) {
+function effect(key, kind, amount) {
   const el = sides[key];
-  el.sfx.textContent = pick(SFX[kind]);
-  el.sfx.classList.remove('show');
-  void el.sfx.offsetWidth; // restart the fade
-  el.sfx.classList.add('show');
+  soundEffect(el.panel, key, kind, amount);
   if (kind === 'hit' || kind === 'unboost') {
     el.focus.classList.add('flash');
     requestAnimationFrame(() => requestAnimationFrame(() => el.focus.classList.remove('flash')));
@@ -82,7 +77,7 @@ for (const key of document.querySelectorAll('.key')) {
   const dir = +key.dataset.dir;
   const apply = (n) => {
     const kind = change(side, n * dir);
-    if (kind) effect(side, kind);
+    if (kind) effect(side, kind, n);
   };
   key.addEventListener('click', () => apply(1));
   onHold(key, () => apply(5));

@@ -34,7 +34,13 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
 - Max HP follows the rules: "gets +X hit points" raises the dial by X and, when it ends, lowers it
   by X (RR v1.8 p. 22); heals stop at max (p. 21). In state, `max` is the printed/typed value and
   `up` the bonus; `total()` is the current maximum.
-- `js/lines.js`: balloon lines and sound effects. `js/art.js`: the inked spirals and rays.
+- `js/sfx.js` letters the sound effects (the user asked for variety): a random word (holds get the
+  `big` ones), spot, tilt and ink style (solid / hollow / speed; max-HP changes tremble), with a
+  per-character wobble. Spots come from ZONES, the gaps left by the number, balloon and corner
+  boxes; each zone sets the direction (across in wide gaps, down in narrow ones, so a word never
+  stands up over the digits). A burst spreads out (farthest open spot), three at most per panel.
+  tests/layout.js fires many and checks each center stays clear.
+- `js/lines.js`: balloon lines and sound-effect words. `js/art.js`: the inked spirals and rays.
   `js/sheet.js`: the HP entry sheet.
 - **Presses** (`js/presses.js`, lessons from Bgt-J's presses.js, not a copy): a control activates
   (its `click()`) when a press lifts still over it; the browser's own click never counts (cancelled

@@ -19,10 +19,13 @@ export const HERO_LINES = [
 
 export const lineFor = (lines, share) => lines.find(([limit]) => share <= limit)[1];
 
-// Sound effects, written vertically beside the number.
+// Sound effects (js/sfx.js letters them). `big` are for holds (5 at once).
 export const SFX = {
-  hit: ['ドン!', 'バキ!', 'ドカッ', 'ガッ'],
-  heal: ['シュウ…', 'ポウ'],
-  boost: ['ゴゴゴ', 'ズズ…'],
-  unboost: ['フッ…', 'シュン'],
+  hit: {
+    small: ['ドン!', 'バキ!', 'ドカッ', 'ガッ', 'バシッ', 'ズガッ', 'ゴッ'],
+    big: ['ドゴォン!!', 'ズドン!!', 'バキィッ!!', 'ドドン!!', 'ドガガッ!!'],
+  },
+  heal: { small: ['シュウ…', 'ポウ', 'スゥ…', 'キラッ'], big: ['シュウウ…', 'パァァ…', 'キィィン'] },
+  boost: { small: ['ゴゴゴ', 'ズズ…', 'ドクン'], big: ['ゴゴゴゴ!!', 'ドクン!!', 'ズオオ…'] },
+  unboost: { small: ['フッ…', 'シュン', 'スッ'], big: ['シュウン…', 'フッ…!!'] },
 };

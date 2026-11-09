@@ -245,29 +245,44 @@ button {
 }
 .round .line { max-height: 72%; }
 
+/* Sound effects (js/sfx.js): each one placed, tilted and styled at random. */
 .sfx {
   position: absolute;
-  font-family: var(--heavy);
-  font-size: min(18cqh, 40px);
-  line-height: 0.92;
-  letter-spacing: -0.08em;
-  writing-mode: vertical-rl;
-  color: var(--ink);
-  -webkit-text-stroke: 0.11em var(--paper);
-  paint-order: stroke;
-  transform: rotate(8deg);
-  opacity: 0;
+  z-index: 2;
   pointer-events: none;
+  font-family: var(--heavy);
+  font-size: calc(min(17cqh, 38px) * var(--size, 1));
+  line-height: 0.95;
+  white-space: nowrap;
+  color: var(--ink);
+  -webkit-text-stroke: 0.12em var(--paper);
+  paint-order: stroke;
+  transform: translate(-50%, -50%) rotate(var(--tilt));
+  animation: sfx-pop 0.75s ease-out forwards;
 }
-.sfx.show { animation: sfx 0.6s ease-out; }
-@keyframes sfx {
-  0% { opacity: 1; transform: rotate(8deg) scale(1.25); }
-  15% { opacity: 1; transform: rotate(8deg) scale(1); }
+.sfx.vertical { writing-mode: vertical-rl; }
+.sfx .ch {
+  display: inline-block;
+  transform: rotate(var(--r)) scale(var(--k)) translateX(var(--d));
+}
+/* Paper letters with a heavy ink outline. */
+.sfx.hollow { color: var(--paper); -webkit-text-stroke: 0.17em var(--ink); }
+/* Slanted, with echoes trailing behind, for a hit with speed. */
+.sfx.speed .ch {
+  transform: rotate(var(--r)) scale(var(--k)) translateX(var(--d)) skewX(-14deg);
+  text-shadow: -0.12em 0.05em 0 var(--tone), -0.24em 0.1em 0 var(--tone);
+}
+/* Max HP rising or falling: the letters tremble (ゴゴゴ). */
+.sfx.tremble .ch { animation: tremble 0.09s steps(2) infinite alternate; }
+@keyframes tremble {
+  to { transform: rotate(var(--r)) scale(var(--k)) translateX(var(--d)) translate(1.5px, -1px); }
+}
+@keyframes sfx-pop {
+  0% { opacity: 1; transform: translate(-50%, -50%) rotate(var(--tilt)) scale(1.35); }
+  14% { transform: translate(-50%, -50%) rotate(var(--tilt)) scale(1); }
   70% { opacity: 1; }
-  100% { opacity: 0; }
+  100% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--tilt)) scale(1.04); }
 }
-#villain .sfx { left: calc(5cqw + max(84px, 27cqw) + 6px); top: 8cqh; }
-#hero .sfx { right: calc(6cqw + max(70px, 21cqw) + 6px); top: 34cqh; }
 
 /* ---------- Villain extras ---------- */
 
