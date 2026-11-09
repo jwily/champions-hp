@@ -106,6 +106,8 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   running head "NARUTO—ナルト—1" (here "MC—マーベル・チャンピオンズ—" and the game count; マーベル・
   チャンピオンズ is the game's Japanese title). Spirals (uzumaki) recur everywhere. "!!!" appears too
   (なっ!!!, chapter 1 p. 24), which VICTORY!!! uses.
+- The villain's panel gets a little more height than the hero's (1.15 : 1): it holds more (balloon,
+  stage box, Next stage). Layout tests check both still fit on the SE.
 - Shared values are tokens on `:root`: `--inset` (10px, anything tucked into a panel corner),
   `--line` / `--line-fine` (2px / 1.5px ink), `--text-s/m/l` (11 / 13 / 14px serif sizes). 術 is
   the one deliberate exception to `--inset` (the user wanted more room; the tag needs clearance).
