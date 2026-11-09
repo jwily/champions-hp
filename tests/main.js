@@ -272,7 +272,7 @@ module.exports = (scenario) => {
       for (let i = 0; i < 30; i++) {
         key.click();
         const effect = [...document.querySelectorAll('#villain > .sfx')].at(-1);
-        out.push({ word: effect.textContent.replace('︙', '…'), tilt: effect.style.getPropertyValue('--tilt') });
+        out.push({ word: effect.textContent, tilt: effect.style.getPropertyValue('--tilt') });
       }
       return out;
     });

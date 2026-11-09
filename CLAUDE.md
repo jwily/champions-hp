@@ -41,9 +41,8 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   wide tilts, several ink styles and many words "trying too hard to be Japanese". So: one heavy
   lettering, solid for a change of 1 and outlined and larger for a hold, a few gentle tilts, a short
   list of classic words. No animation: an effect appears, stays 1 s, and goes. Spots come from
-  ZONES, the gaps left by the number, balloon and corner boxes; each zone sets the direction
-  (across in wide gaps, down in narrow ones, so a word never stands over the digits). A burst
-  spreads out, three at most per panel. tests/layout.js fires many and checks each center.
+  ZONES, the gaps left by the number, balloon and corner boxes. Always lettered across (the
+  user's choice; tilts give the variety). A burst spreads out, three at most per panel. tests/layout.js fires many and checks each center.
 - **The 術 toggle** (`powerUsed`, state version 3; `MIGRATIONS` upgrades v1 and v2): one toggle
   for the hero's special ability, as a seal (the user's pick over an unrolling scroll): ready = the
   bare 術 in white with a blue outline; used = a paper sealing tag (封印) slaps on across it
@@ -57,12 +56,11 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   per-period ability tokens (v2), which the user found to be more than they needed. 術 ("jutsu")
   was the user's pick over 力 ("power").
 - − and + are drawn as CSS bars (`.sign`), not text: the heavy font has no − and engines fell back
-  to different fonts at different heights. Vertical sound effects use ︙ for … (the heavy font
-  draws … sideways, off to the left).
+  to different fonts at different heights.
 - Exclamation marks scale with the moment (the user asked for judgement): "!" for a tap's hit and
   mid-HP lines (小癪な!, まだまだ!); "!!" for real shouts (holds, low-HP and defeat lines, いくぞ!!,
   and the chapter-title style labels VILLAIN!!, STAGE n!!, FIGHT!!); "!!!" only for VICTORY. Hisses,
-  rumbles and breaths take none; NEW GAME takes none. "!" and "!!" stand upright in vertical text.
+  rumbles and breaths take none; NEW GAME takes none. "!" and "!!" stand upright in the balloons' vertical text.
 - The villain has lines for two stages (`VILLAIN_LINES.first` / `.final`, chosen by stage): the
   first stage at 0 isn't beaten but about to stop holding back (遊びは終わりだ…), and the final
   stage opens with the reveal of true power (これが真の力だ!!), a Naruto staple. Lines break into
@@ -123,7 +121,7 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   by the user: a many-spiked shout and a lumpy oval with a tail, both cut off by the panel edge.
 - Limits and states are designed, not left to the happy path: a key that can't change anything shows
   faint (`.inert`), a defeated side's number is a hollow outline, Next stage turns solid ink, still,
-  when the villain is down (a fade and a blink were both tried; the user found motion distracting). HP and max read together (`.reading`).
+  when the villain is down (a fade and a blink were both tried; the user found motion distracting).
 - Panel borders are ruled straight (as Naruto's are); no wobble filter. Tap targets are 44px+.
 - Two spot colors, each with one job: blue for the 術 toggle when used, and orange only for the max-HP mode (the inked 増 seal, the keys' borders, the
   bonus). Keep it meaning one thing.

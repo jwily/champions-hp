@@ -24,7 +24,7 @@ module.exports = (scenario) => {
           const panel = document.getElementById(s);
           const effect = [...panel.querySelectorAll(':scope > .sfx')].at(-1);
           if (!effect) return null; // already faded (a busy machine): nothing to measure
-          if (effect.classList.contains('vertical') && effect.textContent.includes('…')) return `${effect.textContent} uses a sideways … in vertical lettering`;
+          if (getComputedStyle(effect).writingMode !== 'horizontal-tb') return `${effect.textContent} isn't lettered across`;
           const r = effect.getBoundingClientRect();
           const x = r.left + r.width / 2;
           const y = r.top + r.height / 2;

@@ -282,7 +282,6 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   paint-order: stroke;
   transform: translate(-50%, -50%) rotate(var(--tilt));
 }
-.sfx.vertical { writing-mode: vertical-rl; }
 .sfx.outlined { color: var(--paper); -webkit-text-stroke: 0.16em var(--ink); }
 
 /* ---------- Villain extras ---------- */
