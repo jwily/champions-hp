@@ -75,7 +75,8 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   stroke (a paper shape clipped inside an ink one made the long spikes' line several times
   thicker, which the user spotted as amateurish). Balloon text is in the antique serif: the heavy
   font blots many-stroke kanji at small sizes. The 増 seal is a hanko: one centered character in a
-  double-ruled frame, no furigana (it crowded the character).
+  double-ruled frame, no furigana (it crowded the character). Both balloons are SVG outlines with
+  tails (the hero's an uneven oval, the shout's longest spike), never CSS shapes.
 - Limits and states are designed, not left to the happy path: a key that can't change anything shows
   faint (`.inert`), a defeated side's number is a hollow outline, Next stage turns solid ink (static:
   no pulsing) when the villain is down. HP and max read together (`.reading`).

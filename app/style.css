@@ -209,41 +209,41 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
 .balloon .line { writing-mode: vertical-rl; max-height: 100%; }
 .upright { text-combine-upright: all; -webkit-text-combine: horizontal; }
 
-/* The villain's spiky shout balloon: an SVG outline (index.html) with a constant-width ink line.
-   Lettered in the serif, like the hero's: the heavy font blots many-stroke kanji (癪) this small. */
-.shout {
-  left: 5cqw;
-  top: 9cqh;
-  width: max(84px, 27cqw);
-  height: min(62cqh, 100cqh - 9cqh - 66px); /* clear of Next stage */
-}
-.shout svg {
+/* Balloons: SVG outlines (index.html) with a constant-width ink line, lettered in the serif (the
+   heavy font blots many-stroke kanji like 癪 this small). */
+.balloon svg {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   overflow: visible;
 }
-.shout polygon {
+.balloon polygon {
   fill: var(--paper);
   stroke: var(--ink);
   stroke-width: 1.5px;
   stroke-linejoin: miter;
   stroke-miterlimit: 12;
 }
-.shout .line { position: relative; max-height: 58%; font-size: 14px; }
+.balloon .line { position: relative; }
 
-/* The hero's round balloon. */
+/* The villain's spiky shout. */
+.shout {
+  left: 5cqw;
+  top: 9cqh;
+  width: max(84px, 27cqw);
+  height: min(62cqh, 100cqh - 9cqh - 66px); /* clear of Next stage */
+}
+.shout .line { max-height: 58%; font-size: 14px; }
+
+/* The hero's balloon. */
 .round {
   right: 6cqw;
-  top: 26cqh;
+  top: 24cqh;
   width: max(70px, 21cqw);
-  height: 54cqh;
-  background: var(--paper);
-  border: 1.5px solid var(--ink);
-  border-radius: 50%;
+  height: 58cqh;
 }
-.round .line { max-height: 72%; }
+.round .line { max-height: 70%; margin-top: -8%; } /* centered in the oval, above the tail */
 
 /* Sound effects (js/sfx.js): heavy katakana, solid for a change of 1, outlined for a hold. No
    animation: they appear and go at once. */
