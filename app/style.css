@@ -183,11 +183,13 @@ button.narration.pressed,
 }
 /* In the HP sheet the keyboard shrinks the panels. The art keeps the size it has with the keyboard
    closed (--art-h, set by js/sheet.js) and the panel crops it (.entry clips), rather than rescaling
-   it: scaled to cover, a lone tall panel (Next stage) zoomed out as it shrank. It holds to the
-   panel's outer edge, where the tone is. */
-.entry .art-wrap { height: var(--art-h, 100%); }
-.entry .art-wrap[data-art='villain'] { inset: 0 0 auto; }
-.entry .art-wrap[data-art='hero'] { inset: auto 0 0; }
+   it: scaled to cover, a lone tall panel (Next stage) zoomed out as it shrank. It stays centered,
+   cropped top and bottom alike, so the number (centered too) keeps its place against the art. */
+.entry .art-wrap {
+  inset: 50% 0 auto;
+  height: var(--art-h, 100%);
+  translate: 0 -50%;
+}
 /* The tone fades away from the panel's outer edge: down from the top for the villain, up from
    the bottom for the hero (the same in the HP sheet as on the page). */
 .fade {
@@ -572,8 +574,9 @@ button.narration.pressed,
   user-select: text;
 }
 .entry input::placeholder { color: var(--sub); opacity: 1; }
-/* The panel being typed in, or holding a bad entry, gets a heavier border. */
-.entry:focus-within .border, .entry.invalid .border { border-width: 4px; }
+/* A panel holding a bad entry gets a heavier border. (Not the one being typed in: the caret and the
+   keyboard already say which, and on Next stage there's only one.) */
+.entry.invalid .border { border-width: 4px; }
 
 .entry .narration {
   position: absolute;

@@ -98,7 +98,7 @@ module.exports = (scenario) => {
   }
 
   // The keyboard crops the sheet's art, never rescales it: a lone tall panel (Next stage) used to
-  // zoom out as it shrank. The art holds to the panel's outer edge (top for the villain).
+  // zoom out as it shrank. The art stays centered, so the number keeps its place against it.
   for (const mode of ['#set', '#next']) {
     scenario(`the keyboard crops the ${mode === '#set' ? 'new game' : 'next stage'} sheet's art, without zooming`, async (open) => {
       const page = await open({ phone: 'iPhone 14 Pro', game: {} });
@@ -124,8 +124,7 @@ module.exports = (scenario) => {
         check(a.panel < b.panel, `${a.side}: the panel shrinks (${b.panel} to ${a.panel})`);
         check(a.clipped, `${a.side}: the panel crops its art`);
         equal([a.width, a.height], [b.width, b.height], `${a.side}: the art's size`);
-        if (a.side === 'villain-row') equal(a.top, 0, `${a.side}: the art holds to the top`);
-        else equal(a.bottom, 0, `${a.side}: the art holds to the bottom`);
+        check(Math.abs(a.top - a.bottom) <= 1, `${a.side}: the art is cropped top and bottom alike (${a.top}, ${a.bottom})`);
       }
     });
   }
