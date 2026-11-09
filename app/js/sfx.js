@@ -58,13 +58,13 @@ export function soundEffect(panel, side, kind, amount) {
   el.style.top = `${y.toFixed(1)}%`;
   el.style.setProperty('--tilt', `${pick(TILTS)}deg`);
   el.style.setProperty('--size', big ? BIG : 1);
-  // Vertical lettering: "!!" stays one upright pair, and "…" becomes the vertical ellipsis "︙"
+  // Vertical lettering: "!" and "!!" stay upright, and "…" becomes the vertical ellipsis "︙"
   // (the heavy font draws "…" sideways, hugging the left of the column).
   let word = pick(SFX[kind][big ? 'big' : 'small']);
   if (vertical) word = word.replaceAll('…', '︙');
-  for (const part of word.split(/(!!)/).filter(Boolean)) {
+  for (const part of word.split(/(!+)/).filter(Boolean)) {
     const span = document.createElement('span');
-    if (part === '!!') span.className = 'upright';
+    if (part.startsWith('!')) span.className = 'upright';
     span.textContent = part;
     el.append(span);
   }

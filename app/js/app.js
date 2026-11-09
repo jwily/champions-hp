@@ -36,9 +36,9 @@ const sides = Object.fromEntries(
   })
 );
 
-// Vertical text, with "!!" set side by side inside the column as manga lettering does.
+// Vertical text, with "!" and "!!" set upright inside the column as manga lettering does.
 function setVertical(el, text) {
-  el.replaceChildren(...text.split(/(!!)/).filter(Boolean).map((part) => (part === '!!' ? make('span', 'upright', part) : part)));
+  el.replaceChildren(...text.split(/(!+)/).filter(Boolean).map((part) => (part.startsWith('!') ? make('span', 'upright', part) : part)));
 }
 
 function draw() {

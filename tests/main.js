@@ -31,7 +31,7 @@ module.exports = (scenario) => {
     const page = await open({ game: { hero: [3, 10], villain: [14, 14] } });
     await tap(page, 'villain', '-');
     equal((await read(page, 'villain')).hp, 13, 'Villain after one hit');
-    equal((await read(page, 'villain')).line, '小癪な!!', 'Villain line when hurt');
+    equal((await read(page, 'villain')).line, '小癪な!', 'Villain line when hurt');
     await tap(page, 'villain', '+', 3);
     equal((await read(page, 'villain')).hp, 14, 'Heals stop at max');
     await tap(page, 'hero', '-', 3);
@@ -59,9 +59,9 @@ module.exports = (scenario) => {
     await page.click('#seal');
     equal(await page.getAttribute('#seal', 'aria-pressed'), 'true', 'Seal on');
     await tap(page, 'hero', '+', 3);
-    equal(await read(page, 'hero'), { hp: 10, max: '/ 13 (+3)', line: 'まだまだ!!' }, '+3 hit points');
+    equal(await read(page, 'hero'), { hp: 10, max: '/ 13 (+3)', line: 'まだまだ!' }, '+3 hit points');
     await tap(page, 'hero', '-');
-    equal(await read(page, 'hero'), { hp: 9, max: '/ 12 (+2)', line: 'まだまだ!!' }, 'Lowering it lowers HP too');
+    equal(await read(page, 'hero'), { hp: 9, max: '/ 12 (+2)', line: 'まだまだ!' }, 'Lowering it lowers HP too');
     await page.click('#seal');
     await tap(page, 'hero', '+', 5);
     equal((await read(page, 'hero')).hp, 12, 'Heals reach the raised max');
