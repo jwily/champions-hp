@@ -45,7 +45,7 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   updated"; `storage.js` saving on the phone (never throws: full or blocked storage carries on
   from memory); `dom.js` two helpers.
   Startup is the list at the end of app.js.
-- `js/store.js` owns `state` (one JSON object in localStorage under `champions-hp`, version 4).
+- `js/store.js` owns `state` (one JSON object in localStorage under `champions-hp`, version 5).
   Every change goes through a store function, which saves and fires `hp:change`; `app.js` redraws.
   Changing the saved shape: bump `VERSION`, add one migration step from the old version
   (`MIGRATIONS` upgrade one version at a time), and extend `valid()`. A save that isn't valid after
@@ -71,6 +71,10 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   (only when tapped, not at launch) and the character fades to the paper color with a faint outline
   (bright white is only for the ready state). Blue means ready. It starts sealed
   (the user: most heroes have no limited ability).
+- **Last game's HP** (`villainStart`, state version 5): New game offers the hero's HP and the
+  villain's first-stage HP from last time, the villain's kept per mode (the user plays one villain
+  over and over); changing the mode swaps it unless a number was typed. Next stage offers nothing.
+  Tapping a field selects what's in it, so typing replaces it (the fields hold 2 digits).
 - **Standard / Expert** (`mode`, state version 4): `STAGES` in store.js (I → II, or II → III, RR
   p. 28), chosen in the New game sheet and kept. On the last stage Next stage is a disabled "Final stage" caption: a compact caption box
   like the sheet's labels (captions are compact boxes, buttons tall ones), not a greyed-out button;

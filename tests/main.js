@@ -114,7 +114,7 @@ module.exports = (scenario) => {
     await tap(page, 'hero', '+', 2);
     equal(
       await stored(page),
-      { version: 4, game: 1, stage: 1, mode: 'standard', boost: true, hero: { hp: 12, max: 10, up: 2 }, villain: { hp: 10, max: 14, up: 0 }, powerUsed: false },
+      { version: 5, game: 1, stage: 1, mode: 'standard', boost: true, hero: { hp: 12, max: 10, up: 2 }, villain: { hp: 10, max: 14, up: 0 }, powerUsed: false, villainStart: { standard: null, expert: null } },
       'Saved data'
     );
     await page.reload();
@@ -126,8 +126,9 @@ module.exports = (scenario) => {
   });
 
   scenario('unreadable saved data starts fresh', async (open) => {
-    const broken = { version: 4, game: 'x', stage: 1, mode: 'standard', boost: false, hero: null, villain: null, powerUsed: true };
-    for (const storage of ['{not json', { version: 1, hero: { hp: 'x' }, villain: null }, { version: 99 }, broken]) {
+    const fine = { version: 5, game: 1, stage: 1, mode: 'standard', boost: false, hero: null, villain: null, powerUsed: true, villainStart: { standard: null, expert: null } };
+    const broken = [{ ...fine, game: 'x' }, { ...fine, villainStart: { standard: 0, expert: null } }, { ...fine, villainStart: null }];
+    for (const storage of ['{not json', { version: 1, hero: { hp: 'x' }, villain: null }, { version: 99 }, ...broken]) {
       const page = await open({ storage });
       check(await page.isVisible('#sheet'), `Fresh start for ${JSON.stringify(storage)}`);
     }
@@ -336,7 +337,7 @@ module.exports = (scenario) => {
     equal((await read(page, 'hero')).hp, 5, 'Hero');
     await tap(page, 'villain', '-');
     const saved = await stored(page);
-    equal(Object.keys(saved).sort(), ['boost', 'game', 'hero', 'mode', 'powerUsed', 'stage', 'version', 'villain'], 'Saved in the new shape');
+    equal(Object.keys(saved).sort(), ['boost', 'game', 'hero', 'mode', 'powerUsed', 'stage', 'version', 'villain', 'villainStart'], 'Saved in the new shape');
     equal(saved.mode, 'standard', 'as a Standard game');
   });
 
@@ -346,6 +347,37 @@ module.exports = (scenario) => {
     check(!(await page.isVisible('#sheet')), 'The game is still there');
     equal(await page.getAttribute('#power', 'aria-pressed'), 'false', '術 as it was');
     equal(await page.textContent('#next'), 'Final stage', 'Standard: stage II is the last');
+  });
+
+  scenario('New game offers the villain’s first-stage HP from last time, for each mode', async (open) => {
+    const page = await open();
+    equal(await page.inputValue('#villain-input'), '', 'Nothing to offer on the very first game');
+    await fillSheet(page, { villain: 14, hero: 10 });
+    await page.click('#set');
+    equal([await page.inputValue('#villain-input'), await page.inputValue('#hero-input')], ['14', '10'], 'Last game’s villain and hero');
+    await page.click('#mode-row [data-mode="expert"]');
+    equal(await page.inputValue('#villain-input'), '', 'No Expert game yet: nothing offered');
+    await fillSheet(page, { villain: 20 });
+    await page.click('#next');
+    equal(await page.inputValue('#villain-input'), '', 'Next stage offers nothing: a new stage’s HP is its own');
+    await fillSheet(page, { villain: 25 }); // and isn't the villain's start
+    await page.click('#set');
+    equal(await page.inputValue('#villain-input'), '20', 'Expert, as last played');
+    await page.click('#mode-row [data-mode="standard"]');
+    equal(await page.inputValue('#villain-input'), '14', 'Standard’s, switching back');
+    await page.fill('#villain-input', '9');
+    await page.click('#mode-row [data-mode="expert"]');
+    equal(await page.inputValue('#villain-input'), '9', 'A number typed in stays when the mode changes');
+  });
+
+  scenario('a game saved before the remembered HP offers its villain when on the first stage', async (open) => {
+    const v4 = (stage) => ({ version: 4, game: 2, stage, mode: 'standard', boost: false, hero: { hp: 6, max: 10, up: 0 }, villain: { hp: 8, max: 15, up: 0 }, powerUsed: false });
+    let page = await open({ storage: v4(1) });
+    await page.click('#set');
+    equal(await page.inputValue('#villain-input'), '15', 'Stage I: its villain HP is the start');
+    page = await open({ storage: v4(2) });
+    await page.click('#set');
+    equal(await page.inputValue('#villain-input'), '', 'Stage II: the start isn’t known');
   });
 
   scenario('the HP sheet’s panels open where the page’s are, with the same art', async (open) => {

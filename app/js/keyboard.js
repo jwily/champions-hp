@@ -76,13 +76,15 @@ export function trackKeyboard() {
     if (pressed) makeRoomAhead(field);
   });
   // On the lift, the app focuses that field itself, without scrolling, and cancels the tap's own
-  // click: the fields may have moved under the finger (its lift could land on FIGHT!!).
+  // click: the fields may have moved under the finger (its lift could land on FIGHT!!). What's in
+  // the field is selected, so typing replaces it (a field offers last game's HP, and holds 2 digits).
   document.addEventListener(
     'touchend',
     (e) => {
       if (!pressed) return;
       e.preventDefault();
       pressed.focus({ preventScroll: true });
+      pressed.select();
       pressed = null;
       // If no keyboard comes (a hardware keyboard, say), the sheet gets its room back.
       if (guessing()) setTimeout(() => reported === 0 && dropGuess(), SETTLE_MS);

@@ -4,7 +4,7 @@
 import * as storage from './storage.js';
 
 const KEY = 'champions-hp';
-const VERSION = 4;
+const VERSION = 5;
 export const MAX_HP = 99;
 
 // Villain stages by mode: Standard plays stages I and II, Expert the scenario's expert stages, II
@@ -12,19 +12,31 @@ export const MAX_HP = 99;
 export const STAGES = { standard: [1, 2], expert: [2, 3] };
 
 // mode: 'standard' or 'expert' (kept between games). powerUsed: the hero's 術 ("jutsu") toggle,
-// sealed (true) until released: most heroes have no limited ability to track.
+// sealed (true) until released: most heroes have no limited ability to track. villainStart: the
+// villain's HP as last typed for a new game, by mode, offered again for the next (one villain is
+// often played over and over).
+const noVillainStart = () => ({ standard: null, expert: null });
+
 function fresh() {
-  return { version: VERSION, game: 0, stage: 1, mode: 'standard', boost: false, hero: null, villain: null, powerUsed: true };
+  return { version: VERSION, game: 0, stage: 1, mode: 'standard', boost: false, hero: null, villain: null, powerUsed: true, villainStart: noVillainStart() };
 }
 
 // Older saved shapes, each upgraded one version at a time (a new version adds one step here).
 // Version 2 also tracked rounds, phases and limited abilities, since replaced by the single 術
-// toggle; version 3 added that toggle, version 4 the mode.
+// toggle; version 3 added that toggle, version 4 the mode, version 5 villainStart (a game still on
+// its first stage gives its villain's).
 const MIGRATIONS = {
   1: (s) => ({ ...s, version: 3, powerUsed: true }),
   2: ({ round, phase, abilities, used, ...s }) => ({ ...s, version: 3, powerUsed: true }),
   3: (s) => ({ ...s, version: 4, mode: 'standard' }),
+  4: (s) => {
+    const villainStart = noVillainStart();
+    if (s.villain && s.stage === STAGES[s.mode]?.[0]) villainStart[s.mode] = s.villain.max;
+    return { ...s, version: 5, villainStart };
+  },
 };
+
+const validHp = (n) => Number.isInteger(n) && n >= 1 && n <= MAX_HP;
 
 const validSide = (c) =>
   c === null ||
@@ -38,7 +50,8 @@ const valid = (s) =>
   typeof s.powerUsed === 'boolean' &&
   s.mode in STAGES &&
   validSide(s.hero) &&
-  validSide(s.villain);
+  validSide(s.villain) &&
+  Object.keys(STAGES).every((mode) => s.villainStart?.[mode] === null || validHp(s.villainStart?.[mode]));
 
 // The saved game, upgraded to this version, or a fresh one if there's none or it's unreadable.
 function restore() {
@@ -77,6 +90,7 @@ export function newGame(heroHp, villainHp, mode = state.mode) {
   state.boost = false;
   state.hero = side(heroHp);
   state.villain = side(villainHp);
+  state.villainStart[mode] = villainHp;
   state.powerUsed = true;
   save();
 }

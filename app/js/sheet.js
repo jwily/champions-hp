@@ -21,6 +21,9 @@ function drawMode() {
   for (const button of modeRow.querySelectorAll('button')) button.setAttribute('aria-pressed', button.dataset.mode === chosenMode);
 }
 
+// A new game offers last time's HP: the hero's, and the villain's first stage in this mode.
+const villainStart = (mode) => String(state.villainStart[mode] ?? '');
+
 /** forWhat: 'new' (a new game: villain and hero HP) or 'next' (the villain's next stage). */
 export function openSheet(forWhat) {
   purpose = forWhat;
@@ -31,7 +34,7 @@ export function openSheet(forWhat) {
   chosenMode = state.mode;
   drawMode();
   heroInput.value = newGameSheet && state.hero ? state.hero.max : '';
-  villainInput.value = '';
+  villainInput.value = newGameSheet ? villainStart(chosenMode) : '';
   cancel.hidden = !started(); // the first game can't be cancelled: there's nothing to go back to
   clearError();
   sheet.hidden = false;
@@ -91,8 +94,11 @@ form.addEventListener('submit', (e) => {
 modeRow.addEventListener('click', (e) => {
   const button = e.target.closest('button');
   if (!button) return;
+  // The other mode's villain HP comes with it, unless a different number has been typed.
+  if (villainInput.value === villainStart(chosenMode)) villainInput.value = villainStart(button.dataset.mode);
   chosenMode = button.dataset.mode;
   drawMode();
+  clearError();
 });
 for (const input of [villainInput, heroInput]) input.addEventListener('input', clearError);
 cancel.addEventListener('click', closeSheet);

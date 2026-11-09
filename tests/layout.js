@@ -191,7 +191,7 @@ module.exports = (scenario) => {
   // keyboard, so the sheet changes once, when the keyboard arrives (a guess, if off, made it twice).
   for (const phone of Object.keys(PHONES)) {
     scenario(`tapping Villain HP waits for the keyboard on ${phone}`, async (open) => {
-      const page = await open({ phone, game: {} });
+      const page = await open({ phone, game: { villainStart: { standard: 14 } } });
       await page.click('#set');
       const result = await page.evaluate(() => {
         const target = document.getElementById('villain-row');
@@ -201,6 +201,8 @@ module.exports = (scenario) => {
         return { early, focused: document.activeElement?.id };
       });
       equal(result, { early: false, focused: 'villain-input' }, 'No room made ahead of the keyboard, and Villain HP focused');
+      // What's in the field (last game's HP) is selected, so typing replaces it.
+      equal(await page.evaluate(() => { const f = document.getElementById('villain-input'); return [f.value, f.selectionStart, f.selectionEnd]; }), ['14', 0, 2], 'The offered HP selected');
     });
   }
 
