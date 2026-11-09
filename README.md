@@ -15,7 +15,7 @@ no build step, no dependencies.
 - **Next stage ▸** asks for the villain's HP for the next stage. It turns solid ink when the villain
   is at 0.
 - **術** (*jutsu*, bottom-left of the hero panel): tap it when you use the hero's special ability,
-  so there's nothing to remember; it turns blue. Tap again to clear it. A new game clears it.
+  so there's nothing to remember; its outline turns blue. Tap again to clear it. A new game clears it.
 - **The 増 seal** ("increase") is the toggle for raising max HP, for effects that say a character
   "gets +X hit points" (Rules Reference v1.8, p. 22). While it's inked orange, − and + change the
   bonus instead: raising it raises max and current HP together; lowering it lowers both, which can

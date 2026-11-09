@@ -58,9 +58,9 @@ module.exports = (scenario) => {
     await page.click('#seal');
     equal(await page.getAttribute('#seal', 'aria-pressed'), 'true', 'Seal on');
     await tap(page, 'hero', '+', 3);
-    equal(await read(page, 'hero'), { hp: 10, max: '/ 13(+3)', line: 'まだまだ!!' }, '+3 hit points');
+    equal(await read(page, 'hero'), { hp: 10, max: '/ 13 (+3)', line: 'まだまだ!!' }, '+3 hit points');
     await tap(page, 'hero', '-');
-    equal(await read(page, 'hero'), { hp: 9, max: '/ 12(+2)', line: 'まだまだ!!' }, 'Lowering it lowers HP too');
+    equal(await read(page, 'hero'), { hp: 9, max: '/ 12 (+2)', line: 'まだまだ!!' }, 'Lowering it lowers HP too');
     await page.click('#seal');
     await tap(page, 'hero', '+', 5);
     equal((await read(page, 'hero')).hp, 12, 'Heals reach the raised max');
@@ -119,7 +119,7 @@ module.exports = (scenario) => {
     await page.reload();
     await ready(page);
     equal((await read(page, 'villain')).hp, 10, 'Villain after relaunch');
-    equal((await read(page, 'hero')).max, '/ 12(+2)', 'Hero after relaunch');
+    equal((await read(page, 'hero')).max, '/ 12 (+2)', 'Hero after relaunch');
     equal(await page.getAttribute('#seal', 'aria-pressed'), 'true', 'Seal after relaunch');
     check(!(await page.isVisible('#sheet')), 'No sheet when a game is saved');
   });
@@ -212,12 +212,12 @@ module.exports = (scenario) => {
   scenario('the 術 toggle marks the special ability used, and a new game clears it', async (open) => {
     const page = await open({ game: {} });
     const used = () => page.getAttribute('#power', 'aria-pressed');
-    const color = () => page.$eval('#power', (b) => getComputedStyle(b).backgroundColor);
+    const color = () => page.$eval('#power', (b) => getComputedStyle(b).webkitTextStrokeColor);
     equal(await used(), 'false', 'Not used to start');
     const plain = await color();
     await page.click('#power');
     equal(await used(), 'true', 'Tapped: used');
-    check((await color()) !== plain, 'and colored');
+    check((await color()) !== plain, 'and its outline colored');
     await page.reload();
     await ready(page);
     equal(await used(), 'true', 'Saved across a relaunch');

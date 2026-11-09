@@ -47,7 +47,7 @@ function draw() {
     if (!c) continue;
     el.num.textContent = c.hp;
     el.max.textContent = `/ ${total(c)}`;
-    if (c.up) el.max.append(make('span', 'up', `(+${c.up})`));
+    if (c.up) el.max.append(make('span', 'up', ` (+${c.up})`));
     el.status.textContent = `${el.name} ${c.hp} of ${total(c)}`;
     setVertical(el.line, lineFor(el.lines, c.hp / total(c)));
     el.panel.classList.toggle('down', c.hp === 0);

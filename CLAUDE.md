@@ -34,6 +34,8 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
 - Max HP follows the rules: "gets +X hit points" raises the dial by X and, when it ends, lowers it
   by X (RR v1.8 p. 22); heals stop at max (p. 21). In state, `max` is the printed/typed value and
   `up` the bonus; `total()` is the current maximum.
+- Max HP sits small in each panel's bottom-right corner, bonus inline (the user's preference; tried
+  and reverted: max anchored beside/under the number).
 - `js/sfx.js` letters the sound effects, restrained on purpose: the user found per-letter wobble,
   wide tilts, several ink styles and many words "trying too hard to be Japanese". So: one heavy
   lettering, solid for a change of 1 and outlined and larger for a hold, a few gentle tilts, a short
@@ -42,7 +44,8 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   (across in wide gaps, down in narrow ones, so a word never stands over the digits). A burst
   spreads out, three at most per panel. tests/layout.js fires many and checks each center.
 - **The 術 toggle** (`powerUsed`, state version 3; `MIGRATIONS` upgrades v1 and v2): one toggle
-  for the hero's special ability, blue when used. It replaced round / phase tracking with
+  for the hero's special ability: the bare character, white with a black outline that turns blue
+  when used (no box). It replaced round / phase tracking with
   per-period ability tokens (v2), which the user found to be more than they needed. 術 ("jutsu")
   was the user's pick over 力 ("power").
 - `js/lines.js`: balloon lines and sound-effect words. `js/art.js`: the inked spirals and rays.
@@ -80,7 +83,7 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   thicker, which the user spotted as amateurish). Balloon text is in the antique serif: the heavy
   font blots many-stroke kanji at small sizes. The 増 seal is a hanko: one centered character in a
   double-ruled frame, no furigana (it crowded the character). Both balloons are SVG outlines with a
-  non-scaling stroke (even line): the original 12-point star and a plain oval. Tried and reverted
+  non-scaling stroke (even line): a symmetrical 12-point star and a plain oval. Tried and reverted
   by the user: a many-spiked shout and a lumpy oval with a tail, both cut off by the panel edge.
 - Limits and states are designed, not left to the happy path: a key that can't change anything shows
   faint (`.inert`), a defeated side's number is a hollow outline, Next stage turns solid ink (static:

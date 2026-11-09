@@ -24,6 +24,7 @@
   --orange: #ff7a1a; /* the one spot color: the max-HP mode */
   --orange-ink: #c4500a; /* the same orange, dark enough to read as small text on paper */
   --blue: #2b62c9; /* the second spot color: the hero's special ability, used */
+  --white: #fbf8f1; /* lettering that stands out from the paper (the 術 toggle) */
   --col-gap: 8px;
   --row-gap: 12px;
   --side: 12px;
@@ -165,16 +166,9 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
 
 /* ---------- Numbers, balloons, sound effects ---------- */
 
-/* HP and its max together: "/ 14" sits right under the villain's number and beside the hero's. */
-.reading {
-  position: absolute;
-  display: flex;
-}
-#villain .reading { right: 6cqw; top: 52%; transform: translateY(-50%); flex-direction: column; align-items: flex-end; }
-/* The hero's number breaks out over the panel's top border, as Kishimoto does for impact. */
-#hero .reading { left: 4cqw; top: 0; transform: translateY(-22%); align-items: baseline; gap: 6px; }
-
+/* The HP number. */
 .num {
+  position: absolute;
   font-family: var(--heavy);
   line-height: 0.9;
   color: var(--ink);
@@ -182,27 +176,26 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   paint-order: stroke;
   font-variant-numeric: tabular-nums;
 }
-#villain .num { font-size: min(38cqh, 30cqw); }
-#villain .max { margin-top: 6px; }
-#hero .num { font-size: min(46cqh, 29cqw); }
+#villain .num { right: 6cqw; top: 52%; transform: translateY(-50%); font-size: min(38cqh, 30cqw); }
+/* The hero's number breaks out over the panel's top border, as Kishimoto does for impact. */
+#hero .num { left: 4cqw; top: 0; transform: translateY(-22%); font-size: min(46cqh, 29cqw); }
 /* Defeated: the number is left as an empty outline. */
 .down .num { color: var(--paper); -webkit-text-stroke: 0.035em var(--ink); paint-order: normal; }
 
+/* Max HP: small, in the panel's bottom-right corner (the user's preference), with any bonus inline. */
 .max {
-  font-size: 18px;
-  line-height: 1.2;
+  position: absolute;
+  right: 12px;
+  bottom: 8px;
+  font-size: 14px;
   color: var(--sub);
-  -webkit-text-stroke: 4px var(--paper);
+  -webkit-text-stroke: 3px var(--paper);
   paint-order: stroke;
   white-space: nowrap;
 }
-/* The bonus hangs on its own line under the max, out of the layout: adding it mustn't move the
-   number (the villain's reading is centered as a block). */
-.max { position: relative; }
-.max .up { position: absolute; top: 100%; color: var(--orange-ink); }
-#villain .max .up { right: 0; }
-#hero .max .up { left: 0; }
+.max .up { color: var(--orange-ink); }
 
+/* Speech balloons, lettered vertically. "!!" sits upright, side by side, inside the column. */
 .balloon {
   position: absolute;
   display: flex;
@@ -301,29 +294,26 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
 
 /* ---------- Hero extras: the 術 ("jutsu") toggle for a special ability ---------- */
 
-/* Bottom-left of the hero panel. Plain ink on paper; blue once the ability is used (blue marks this
-   and nothing else, as orange marks the max-HP mode). */
+/* Bottom-left of the hero panel: the character itself, white with a black outline, no box. Once
+   the ability is used the outline turns blue (blue marks this and nothing else, as orange marks
+   the max-HP mode). The button keeps a 44px tap area around it. */
 .power {
   position: absolute;
-  left: 10px;
-  bottom: 10px;
+  left: 8px;
+  bottom: 6px;
   z-index: 1;
-  width: 44px;
-  height: 44px;
-  border: 2px solid var(--ink);
-  background: var(--paper);
-  color: var(--ink);
-  font-family: var(--heavy);
-  font-size: 22px;
-  line-height: 1;
+  width: 48px;
+  height: 48px;
   display: grid;
   place-items: center;
+  font-family: var(--heavy);
+  font-size: 34px;
+  line-height: 1;
+  color: var(--white);
+  -webkit-text-stroke: 0.1em var(--ink);
+  paint-order: stroke;
 }
-.power[aria-pressed='true'] {
-  background: var(--blue);
-  border-color: var(--blue);
-  color: var(--paper);
-}
+.power[aria-pressed='true'] { -webkit-text-stroke-color: var(--blue); }
 
 /* ---------- Keys ---------- */
 
