@@ -35,7 +35,7 @@
   --row-gap: 12px;
   --side: 12px;
   --key-row-h: clamp(60px, 10.5dvh, 86px); /* the − / + rows and the sheet's button row */
-  --key-ratio: 1.55fr; /* the bigger key's share: − on the page, FIGHT on the sheet */
+  --key-ratio: 1.55fr; /* the bigger key's share: − on the page, FIGHT!! on the sheet */
   --heavy: 'Dela Gothic One', 'Hiragino Kaku Gothic StdN', sans-serif;
   --antique: 'Zen Antique', 'Hiragino Mincho ProN', serif;
 }

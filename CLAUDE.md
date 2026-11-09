@@ -108,10 +108,10 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   a missing-font fallback, the user's note). On the black, use the heavy font or small running-head
   text. Buttons on the page are narration boxes (`.narration-button`: paper, ink border).
 - The HP sheet is a page of its own: villain panel above hero panel (as on the main page), labels
-  as narration boxes, the fields' numbers in the heavy font, Cancel / FIGHT as key panels. It
+  as narration boxes, the fields' numbers in the heavy font, Cancel / FIGHT!! as key panels. It
   opens with nothing focused (the user's choice): tap a panel to type. A bad entry is shown in its
   own panel (its label says "Villain HP: 1–99", heavier border), in ink: no second accent color.
-- The sheet's Cancel / FIGHT row sits at the bottom, under the thumb (the user's request), and
+- The sheet's Cancel / FIGHT!! row sits at the bottom, under the thumb (the user's request), and
   rides above the keyboard while it's open (`js/keyboard.js` sets `--keyboard` from the visual
   viewport: iOS overlays the keyboard without resizing the page, and its number pad has no Done
   key). The field panels shrink to share what's left.
