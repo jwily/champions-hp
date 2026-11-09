@@ -70,7 +70,7 @@ npm test           # every check on WebKit (Safari's engine) and Chromium
   "App updated"
 
 Tools: `npm run screens` screenshots each phone size into `tests/output/screens/`. `npm run fonts`
-re-cuts the bundled fonts after you add text. `npm run icons` redraws the icon and launch screens.
+re-cuts the bundled fonts after you add text. `npm run icons` redraws the icon and launch screens. When the icon changes, bump `ICON_VERSION` in `tests/tools/make-icons.js` first: iOS keeps its own copy of a home-screen icon by file name, so a changed icon needs a new name to show.
 
 ## Credits
 

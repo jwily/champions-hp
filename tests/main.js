@@ -442,7 +442,10 @@ module.exports = (scenario) => {
 
   scenario('the offline manifest covers the app’s files', async () => {
     const listed = Object.keys(manifest().files);
-    const wanted = ['./', 'index.html', 'style.css', 'manifest.json', 'fonts/OFL.txt', 'icons/icon-180.png', 'icons/icon-512.png'];
+    // The icons, under whatever versioned names the page and the web app manifest give them.
+    const icons = [...fs.readFileSync(path.join(APP, 'index.html'), 'utf8').matchAll(/href="(icons\/icon-[^"]+)"/g), ...fs.readFileSync(path.join(APP, 'manifest.json'), 'utf8').matchAll(/"src": "([^"]+)"/g)].map((m) => m[1]);
+    equal(icons.length, 3, 'Icon references (apple-touch-icon, two manifest icons)');
+    const wanted = ['./', 'index.html', 'style.css', 'manifest.json', 'fonts/OFL.txt', ...icons];
     const js = appFiles().filter((f) => f.startsWith('js/'));
     const fonts = appFiles().filter((f) => f.endsWith('.woff2'));
     const missing = [...wanted, ...js, ...fonts].filter((f) => !listed.includes(f));

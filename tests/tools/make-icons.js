@@ -8,8 +8,14 @@ const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
 
-const ICONS = path.join(__dirname, '..', '..', 'app', 'icons');
-const FONT = fs.readFileSync(path.join(__dirname, '..', '..', 'app', 'fonts', 'dela-gothic-one.woff2')).toString('base64');
+const APP = path.join(__dirname, '..', '..', 'app');
+const ICONS = path.join(APP, 'icons');
+// Bump this whenever the icon's look changes. iOS keeps its own copy of a home-screen icon, looked up
+// by the icon's address, and Add to Home Screen uses that copy over the new file; a new file name is
+// the only way past it. The run renames the files and rewrites index.html and manifest.json to match.
+const ICON_VERSION = 2;
+const iconFile = (size) => `icon-${size}-v${ICON_VERSION}.png`;
+const FONT = fs.readFileSync(path.join(APP, 'fonts', 'dela-gothic-one.woff2')).toString('base64');
 // Launch screen sizes, matching the apple-touch-startup-image links in index.html (a test checks).
 const LAUNCH = ['750x1334', '1125x2436', '1170x2532', '1179x2556', '1206x2622', '828x1792', '1242x2688', '1284x2778', '1290x2796', '1320x2868'];
 
@@ -61,11 +67,11 @@ async function main() {
   const page = await browser.newPage({ viewport: { width: 512, height: 512 } });
   await page.setContent(ICON);
   await page.evaluate(() => document.fonts.ready);
-  await page.screenshot({ path: path.join(ICONS, 'icon-512.png') });
+  await page.screenshot({ path: path.join(ICONS, iconFile(512)) });
   const small = await browser.newPage({ viewport: { width: 512, height: 512 }, deviceScaleFactor: 180 / 512 });
   await small.setContent(ICON);
   await small.evaluate(() => document.fonts.ready);
-  await small.screenshot({ path: path.join(ICONS, 'icon-180.png') });
+  await small.screenshot({ path: path.join(ICONS, iconFile(180)) });
   for (const size of LAUNCH) {
     const [w, h] = size.split('x').map(Number);
     const black = await browser.newPage({ viewport: { width: w, height: h } });
@@ -74,6 +80,14 @@ async function main() {
     await black.close();
   }
   await browser.close();
+  // Drop the icons of earlier versions, and point the page and the web app manifest at these.
+  for (const file of fs.readdirSync(ICONS)) {
+    if (/^icon-\d+(-v\d+)?\.png$/.test(file) && file !== iconFile(180) && file !== iconFile(512)) fs.unlinkSync(path.join(ICONS, file));
+  }
+  for (const file of ['index.html', 'manifest.json']) {
+    const at = path.join(APP, file);
+    fs.writeFileSync(at, fs.readFileSync(at, 'utf8').replace(/icons\/icon-(\d+)(-v\d+)?\.png/g, (m, size) => `icons/${iconFile(size)}`));
+  }
   console.log('Icons written to app/icons/');
 }
 
