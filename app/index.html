@@ -44,7 +44,13 @@
 
     <section id="villain" class="panel" aria-label="Villain">
       <div class="art-wrap"><div class="tone fade"></div><div class="focus"></div></div>
-      <div class="balloon shout" aria-hidden="true"><span class="line"></span></div>
+      <div class="balloon shout" aria-hidden="true">
+        <!-- Drawn as a vector so the ink line is the same width all round (a paper star clipped
+             inside an ink star made the long points' line several times thicker). Irregular
+             spikes, as if inked by hand. -->
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none"><polygon vector-effect="non-scaling-stroke" points="49.1,6.0 57.4,17.5 68.7,8.5 69.3,20.8 82.4,17.3 78.1,32.1 96.3,34.5 83.6,45.2 99.3,55.9 82.8,60.9 86.2,73.8 74.5,73.8 77.2,84.3 65.4,82.8 61.5,95.6 49.5,84.5 40.7,92.4 37.6,81.5 22.2,86.6 24.2,74.1 11.1,72.8 15.6,60.1 3.4,56.3 13.7,46.1 7.6,34.9 21.8,31.9 13.8,18.0 28.5,22.5 28.2,7.6 43.6,15.3"/></svg>
+        <span class="line"></span>
+      </div>
       <div class="num" aria-live="polite"></div>
       <div class="max"></div>
       <!-- Inset panel in the corner, after the chapter titles ("ナンバー1：うずまきナルト!!"). -->
@@ -58,8 +64,8 @@
     </div>
 
     <div class="seal-row">
-      <!-- The max-HP toggle, as a hanko seal: 増 ("increase"). -->
-      <button id="seal" class="seal" aria-pressed="false" aria-label="Raise or lower max HP"><ruby>増<rt>ぞう</rt></ruby></button>
+      <!-- The max-HP toggle, as a hanko seal: 増 ("increase"), one character in a double-ruled frame. -->
+      <button id="seal" class="seal" aria-pressed="false" aria-label="Raise or lower max HP">増</button>
     </div>
 
     <section id="hero" class="panel" aria-label="Hero">

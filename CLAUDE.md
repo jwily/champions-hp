@@ -70,6 +70,11 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   hand-lettered katakana sound effects, the chapter-title format "[mark with ruby]1：TITLE!!", and the
   running head "NARUTO—ナルト—1". Spirals (uzumaki) recur everywhere.
 - Paper is dimmed (`--paper` #d8d1c1) so the panels don't glare in a dim room; ink is near-black.
+- Ink lines must be even: the villain's shout balloon is an SVG polygon with a non-scaling 1.5px
+  stroke (a paper shape clipped inside an ink one made the long spikes' line several times
+  thicker, which the user spotted as amateurish). Balloon text is in the antique serif: the heavy
+  font blots many-stroke kanji at small sizes. The 増 seal is a hanko: one centered character in a
+  double-ruled frame, no furigana (it crowded the character).
 - One spot color, orange, and only for the max-HP mode (the inked 増 seal, the keys' borders, the
   bonus). Keep it meaning one thing.
 - The hero's number breaks out over its panel's top border; it must clear the villain keys and the

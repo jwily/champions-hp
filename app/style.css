@@ -212,26 +212,29 @@ button {
 .balloon .line { writing-mode: vertical-rl; max-height: 100%; }
 .upright { text-combine-upright: all; -webkit-text-combine: horizontal; }
 
-/* The villain's spiky shout balloon: ink star with a paper star inside. */
+/* The villain's spiky shout balloon: an SVG outline (index.html) with a constant-width ink line.
+   Lettered like the hero's balloon: the heavy font turned many-stroke kanji (癪) into blots. */
 .shout {
   left: 5cqw;
   top: 9cqh;
   width: max(84px, 27cqw);
   height: min(62cqh, 100cqh - 9cqh - 56px);
-  background: var(--ink);
-  font-family: var(--heavy);
-  font-size: 12px;
 }
-.shout, .shout::before {
-  clip-path: polygon(50% 0, 58% 13%, 74% 4%, 72% 21%, 94% 17%, 82% 34%, 100% 46%, 82% 56%, 96% 74%, 74% 70%, 76% 92%, 60% 80%, 50% 100%, 40% 82%, 24% 96%, 26% 72%, 4% 78%, 18% 58%, 0 46%, 18% 34%, 6% 16%, 28% 22%, 26% 4%, 42% 16%);
-}
-.shout::before {
-  content: '';
+.shout svg {
   position: absolute;
-  inset: 2px;
-  background: var(--paper);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
 }
-.shout .line { position: relative; max-height: 60%; }
+.shout polygon {
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 1.5px;
+  stroke-linejoin: miter;
+  stroke-miterlimit: 12;
+}
+.shout .line { position: relative; max-height: 58%; font-size: 14px; }
 
 /* The hero's round balloon. */
 .round {
@@ -352,23 +355,26 @@ button {
   right: 8%;
   top: 50%;
   z-index: 2;
-  width: 46px;
-  height: 46px;
+  width: 44px;
+  height: 44px;
   transform: translateY(-46%) rotate(-5deg);
   border: 2.5px solid #8a7b6b;
-  border-radius: 5px;
+  border-radius: 4px;
+  /* The hanko's inner rule: a thin second frame inside the first. */
+  box-shadow: inset 0 0 0 2.5px var(--black), inset 0 0 0 3.5px #8a7b6b;
   background: var(--black);
   color: #8a7b6b;
   font-family: var(--heavy);
-  font-size: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  font-size: 23px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  padding-bottom: 1px; /* the heavy font sits a touch low in its box */
 }
-.seal rt { font-family: var(--antique); font-size: 8px; }
 .seal[aria-pressed='true'] {
   background: var(--orange);
   border-color: var(--orange);
+  box-shadow: inset 0 0 0 2.5px var(--orange), inset 0 0 0 3.5px var(--ink);
   color: var(--ink);
 }
 
