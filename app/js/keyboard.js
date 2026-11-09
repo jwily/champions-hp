@@ -54,17 +54,19 @@ export function trackKeyboard() {
   view.addEventListener('resize', update);
   view.addEventListener('scroll', update);
 
-  // A finger landing on a field while the keyboard is closed: make room now. The first time, guess
+  // A finger landing on a field. With the keyboard closed, make room now; the first time, guess
   // about a third of the screen (iOS's number pad is 260–300px tall on current iPhones).
   let pressed = null; // the field the finger came down on
   document.addEventListener('touchstart', (e) => {
-    pressed = last > 0 ? null : e.target.closest?.('.entry')?.querySelector('input');
-    if (!pressed) return;
+    pressed = e.target.closest?.('.entry')?.querySelector('input') ?? null;
+    if (!pressed || last > 0) return;
     guessUntil = performance.now() + SETTLE_MS;
     makeRoom(remembered() || Math.max(260, Math.round(window.innerHeight * 0.34)));
   });
-  // The fields have moved under the finger, so its lift could land on something else (FIGHT!!, say):
-  // focus the field it came down on, and cancel the tap's own click.
+  // On the lift, focus the field the finger came down on ourselves, without scrolling, and cancel
+  // the tap's own click: the fields may have moved under the finger (its lift could land on FIGHT!!),
+  // and iOS's own focus scrolls toward the field even when it's already in view (going from Villain
+  // HP straight to Hero HP slid the page down and back).
   document.addEventListener(
     'touchend',
     (e) => {
@@ -72,6 +74,7 @@ export function trackKeyboard() {
       e.preventDefault();
       pressed.focus({ preventScroll: true });
       pressed = null;
+      if (last > 0) return; // the keyboard was already open: there's no guess to check
       // No keyboard came (a hardware keyboard, say): give the sheet its room back.
       setTimeout(() => {
         if (last > 0) return;

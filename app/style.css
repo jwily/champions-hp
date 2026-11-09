@@ -186,9 +186,8 @@ button.narration.pressed,
    it: scaled to cover, a lone tall panel (Next stage) zoomed out as it shrank. It stays centered,
    cropped top and bottom alike, so the number (centered too) keeps its place against the art. */
 .entry .art-wrap {
-  inset: 50% 0 auto;
+  inset: calc(50% - var(--art-h, 100%) / 2) 0 auto; /* not a translate: as its own layer it slipped past the border */
   height: var(--art-h, 100%);
-  translate: 0 -50%;
 }
 /* The tone fades away from the panel's outer edge: down from the top for the villain, up from
    the bottom for the hero (the same in the HP sheet as on the page). */
@@ -558,13 +557,15 @@ button.narration.pressed,
   inset: 0;
   width: 100%;
   height: 100%;
-  padding: 18px 7cqw 0 0;
+  padding: 6cqh 7cqw 0 0;
   border: 0;
   border-radius: 0;
   background: transparent;
   text-align: right;
   font-family: var(--heavy);
-  font-size: min(58cqh, 26cqw);
+  /* iOS's cursor is the font's full height, about 1.45× its size: at most 50% of the panel's height
+     keeps it clear of the edges when the keyboard shrinks the panel (at 58% it ran off the bottom). */
+  font-size: min(50cqh, 26cqw);
   line-height: 1;
   color: var(--ink);
   caret-color: var(--ink);

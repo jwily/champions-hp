@@ -129,6 +129,36 @@ module.exports = (scenario) => {
     });
   }
 
+  // iOS draws the cursor the font's full height: it must stay inside the field's panel even when
+  // the keyboard leaves the panels short (Safari's bars take room too: up to 400px here).
+  for (const phone of Object.keys(PHONES)) {
+    scenario(`the cursor fits the field on ${phone}, keyboard open`, async (open) => {
+      const page = await open({ phone, game: {} });
+      await page.click('#set');
+      for (const keyboard of [291, 400]) {
+        const problems = await page.evaluate((kb) => {
+          Object.defineProperty(window.visualViewport, 'height', { value: innerHeight - kb, configurable: true });
+          window.visualViewport.dispatchEvent(new Event('resize'));
+          const out = [];
+          for (const input of document.querySelectorAll('.entry input')) {
+            const panel = input.closest('.entry').getBoundingClientRect();
+            const st = getComputedStyle(input);
+            const size = parseFloat(st.fontSize);
+            const ctx = document.createElement('canvas').getContext('2d');
+            ctx.font = `${size}px ${st.fontFamily}`;
+            const m = ctx.measureText('0');
+            const caret = m.fontBoundingBoxAscent + m.fontBoundingBoxDescent;
+            const top = panel.top + parseFloat(st.paddingTop) + (panel.height - parseFloat(st.paddingTop) - caret) / 2; // centered in the content box
+            const bottom = top + caret;
+            if (top < panel.top + 4 || bottom > panel.bottom - 4) out.push(`${input.id} at ${kb}px: cursor ${Math.round(top - panel.top)}–${Math.round(bottom - panel.top)} in a ${Math.round(panel.height)}px panel`);
+          }
+          return out;
+        }, keyboard);
+        check(problems.length === 0, problems.join('; '));
+      }
+    });
+  }
+
   // Tapping Hero HP with the keyboard closed: the sheet makes room as the finger lands (so iOS
   // has no field under the keyboard to scroll to), and the lift focuses Hero HP even though the
   // fields have moved under the finger: low on the panel, it's now over the buttons.
@@ -161,6 +191,18 @@ module.exports = (scenario) => {
       // No keyboard came (Playwright has none): the sheet gets its room back.
       await page.waitForTimeout(1200);
       check(!(await page.evaluate(() => document.documentElement.classList.contains('keyboard-open'))), 'Room given back when no keyboard came');
+      // With the keyboard open, going straight to the other field: focused by the app, without iOS's
+      // own focus (which scrolled toward it, sliding the page down and back).
+      const switched = await page.evaluate(() => {
+        Object.defineProperty(window.visualViewport, 'height', { value: innerHeight - 291, configurable: true });
+        window.visualViewport.dispatchEvent(new Event('resize'));
+        const target = document.getElementById('villain-row');
+        target.dispatchEvent(new Event('touchstart', { bubbles: true, cancelable: true }));
+        const end = new Event('touchend', { bubbles: true, cancelable: true });
+        target.dispatchEvent(end);
+        return { prevented: end.defaultPrevented, focused: document.activeElement?.id };
+      });
+      equal(switched, { prevented: true, focused: 'villain-input' }, 'Switching fields with the keyboard open');
     });
   }
 
