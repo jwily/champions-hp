@@ -239,15 +239,16 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
 }
 .round .line { max-height: 72%; }
 
-/* Sound effects (js/sfx.js): each one placed, tilted and styled at random. No animation: they
-   appear and go at once. */
+/* Sound effects (js/sfx.js): heavy katakana, solid for a change of 1, outlined for a hold. No
+   animation: they appear and go at once. */
 .sfx {
   position: absolute;
   z-index: 2;
   pointer-events: none;
   font-family: var(--heavy);
-  font-size: calc(min(17cqh, 38px) * var(--size, 1));
+  font-size: calc(min(16cqh, 36px) * var(--size, 1));
   line-height: 0.95;
+  letter-spacing: -0.04em;
   white-space: nowrap;
   color: var(--ink);
   -webkit-text-stroke: 0.12em var(--paper);
@@ -255,17 +256,7 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   transform: translate(-50%, -50%) rotate(var(--tilt));
 }
 .sfx.vertical { writing-mode: vertical-rl; }
-.sfx .ch {
-  display: inline-block;
-  transform: rotate(var(--r)) scale(var(--k)) translateX(var(--d));
-}
-/* Paper letters with a heavy ink outline. */
-.sfx.hollow { color: var(--paper); -webkit-text-stroke: 0.17em var(--ink); }
-/* Slanted, with echoes trailing behind, for a hit with speed. */
-.sfx.speed .ch {
-  transform: rotate(var(--r)) scale(var(--k)) translateX(var(--d)) skewX(-14deg);
-  text-shadow: -0.12em 0.05em 0 var(--tone), -0.24em 0.1em 0 var(--tone);
-}
+.sfx.outlined { color: var(--paper); -webkit-text-stroke: 0.16em var(--ink); }
 
 /* ---------- Villain extras ---------- */
 

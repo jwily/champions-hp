@@ -34,13 +34,13 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
 - Max HP follows the rules: "gets +X hit points" raises the dial by X and, when it ends, lowers it
   by X (RR v1.8 p. 22); heals stop at max (p. 21). In state, `max` is the printed/typed value and
   `up` the bonus; `total()` is the current maximum.
-- `js/sfx.js` letters the sound effects (the user asked for variety): a random word (holds get the
-  `big` ones), spot, tilt and ink style (solid / hollow / speed), with a per-character wobble. No
-  animation (the user's choice): an effect appears at once, stays 1 s, and goes at once. Spots
-  come from ZONES, the gaps left by the number, balloon and corner
-  boxes; each zone sets the direction (across in wide gaps, down in narrow ones, so a word never
-  stands up over the digits). A burst spreads out (farthest open spot), three at most per panel.
-  tests/layout.js fires many and checks each center stays clear.
+- `js/sfx.js` letters the sound effects, restrained on purpose: the user found per-letter wobble,
+  wide tilts, several ink styles and many words "trying too hard to be Japanese". So: one heavy
+  lettering, solid for a change of 1 and outlined and larger for a hold, a few gentle tilts, a short
+  list of classic words. No animation: an effect appears, stays 1 s, and goes. Spots come from
+  ZONES, the gaps left by the number, balloon and corner boxes; each zone sets the direction
+  (across in wide gaps, down in narrow ones, so a word never stands over the digits). A burst
+  spreads out, three at most per panel. tests/layout.js fires many and checks each center.
 - `js/lines.js`: balloon lines and sound-effect words. `js/art.js`: the inked spirals and rays.
   `js/sheet.js`: the HP entry sheet.
 - **Presses** (`js/presses.js`, lessons from Bgt-J's presses.js, not a copy): a control activates

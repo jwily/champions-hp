@@ -1,7 +1,7 @@
-// Sound effects, lettered like the manga's: hand-drawn katakana that land at an angle wherever there's
-// room, never twice the same. Each one picks its own word, spot (which sets whether it's lettered
-// down or across), tilt and ink style, and each character gets its own small wobble in size, angle
-// and position, as hand-lettering has. Fast taps stack up to MAX_AT_ONCE, spread apart.
+// Sound effects: a katakana word lettered beside the number when HP changes. Restrained on purpose,
+// like a drawn panel rather than a text effect: one heavy lettering, solid ink for a change of 1 and
+// an outlined, larger word for a hold (5 at once), a few gentle tilts, and placement in the gaps the
+// number and balloon leave. Fast taps stack up to MAX_AT_ONCE, spread apart.
 
 import { SFX } from './lines.js';
 
@@ -25,19 +25,14 @@ const ZONES = {
   ],
 };
 
-// How each kind of change looks. Styles: solid (ink, paper outline), hollow (paper letters, heavy
-// ink outline), speed (slanted, with trailing echoes). Tilt is the most the whole word turns.
-const LOOKS = {
-  hit: { styles: ['solid', 'solid', 'hollow', 'speed'], tilt: 22, size: 1 },
-  heal: { styles: ['hollow', 'hollow', 'solid'], tilt: 8, size: 0.85 },
-  boost: { styles: ['solid', 'hollow'], tilt: 6, size: 1 },
-  unboost: { styles: ['hollow', 'speed'], tilt: 12, size: 0.9 },
-};
-
+const TILTS = [-8, -4, 0, 5]; // degrees
+const BIG = 1.35; // holds are louder
 const CANDIDATES = 8; // spots tried for each effect
+const MAX_AT_ONCE = 3; // per panel
+const SHOW_MS = 1000; // it appears and goes at once: no animation
 
 // A random spot in the panel's zones, as far as it can find from the effects already showing, so a
-// burst of taps spreads out rather than piling up.
+// burst of taps spreads out rather than piling up. Returns [x, y, vertical].
 function openSpot(panel, side) {
   const showing = [...panel.querySelectorAll(':scope > .sfx')].map((e) => [parseFloat(e.style.left), parseFloat(e.style.top)]);
   let best = null;
@@ -54,30 +49,22 @@ function openSpot(panel, side) {
   return best;
 }
 
-const BIG = 1.45; // holds (5 at once) are louder
-const MAX_AT_ONCE = 3; // per panel
-const SHOW_MS = 1000; // how long an effect stays (it appears and goes at once: no animation)
-
 export function soundEffect(panel, side, kind, amount) {
-  const look = LOOKS[kind];
   const big = Math.abs(amount) > 1;
+  const [x, y, vertical] = openSpot(panel, side);
   const el = document.createElement('div');
-  const [x, y, down] = openSpot(panel, side);
-  el.className = ['sfx', pick(look.styles), down && 'vertical'].filter(Boolean).join(' ');
+  el.className = ['sfx', big ? 'outlined' : 'solid', vertical && 'vertical'].filter(Boolean).join(' ');
   el.setAttribute('aria-hidden', 'true');
   el.style.left = `${x.toFixed(1)}%`;
   el.style.top = `${y.toFixed(1)}%`;
-  el.style.setProperty('--tilt', `${rand(-look.tilt, look.tilt).toFixed(1)}deg`);
-  el.style.setProperty('--size', ((big ? BIG : 1) * look.size).toFixed(2));
-  // Letter by letter; "!!" stays one upright pair in vertical lettering.
-  for (const part of pick(SFX[kind][big ? 'big' : 'small']).match(/!!|./gu)) {
-    const ch = document.createElement('span');
-    ch.className = part === '!!' ? 'ch upright' : 'ch';
-    ch.textContent = part;
-    ch.style.setProperty('--r', `${rand(-10, 10).toFixed(1)}deg`);
-    ch.style.setProperty('--k', rand(0.88, 1.15).toFixed(2));
-    ch.style.setProperty('--d', `${rand(-0.08, 0.08).toFixed(2)}em`);
-    el.append(ch);
+  el.style.setProperty('--tilt', `${pick(TILTS)}deg`);
+  el.style.setProperty('--size', big ? BIG : 1);
+  // "!!" stays one upright pair in vertical lettering.
+  for (const part of pick(SFX[kind][big ? 'big' : 'small']).split(/(!!)/).filter(Boolean)) {
+    const span = document.createElement('span');
+    if (part === '!!') span.className = 'upright';
+    span.textContent = part;
+    el.append(span);
   }
   const shown = panel.querySelectorAll(':scope > .sfx');
   if (shown.length >= MAX_AT_ONCE) shown[0].remove();

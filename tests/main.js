@@ -127,24 +127,23 @@ module.exports = (scenario) => {
     }
   });
 
-  scenario('sound effects vary, stack up to three, and holds get the big ones', async (open) => {
+  scenario('sound effects stack up to three, and holds get the big outlined ones', async (open) => {
     const page = await open({ clock: true, game: { villain: [40, 40] } });
     const { HOLD_MS } = await holdTimes(page);
     const effects = () =>
       page.$$eval('#villain > .sfx', (list) =>
         list.map((e) => ({ text: e.textContent, classes: e.className, tilt: e.style.getPropertyValue('--tilt') }))
       );
-    const { SMALL, BIG } = { SMALL: ['ドン!', 'バキ!', 'ドカッ', 'ガッ', 'バシッ', 'ズガッ', 'ゴッ'], BIG: ['ドゴォン!!', 'ズドン!!', 'バキィッ!!', 'ドドン!!', 'ドガガッ!!'] }; // app/js/lines.js
+    const { SMALL, BIG } = await page.evaluate(() => import('./js/lines.js').then(({ SFX }) => ({ SMALL: SFX.hit.small, BIG: SFX.hit.big })));
     await tap(page, 'villain', '-');
     let shown = await effects();
     equal(shown.length, 1, 'One effect per tap');
     check(SMALL.includes(shown[0].text), `A small hit word: ${shown[0].text}`);
-    check(/\bsfx (solid|hollow|speed)\b/.test(shown[0].classes), `A style: ${shown[0].classes}`);
+    check(/\bsfx solid\b/.test(shown[0].classes), `Solid ink for a change of 1: ${shown[0].classes}`);
     // Four quick taps (clicks from code, all at once).
     await page.evaluate(() => { for (let i = 0; i < 4; i++) document.querySelector('.key[data-side="villain"][data-dir="-1"]').click(); });
     shown = await effects();
     equal(shown.length, 3, 'Fast taps stack, three at most');
-    check(new Set(shown.map((e) => e.tilt)).size > 1, 'Each at its own tilt');
     const shakes = await page.evaluate(() => {
       document.querySelector('.key[data-side="villain"][data-dir="-1"]').click();
       return document.getElementById('villain').getAnimations().length > 0; // read at once: it's brief
@@ -152,7 +151,7 @@ module.exports = (scenario) => {
     check(shakes, 'The panel shakes on a hit');
     await hold(page, 'villain', '-', HOLD_MS + 50);
     shown = await effects();
-    check(BIG.includes(shown.at(-1).text), `A hold gets a big word: ${shown.at(-1).text}`);
+    check(BIG.includes(shown.at(-1).text) && /\boutlined\b/.test(shown.at(-1).classes), `A hold gets a big, outlined word: ${JSON.stringify(shown.at(-1))}`);
     check(await page.$eval('#villain > .sfx', (e) => e.getAnimations().length === 0), 'No animation: they appear at once');
     await page.clock.runFor(900);
     check((await effects()).length > 0, 'and stay a moment');

@@ -19,13 +19,10 @@ export const HERO_LINES = [
 
 export const lineFor = (lines, share) => lines.find(([limit]) => share <= limit)[1];
 
-// Sound effects (js/sfx.js letters them). `big` are for holds (5 at once).
+// Sound effects (js/sfx.js letters them): a few classic words per action, `big` for holds.
 export const SFX = {
-  hit: {
-    small: ['ドン!', 'バキ!', 'ドカッ', 'ガッ', 'バシッ', 'ズガッ', 'ゴッ'],
-    big: ['ドゴォン!!', 'ズドン!!', 'バキィッ!!', 'ドドン!!', 'ドガガッ!!'],
-  },
-  heal: { small: ['シュウ…', 'ポウ', 'スゥ…', 'キラッ'], big: ['シュウウ…', 'パァァ…', 'キィィン'] },
-  boost: { small: ['ゴゴゴ', 'ズズ…', 'ドクン'], big: ['ゴゴゴゴ!!', 'ドクン!!', 'ズオオ…'] },
-  unboost: { small: ['フッ…', 'シュン', 'スッ'], big: ['シュウン…', 'フッ…!!'] },
+  hit: { small: ['ドン', 'バキッ', 'ドカッ'], big: ['ドゴォン!!', 'ズドン!!'] }, // impacts
+  heal: { small: ['シュウ…'], big: ['シュウウ…'] }, // a soft hiss
+  boost: { small: ['ゴゴゴ'], big: ['ゴゴゴゴ'] }, // the classic rumble of rising power
+  unboost: { small: ['フッ…'], big: ['フッ…'] }, // a breath going out
 };
