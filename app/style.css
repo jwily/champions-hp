@@ -195,7 +195,12 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   paint-order: stroke;
   white-space: nowrap;
 }
-.max .up { display: block; color: var(--orange-ink); } /* the bonus on its own line, under the max */
+/* The bonus hangs on its own line under the max, out of the layout: adding it mustn't move the
+   number (the villain's reading is centered as a block). */
+.max { position: relative; }
+.max .up { position: absolute; top: 100%; color: var(--orange-ink); }
+#villain .max .up { right: 0; }
+#hero .max .up { left: 0; }
 
 .balloon {
   position: absolute;
@@ -210,7 +215,15 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
 .upright { text-combine-upright: all; -webkit-text-combine: horizontal; }
 
 /* Balloons: SVG outlines (index.html) with a constant-width ink line, lettered in the serif (the
-   heavy font blots many-stroke kanji like 癪 this small). */
+   heavy font blots many-stroke kanji like 癪 this small). Each runs off its panel's outer edge, as
+   Naruto's balloons often do when the speaker is out of frame: .balloon-clip cuts it at the panel,
+   and the panel's border is drawn over the cut. */
+.balloon-clip {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
 .balloon svg {
   position: absolute;
   inset: 0;
@@ -218,32 +231,36 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   height: 100%;
   overflow: visible;
 }
-.balloon polygon {
+.balloon polygon,
+.balloon path {
   fill: var(--paper);
   stroke: var(--ink);
-  stroke-width: 1.5px;
+  stroke-width: 1.25px;
   stroke-linejoin: miter;
   stroke-miterlimit: 12;
 }
 .balloon .line { position: relative; }
 
-/* The villain's spiky shout. */
+/* The villain's shout, off the left edge (the hidden part is padded out so the text stays centered
+   in what shows). */
 .shout {
-  left: 5cqw;
-  top: 9cqh;
-  width: max(84px, 27cqw);
-  height: min(62cqh, 100cqh - 9cqh - 66px); /* clear of Next stage */
+  left: -5cqw;
+  top: 8cqh;
+  width: max(92px, 32cqw);
+  height: min(64cqh, 100cqh - 8cqh - 66px); /* clear of Next stage */
+  padding-left: 5cqw;
 }
-.shout .line { max-height: 58%; font-size: 14px; }
+.shout .line { max-height: 56%; font-size: 14px; }
 
-/* The hero's balloon. */
+/* The hero's balloon, off the right edge. */
 .round {
-  right: 6cqw;
-  top: 24cqh;
-  width: max(70px, 21cqw);
-  height: 58cqh;
+  right: -5cqw;
+  top: 22cqh;
+  width: max(82px, 26cqw);
+  height: 60cqh;
+  padding-right: 5cqw;
 }
-.round .line { max-height: 70%; margin-top: -8%; } /* centered in the oval, above the tail */
+.round .line { max-height: 66%; margin-top: -8%; } /* centered in the oval, above the tail */
 
 /* Sound effects (js/sfx.js): heavy katakana, solid for a change of 1, outlined for a hold. No
    animation: they appear and go at once. */
@@ -301,7 +318,7 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   left: 10px;
   bottom: 10px;
   z-index: 1;
-  max-width: calc(94cqw - max(70px, 21cqw) - 16px); /* up to the balloon (.round), less a gap */
+  max-width: calc(105cqw - max(82px, 26cqw) - 16px); /* up to the balloon (.round), less a gap */
   display: flex;
   flex-wrap: wrap;
   gap: 6px;

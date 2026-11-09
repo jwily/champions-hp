@@ -163,6 +163,16 @@ module.exports = (scenario) => {
     equal((await effects()).length, 0, 'then go at once');
   });
 
+  scenario('raising max HP doesn’t move the number', async (open) => {
+    const page = await open({ game: {} });
+    const tops = () => page.evaluate(() => ['villain', 'hero'].map((s) => Math.round(document.querySelector(`#${s} .num`).getBoundingClientRect().top)));
+    const before = await tops();
+    await page.click('#seal');
+    await tap(page, 'villain', '+');
+    await tap(page, 'hero', '+');
+    equal(await tops(), before, 'Number positions with a bonus showing');
+  });
+
   scenario('keys that can’t change anything show faint; a defeated side is drawn hollow', async (open) => {
     const page = await open({ game: { hero: [1, 10], villain: [14, 14] } });
     const inert = () =>
