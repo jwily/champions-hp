@@ -75,6 +75,13 @@
         <span class="line"></span>
       </div>
       <span class="status visually-hidden" aria-live="polite"></span>
+      <!-- Where the game is (tap for the next phase, which brings limited abilities back), then the
+           hero's once-per-round / once-per-phase abilities (tap one when it's used). -->
+      <div class="hero-foot">
+        <button id="phase" class="narration phase" aria-describedby="phase-hint"><span id="phase-round">Round 1</span><span id="phase-name">Player phase ▸</span></button>
+        <span id="phase-hint" class="visually-hidden">Tap for the next phase, hold to go back one.</span>
+        <div class="abilities" role="group" aria-label="Limited abilities"></div>
+      </div>
       <div class="border"></div>
       <!-- Breaks out over the panel's top border. -->
       <div class="reading" aria-hidden="true"><div class="num"></div><div class="max"></div></div>
@@ -100,6 +107,17 @@
         <input id="hero-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" placeholder="?">
         <span class="border"></span>
       </label>
+      <!-- How many of the hero's limited abilities to track (kept for the next game). -->
+      <div class="panel abilities-setup" id="abilities-row">
+        <div class="setup-group" data-period="round" role="group" aria-label="Abilities once per round">
+          <span class="setup-label">Once per round</span>
+          <button type="button" class="narration" data-count="0">0</button><button type="button" class="narration" data-count="1">1</button><button type="button" class="narration" data-count="2">2</button>
+        </div>
+        <div class="setup-group" data-period="phase" role="group" aria-label="Abilities once per phase">
+          <span class="setup-label">Once per phase</span>
+          <button type="button" class="narration" data-count="0">0</button><button type="button" class="narration" data-count="1">1</button><button type="button" class="narration" data-count="2">2</button>
+        </div>
+      </div>
       <p id="sheet-error" class="visually-hidden" role="alert"></p>
       <div class="sheet-actions">
         <button type="button" id="sheet-cancel" class="panel sheet-key">Cancel<span class="border"></span></button>

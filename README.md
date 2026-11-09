@@ -14,6 +14,13 @@ no build step, no dependencies.
   faint when it can't change anything (− at 0, + at max), and a defeated side's number is hollow.
 - **Next stage ▸** asks for the villain's HP for the next stage. It turns solid ink when the villain
   is at 0.
+- **Round and phase** (bottom-left of the hero panel): "Round 1 / Player phase ▸". Tap it at the
+  end of each phase; hold it to step back one. A round is the player phase then the villain phase
+  (Rules Reference v1.8, p. 4).
+- **Limited abilities**: for a hero's "once per round" or "once per phase" abilities ("Limit/Max X
+  per [period]", RR pp. 26–27), choose how many to track (0–2 of each) in the New game sheet; it's
+  remembered for the next game. Each shows as a small box ("Round", "Phase"); tap it when you use
+  the ability, and it's struck through until the phase or round it's limited to ends.
 - **The 増 seal** ("increase") is the toggle for raising max HP, for effects that say a character
   "gets +X hit points" (Rules Reference v1.8, p. 22). While it's inked orange, − and + change the
   bonus instead: raising it raises max and current HP together; lowering it lowers both, which can

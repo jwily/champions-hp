@@ -1,6 +1,6 @@
 // Startup and drawing. The page is a manga "flashback" page: paper panels on black gutters.
 
-import { state, started, total, change, toggleBoost, MAX_HP } from './store.js';
+import { state, started, total, change, toggleBoost, toggleUsed, nextPhase, previousPhase, MAX_HP, PERIODS } from './store.js';
 import { VILLAIN_LINES, HERO_LINES, lineFor } from './lines.js';
 import { soundEffect } from './sfx.js';
 import { trackPresses, onHold } from './presses.js';
@@ -56,10 +56,32 @@ function draw() {
     el.minus.classList.toggle('inert', !canLower);
     el.plus.classList.toggle('inert', !canRaise);
   }
+  drawAbilities();
+  $('#phase-round').textContent = `Round ${state.round}`;
+  $('#phase-name').textContent = `${state.phase === 'player' ? 'Player' : 'Villain'} phase ▸`;
   $('#stage-num').textContent = state.stage;
   $('#game-num').textContent = Math.max(1, state.game);
   $('#seal').setAttribute('aria-pressed', state.boost);
   document.body.classList.toggle('boosting', state.boost);
+}
+
+// The hero's limited abilities, as narration-box tokens: "Round" / "Phase" (numbered when there are
+// two). A used one is faint and struck through, like a key that can't do anything right now.
+function drawAbilities() {
+  const tokens = PERIODS.flatMap((period) =>
+    Array.from({ length: state.abilities[period] }, (_, i) => {
+      const name = period === 'round' ? 'Round' : 'Phase';
+      const label = state.abilities[period] > 1 ? `${name} ${i + 1}` : name;
+      const used = Boolean(state.used[period][i]);
+      const token = make('button', `narration token${used ? ' used' : ''}`, label);
+      token.dataset.period = period;
+      token.dataset.index = i;
+      token.setAttribute('aria-pressed', used);
+      token.setAttribute('aria-label', `${label}: once per ${period}, ${used ? 'used' : 'not used yet'}`);
+      return token;
+    })
+  );
+  $('#hero .abilities').replaceChildren(...tokens);
 }
 
 const SHAKE = [
@@ -95,6 +117,12 @@ for (const key of document.querySelectorAll('.key')) {
 
 trackKeyboard();
 $('#seal').addEventListener('click', toggleBoost);
+$('#hero .abilities').addEventListener('click', (e) => {
+  const token = e.target.closest('.token');
+  if (token) toggleUsed(token.dataset.period, +token.dataset.index);
+});
+$('#phase').addEventListener('click', nextPhase);
+onHold($('#phase'), previousPhase, { repeat: false });
 $('#set').addEventListener('click', () => openSheet('new'));
 $('#next').addEventListener('click', () => openSheet('next'));
 

@@ -111,7 +111,11 @@ module.exports = (scenario) => {
     await tap(page, 'villain', '-', 4);
     await page.click('#seal');
     await tap(page, 'hero', '+', 2);
-    equal(await stored(page), { version: 1, game: 1, stage: 1, boost: true, hero: { hp: 12, max: 10, up: 2 }, villain: { hp: 10, max: 14, up: 0 } }, 'Saved data');
+    equal(
+      await stored(page),
+      { version: 2, game: 1, stage: 1, boost: true, hero: { hp: 12, max: 10, up: 2 }, villain: { hp: 10, max: 14, up: 0 }, round: 1, phase: 'player', abilities: { round: 0, phase: 0 }, used: { round: [], phase: [] } },
+      'Saved data'
+    );
     await page.reload();
     await ready(page);
     equal((await read(page, 'villain')).hp, 10, 'Villain after relaunch');
@@ -191,6 +195,64 @@ module.exports = (scenario) => {
     check(!(await page.$eval('#hero-row', (r) => r.classList.contains('invalid'))), 'The hero panel isn’t');
     await page.fill('#villain-input', '1');
     equal(await page.textContent('#villain-row .narration'), 'Villain HP', 'Typing clears it');
+  });
+
+  // ---------- Rounds, phases and limited abilities ----------
+
+  scenario('the round marker moves through phases and brings abilities back', async (open) => {
+    const page = await open({ clock: true, game: { abilities: { round: 1, phase: 2 } } });
+    const marker = () => page.$eval('#phase', (b) => b.innerText.replace(/\s+/g, ' ').trim());
+    const tokens = () => page.$$eval('#hero .token', (ts) => ts.map((t) => `${t.textContent}${t.classList.contains('used') ? ' used' : ''}`));
+    equal(await marker(), 'Round 1 Player phase ▸', 'Starts at round 1, player phase');
+    equal(await tokens(), ['Round', 'Phase 1', 'Phase 2'], 'One per-round token, two per-phase');
+    await page.click('#hero .token >> nth=0');
+    await page.click('#hero .token >> nth=2');
+    equal(await tokens(), ['Round used', 'Phase 1', 'Phase 2 used'], 'Tapping marks them used');
+    await page.click('#phase');
+    equal(await marker(), 'Round 1 Villain phase ▸', 'Then the villain phase');
+    equal(await tokens(), ['Round used', 'Phase 1', 'Phase 2'], 'A new phase brings per-phase abilities back');
+    await page.click('#hero .token >> nth=1');
+    await page.click('#phase');
+    equal(await marker(), 'Round 2 Player phase ▸', 'Then the next round');
+    equal(await tokens(), ['Round', 'Phase 1', 'Phase 2'], 'A new round brings everything back');
+    await page.click('#hero .token >> nth=0');
+    await page.click('#hero .token >> nth=0');
+    equal((await tokens())[0], 'Round', 'Tapping a used one again unmarks it');
+    // Hold to step back one, once per hold.
+    const { HOLD_MS, REPEAT_MS } = await holdTimes(page);
+    const box = await page.locator('#phase').boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.clock.runFor(HOLD_MS + REPEAT_MS * 2 + 50);
+    await page.mouse.up();
+    equal(await marker(), 'Round 1 Villain phase ▸', 'Holding steps back one phase, once');
+  });
+
+  scenario('the New game sheet sets how many abilities to track, and remembers it', async (open) => {
+    const page = await open();
+    check(await page.isVisible('#abilities-row'), 'The setup shows for a new game');
+    const pressed = (period) => page.$eval(`.setup-group[data-period="${period}"] [aria-pressed="true"]`, (b) => b.textContent);
+    equal([await pressed('round'), await pressed('phase')], ['0', '0'], 'None by default');
+    await page.click('.setup-group[data-period="round"] [data-count="2"]');
+    await page.click('.setup-group[data-period="phase"] [data-count="1"]');
+    await fillSheet(page, { hero: 10, villain: 14 });
+    equal(await page.$$eval('#hero .token', (ts) => ts.map((t) => t.textContent)), ['Round 1', 'Round 2', 'Phase'], 'The tokens');
+    await page.click('#phase');
+    await page.click('#set');
+    equal([await pressed('round'), await pressed('phase')], ['2', '1'], 'Remembered for the next game');
+    await fillSheet(page, { villain: 12 });
+    equal(await page.$eval('#phase', (b) => b.innerText.replace(/\s+/g, ' ').trim()), 'Round 1 Player phase ▸', 'A new game starts at round 1');
+    await page.click('#next');
+    check(!(await page.isVisible('#abilities-row')), 'Next stage doesn’t ask');
+  });
+
+  scenario('a game saved by the first version carries over', async (open) => {
+    const v1 = { version: 1, game: 2, stage: 2, boost: false, hero: { hp: 7, max: 11, up: 0 }, villain: { hp: 9, max: 15, up: 0 } };
+    const page = await open({ storage: v1 });
+    check(!(await page.isVisible('#sheet')), 'No new-game sheet: the game is still there');
+    equal((await read(page, 'hero')).hp, 7, 'Hero');
+    equal((await read(page, 'villain')).hp, 9, 'Villain');
+    equal(await page.$$eval('#hero .token', (ts) => ts.length), 0, 'No tokens until set up');
   });
 
   // ---------- Presses (lessons from Bgt-J: app/js/presses.js) ----------

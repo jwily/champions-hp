@@ -19,8 +19,7 @@ const ZONES = {
     [35, 39, 30, 62, 'down'], // between the balloon and the number
   ],
   hero: [
-    [36, 64, 64, 84, 'across'], // below the number, left of the balloon
-    [40, 64, 55, 62, 'down'], // the same gap, standing up (clear of the max, beside the number)
+    [34, 66, 38, 46, 'across'], // below the number, above the round marker and tokens, left of the balloon
   ],
 };
 

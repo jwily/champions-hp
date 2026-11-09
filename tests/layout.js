@@ -4,8 +4,8 @@
 const { PHONES, check } = require('./helpers');
 
 const CASES = {
-  'widest numbers': { hero: [99, 90, 9], villain: [99, 99, 0], stage: 3 },
-  'longest lines': { hero: [1, 99, 0], villain: [0, 99, 0], stage: 12 },
+  'widest numbers': { hero: [99, 90, 9], villain: [99, 99, 0], stage: 3, abilities: { round: 2, phase: 2 }, round: 99, phase: 'villain' },
+  'longest lines': { hero: [1, 99, 0], villain: [0, 99, 0], stage: 12, abilities: { round: 2, phase: 2 }, round: 10 },
 };
 
 module.exports = (scenario) => {
@@ -13,7 +13,7 @@ module.exports = (scenario) => {
   // balloons and the corner boxes, inside its own panel.
   for (const phone of Object.keys(PHONES)) {
     scenario(`sound effects stay clear of the numbers and balloons on ${phone}`, async (open) => {
-      const page = await open({ phone, game: { hero: [50, 99], villain: [50, 99] } });
+      const page = await open({ phone, game: { hero: [50, 99], villain: [50, 99], abilities: { round: 2, phase: 2 } } });
       const problems = [];
       for (let i = 0; i < 24; i++) {
         const side = i % 2 ? 'hero' : 'villain';
@@ -25,13 +25,14 @@ module.exports = (scenario) => {
           const r = effect.getBoundingClientRect();
           const x = r.left + r.width / 2;
           const y = r.top + r.height / 2;
-          const inside = (sel) => {
-            const b = panel.querySelector(sel).getBoundingClientRect();
-            return x > b.left && x < b.right && y > b.top && y < b.bottom;
-          };
           const p = panel.getBoundingClientRect();
           if (!(x > p.left && x < p.right && y > p.top && y < p.bottom)) return `${effect.textContent} centered outside its panel`;
-          for (const sel of ['.num', '.balloon', '.max', '.inset', '.next']) if (panel.querySelector(sel) && inside(sel)) return `${effect.textContent} centered on ${s} ${sel}`;
+          for (const sel of ['.num', '.balloon', '.max', '.inset', '.next', '.phase', '.token']) {
+            for (const el of panel.querySelectorAll(sel)) {
+              const b = el.getBoundingClientRect();
+              if (x > b.left && x < b.right && y > b.top && y < b.bottom) return `${effect.textContent} centered on ${s} ${sel}`;
+            }
+          }
           return null;
         }, side);
         if (problem) problems.push(problem);
@@ -154,6 +155,12 @@ module.exports = (scenario) => {
           apart(box('#villain .max'), box('#villain .shout'));
           if (hNum.bottom > hero.bottom) out.push('The hero number spills out of the bottom of its panel');
           within(ink('#hero .line'), box('#hero .round'));
+          // The round marker and ability tokens: inside the panel, clear of the number and balloon.
+          const foot = box('#hero .hero-foot');
+          within(foot, hero);
+          apart(foot, hNum);
+          apart(foot, glyphs('#hero .max'));
+          apart(foot, box('#hero .round'));
 
           for (const sel of ['#set', '#next', '#seal', ...[0, 1, 2, 3].map((i) => document.querySelectorAll('.key')[i])]) {
             const b = box(sel);

@@ -292,6 +292,36 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
 /* The villain is down: Next stage is what to press now. */
 #villain.down .next { background: var(--ink); color: var(--paper); }
 
+/* ---------- Hero extras: round / phase and limited abilities ---------- */
+
+/* Bottom-left of the hero panel, clear of the balloon: the marker, then the tokens, in reading
+   order (the block grows upward from the panel's bottom as it wraps). */
+.hero-foot {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 1;
+  max-width: calc(94cqw - max(70px, 21cqw) - 16px); /* up to the balloon (.round), less a gap */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.abilities { display: contents; }
+.phase {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 3px 9px;
+  font-size: 12px;
+  line-height: 1.2;
+}
+.token { padding: 6px 8px; font-size: 12px; }
+.token.used {
+  color: var(--tone);
+  text-decoration: line-through;
+}
+
 /* ---------- Keys ---------- */
 
 .keys {
@@ -443,3 +473,18 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   justify-content: center;
 }
 .sheet-key.pressed { background: var(--ink); color: var(--paper); }
+
+/* How many limited abilities to track: a small panel under the fields, two rows of 0 / 1 / 2.
+   Hidden while the keyboard is open: it isn't needed while typing a number. */
+.abilities-setup {
+  flex: none;
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  container-type: normal;
+}
+.keyboard-open .abilities-setup { display: none; }
+.setup-group { display: flex; align-items: center; gap: 6px; }
+.setup-label { flex: 1; font-size: 13px; }
+.setup-group button { width: 44px; }
+.setup-group button[aria-pressed='true'] { background: var(--ink); color: var(--paper); }

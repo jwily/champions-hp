@@ -2,21 +2,51 @@
 // which saves and fires `hp:change`; app.js redraws on that event.
 
 const KEY = 'champions-hp';
-const VERSION = 1;
+const VERSION = 2;
 export const MAX_HP = 99;
+export const MAX_ABILITIES = 2; // limited abilities tracked per period
+export const PERIODS = ['round', 'phase'];
 
+// round and phase: where the game is (a round is the player phase, then the villain phase; Rules
+// Reference p. 4). abilities: how many of the hero's "Limit/Max 1 per round" and "per phase"
+// abilities to track (kept between games); used: which of them have been used this period.
 function fresh() {
-  return { version: VERSION, game: 0, stage: 1, boost: false, hero: null, villain: null };
+  return {
+    version: VERSION,
+    game: 0,
+    stage: 1,
+    boost: false,
+    hero: null,
+    villain: null,
+    round: 1,
+    phase: 'player',
+    abilities: { round: 0, phase: 0 },
+    used: { round: [], phase: [] },
+  };
 }
+
+// Older saved shapes, upgraded one version at a time.
+const MIGRATIONS = {
+  1: (s) => ({ ...s, version: 2, round: 1, phase: 'player', abilities: { round: 0, phase: 0 }, used: { round: [], phase: [] } }),
+};
 
 const validSide = (c) =>
   c === null ||
   (c && [c.hp, c.max, c.up].every(Number.isInteger) && c.hp >= 0 && c.max >= 1 && c.up >= 0);
 
+const validCount = (n) => Number.isInteger(n) && n >= 0 && n <= MAX_ABILITIES;
+
 function load() {
   try {
-    const saved = JSON.parse(localStorage.getItem(KEY));
-    if (saved && saved.version === VERSION && validSide(saved.hero) && validSide(saved.villain)) {
+    let saved = JSON.parse(localStorage.getItem(KEY));
+    while (saved && MIGRATIONS[saved.version]) saved = MIGRATIONS[saved.version](saved);
+    if (
+      saved &&
+      saved.version === VERSION &&
+      validSide(saved.hero) &&
+      validSide(saved.villain) &&
+      PERIODS.every((p) => validCount(saved.abilities?.[p]) && Array.isArray(saved.used?.[p]))
+    ) {
       return { ...fresh(), ...saved };
     }
   } catch {
@@ -43,12 +73,19 @@ export const total = (c) => c.max + c.up;
 
 export const started = () => state.hero !== null && state.villain !== null;
 
-export function newGame(heroHp, villainHp) {
+const clearUsed = (...periods) => periods.forEach((p) => (state.used[p] = []));
+
+/** abilities: { round, phase } counts to track; left out, the last game's are kept. */
+export function newGame(heroHp, villainHp, abilities = state.abilities) {
   state.game += 1;
   state.stage = 1;
   state.boost = false;
   state.hero = side(heroHp);
   state.villain = side(villainHp);
+  state.round = 1;
+  state.phase = 'player';
+  state.abilities = { ...abilities };
+  clearUsed(...PERIODS);
   save();
 }
 
@@ -91,5 +128,35 @@ export function change(key, amount) {
 
 export function toggleBoost() {
   state.boost = !state.boost;
+  save();
+}
+
+/** Marks a tracked ability used, or unused again (a mistap). */
+export function toggleUsed(period, index) {
+  state.used[period][index] = !state.used[period][index];
+  save();
+}
+
+/** Player phase → villain phase → the next round's player phase. Per-phase abilities come back at
+ * every step; per-round ones when a new round starts. */
+export function nextPhase() {
+  if (state.phase === 'player') {
+    state.phase = 'villain';
+    clearUsed('phase');
+  } else {
+    state.round += 1;
+    state.phase = 'player';
+    clearUsed(...PERIODS);
+  }
+  save();
+}
+
+/** One step back, for a mistap (what was marked used stays cleared). */
+export function previousPhase() {
+  if (state.phase === 'villain') state.phase = 'player';
+  else if (state.round > 1) {
+    state.round -= 1;
+    state.phase = 'villain';
+  } else return;
   save();
 }

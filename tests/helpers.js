@@ -109,10 +109,23 @@ async function ready(page) {
   await page.waitForFunction(() => !document.body.classList.contains('starting'));
 }
 
-/** Saved data for a game in progress: { hero: [hp, max, up], villain: [...], stage, boost, game }. */
-function saved({ hero = [10, 10, 0], villain = [14, 14, 0], stage = 1, boost = false, game = 1 }) {
+/**
+ * Saved data for a game in progress: { hero: [hp, max, up], villain: [...], stage, boost, game,
+ * round, phase, abilities: { round, phase }, used: { round: [...], phase: [...] } }.
+ */
+function saved({
+  hero = [10, 10, 0],
+  villain = [14, 14, 0],
+  stage = 1,
+  boost = false,
+  game = 1,
+  round = 1,
+  phase = 'player',
+  abilities = { round: 0, phase: 0 },
+  used = { round: [], phase: [] },
+}) {
   const side = ([hp, max, up = 0]) => ({ hp, max, up });
-  return { version: 1, game, stage, boost, hero: side(hero), villain: side(villain) };
+  return { version: 2, game, stage, boost, hero: side(hero), villain: side(villain), round, phase, abilities, used };
 }
 
 // ---------- Reading and acting on the page ----------

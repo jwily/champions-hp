@@ -41,6 +41,14 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   ZONES, the gaps left by the number, balloon and corner boxes; each zone sets the direction
   (across in wide gaps, down in narrow ones, so a word never stands over the digits). A burst
   spreads out, three at most per panel. tests/layout.js fires many and checks each center.
+- **Rounds, phases, limited abilities** (state version 2; `MIGRATIONS` in store.js upgrades v1):
+  `round`, `phase` ('player' | 'villain'), `abilities` (how many per-round / per-phase abilities to
+  track, 0–2 each, kept between games, set in the New game sheet) and `used`. `nextPhase()` clears
+  per-phase uses at every step and per-round uses at a new round; `previousPhase()` (hold the
+  marker) steps back without restoring uses. The marker and tokens sit bottom-left in the hero
+  panel (`.hero-foot`), sized up to the balloon. Tokens are narration boxes; used = faint and struck
+  through, the same "can't now" look as `.inert` keys. Deliberately no kanji or 済 stamps: the user
+  found Japanese decoration for its own sake "weeb".
 - `js/lines.js`: balloon lines and sound-effect words. `js/art.js`: the inked spirals and rays.
   `js/sheet.js`: the HP entry sheet.
 - **Presses** (`js/presses.js`, lessons from Bgt-J's presses.js, not a copy): a control activates
