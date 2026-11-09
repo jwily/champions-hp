@@ -339,6 +339,17 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   paint-order: stroke;
 }
 /* Sealed: the character settles back to the paper color, outlined faintly, under the tag. */
+/* Ready, it looks charged: a second, heavier blue outline drawn behind the character's own. */
+.power .kanji { position: relative; isolation: isolate; }
+.power .kanji::before {
+  content: attr(data-glyph);
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  color: transparent;
+  -webkit-text-stroke: 0.24em var(--blue);
+}
+.power[aria-pressed='true'] .kanji::before { content: none; }
 .power[aria-pressed='true'] .kanji { color: var(--paper); -webkit-text-stroke-color: var(--tone); }
 
 /* The sealing tag: a strip of paper with a ruled border and 封印 written down it, with room around

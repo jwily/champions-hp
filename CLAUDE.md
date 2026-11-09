@@ -45,7 +45,8 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   user's choice; tilts give the variety). A burst spreads out, three at most per panel. tests/layout.js fires many and checks each center.
 - **The 術 toggle** (`powerUsed`, state version 3; `MIGRATIONS` upgrades v1 and v2): one toggle
   for the hero's special ability, as a seal (the user's pick over an unrolling scroll): ready = the
-  bare 術 in white with a blue outline; used = a paper sealing tag (封印) slaps on across it
+  bare 術 in white with a double blue outline (its own, plus a heavier one behind: the user's pick
+  over a halftone glow, emanation lines and others, chosen in context); used = a paper sealing tag (封印) slaps on across it
   (only when tapped, not at launch) and the character fades to the paper color with a faint outline
   (bright white is only for the ready state). Blue means ready. It starts sealed
   (the user: most heroes have no limited ability).
