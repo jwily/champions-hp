@@ -114,7 +114,7 @@ module.exports = (scenario) => {
     await tap(page, 'hero', '+', 2);
     equal(
       await stored(page),
-      { version: 3, game: 1, stage: 1, boost: true, hero: { hp: 12, max: 10, up: 2 }, villain: { hp: 10, max: 14, up: 0 }, powerUsed: false },
+      { version: 4, game: 1, stage: 1, mode: 'standard', boost: true, hero: { hp: 12, max: 10, up: 2 }, villain: { hp: 10, max: 14, up: 0 }, powerUsed: false },
       'Saved data'
     );
     await page.reload();
@@ -188,12 +188,13 @@ module.exports = (scenario) => {
     equal(await inert(), ['villain-', 'hero-'], 'Max-HP mode: − is faint with no bonus to remove');
   });
 
-  scenario('Next stage pulses when the villain is down', async (open) => {
+  scenario('Next stage turns solid ink, and stays still, when the villain is down', async (open) => {
     const page = await open({ game: { villain: [1, 14] } });
-    const blinking = () => page.$eval('#next', (b) => b.getAnimations().length > 0);
-    check(!(await blinking()), 'Still while the villain stands');
+    const bg = () => page.$eval('#next', (b) => getComputedStyle(b).backgroundColor);
+    const before = await bg();
     await tap(page, 'villain', '-');
-    check(await blinking(), 'Pulsing at 0');
+    check((await bg()) !== before, 'Solid ink at 0');
+    equal(await page.$eval('#next', (b) => b.getAnimations().length), 0, 'No animation');
   });
 
   scenario('a bad entry is shown in its own panel', async (open) => {
@@ -207,30 +208,65 @@ module.exports = (scenario) => {
     equal(await page.textContent('#villain-row .narration'), 'Villain HP', 'Typing clears it');
   });
 
+  // ---------- Standard / Expert, and winning ----------
+
+  scenario('Expert runs stages II then III, and the last one down wins', async (open) => {
+    const page = await open();
+    const pressed = () => page.$eval('#mode-row [aria-pressed="true"]', (b) => b.textContent);
+    equal(await pressed(), 'Standard', 'Standard by default');
+    await page.click('#mode-row [data-mode="expert"]');
+    await fillSheet(page, { villain: 1, hero: 10 });
+    equal(await page.textContent('#stage-num'), '2', 'Expert starts at stage II');
+    await tap(page, 'villain', '-');
+    check(!(await page.$eval('#villain', (p) => p.classList.contains('won'))), 'Stage II down is not a win in Expert');
+    await page.click('#next');
+    equal(await page.textContent('#sheet-title'), 'STAGE 3!!', 'Next is stage III');
+    await fillSheet(page, { villain: 1 });
+    await tap(page, 'villain', '-');
+    check(await page.isVisible('#villain .victory'), 'VICTORY!! once stage III is down');
+    check(!(await page.isVisible('#next')), 'No Next stage after the last one');
+    equal((await read(page, 'hero')).line, 'やった!!', 'The hero cheers');
+    await tap(page, 'villain', '+');
+    check(!(await page.isVisible('#villain .victory')), 'Healing the villain takes the win back (a mistap)');
+    await page.click('#set');
+    equal(await pressed(), 'Expert', 'Expert is remembered for the next game');
+  });
+
+  scenario('Standard wins when stage II is down, not stage I', async (open) => {
+    const page = await open({ game: { villain: [1, 14], stage: 1 } });
+    await tap(page, 'villain', '-');
+    check(!(await page.isVisible('#villain .victory')), 'No win at stage I');
+    check(await page.isVisible('#next'), 'Next stage instead');
+    await page.click('#next');
+    await fillSheet(page, { villain: 1 });
+    await tap(page, 'villain', '-');
+    check(await page.isVisible('#villain .victory'), 'VICTORY!! at stage II');
+  });
+
   // ---------- The 術 toggle ----------
 
-  scenario('the 術 toggle seals the special ability when used, and a new game releases it', async (open) => {
-    const page = await open({ game: {} });
+  scenario('術 starts sealed; tapping releases and seals it; a new game seals it again', async (open) => {
+    const page = await open();
+    await fillSheet(page, { villain: 14, hero: 10 });
     const used = () => page.getAttribute('#power', 'aria-pressed');
-    const sealed = () => page.$eval('#power .tag', (t) => getComputedStyle(t).opacity === '1');
+    const tagShown = () => page.$eval('#power .tag', (t) => getComputedStyle(t).opacity === '1');
     const outline = () => page.$eval('#power .kanji', (k) => getComputedStyle(k).webkitTextStrokeColor);
-    equal(await used(), 'false', 'Ready to start');
-    check(!(await sealed()), 'No seal while ready');
-    const ready = await outline();
-    await page.click('#power');
-    equal(await used(), 'true', 'Tapped: used');
     await page.waitForFunction(() => getComputedStyle(document.querySelector('#power .tag')).opacity === '1'); // the tag's slap-on
-    check(await sealed(), 'Sealed with the tag');
-    check((await outline()) !== ready, 'and the character fades');
+    equal(await used(), 'true', 'A new game starts sealed: most heroes have no limited ability');
+    const sealedOutline = await outline();
+    await page.click('#power');
+    equal(await used(), 'false', 'Tapped: released, ready');
+    check(!(await tagShown()), 'No tag while ready');
+    check((await outline()) !== sealedOutline, 'The character shows its blue outline');
     await page.reload();
     await ready(page);
-    equal(await used(), 'true', 'Saved across a relaunch');
+    equal(await used(), 'false', 'Saved across a relaunch');
     await page.click('#power');
-    equal(await used(), 'false', 'Tapped again: clear');
+    equal(await used(), 'true', 'Tapped again: sealed (used)');
     await page.click('#power');
     await page.click('#set');
     await fillSheet(page, { villain: 14 });
-    equal(await used(), 'false', 'A new game clears it');
+    equal(await used(), 'true', 'A new game seals it again');
   });
 
   scenario('a game saved by the first version carries over', async (open) => {
@@ -239,7 +275,7 @@ module.exports = (scenario) => {
     check(!(await page.isVisible('#sheet')), 'No new-game sheet: the game is still there');
     equal((await read(page, 'hero')).hp, 7, 'Hero');
     equal((await read(page, 'villain')).hp, 9, 'Villain');
-    equal(await page.getAttribute('#power', 'aria-pressed'), 'false', '術 not used');
+    equal(await page.getAttribute('#power', 'aria-pressed'), 'true', '術 sealed');
   });
 
   scenario('a game saved with round tracking carries over', async (open) => {
@@ -249,7 +285,8 @@ module.exports = (scenario) => {
     equal((await read(page, 'hero')).hp, 5, 'Hero');
     await tap(page, 'villain', '-');
     const saved = await stored(page);
-    equal(Object.keys(saved).sort(), ['boost', 'game', 'hero', 'powerUsed', 'stage', 'version', 'villain'], 'Saved in the new shape');
+    equal(Object.keys(saved).sort(), ['boost', 'game', 'hero', 'mode', 'powerUsed', 'stage', 'version', 'villain'], 'Saved in the new shape');
+    equal(saved.mode, 'standard', 'as a Standard game');
   });
 
   // ---------- Presses (lessons from Bgt-J: app/js/presses.js) ----------

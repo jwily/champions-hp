@@ -11,6 +11,18 @@ const heroInput = $('#hero-input');
 const villainInput = $('#villain-input');
 const error = $('#sheet-error'); // for screen readers; the panel itself shows the problem
 let mode = 'new';
+let gameMode = state.mode; // Standard or Expert, as chosen in the sheet
+
+const modeRow = $('#mode-row');
+function drawMode() {
+  for (const button of modeRow.querySelectorAll('button')) button.setAttribute('aria-pressed', button.dataset.mode === gameMode);
+}
+modeRow.addEventListener('click', (e) => {
+  const button = e.target.closest('button');
+  if (!button) return;
+  gameMode = button.dataset.mode;
+  drawMode();
+});
 // The fields' panels get the main page's art: spirals for the villain, rays for the hero.
 const ART = { spirals, rays };
 for (const panel of sheet.querySelectorAll('[data-art]')) {
@@ -25,6 +37,9 @@ export function openSheet(next) {
   const fresh = mode === 'new';
   $('#sheet-title').textContent = fresh ? 'NEW GAME!!' : `STAGE ${state.stage + 1}!!`;
   heroRow.hidden = !fresh;
+  modeRow.hidden = !fresh;
+  gameMode = state.mode;
+  drawMode();
   heroInput.value = fresh && state.hero ? state.hero.max : '';
   villainInput.value = '';
   // The first game can't be cancelled: there's nothing to go back to.
@@ -52,7 +67,7 @@ form.addEventListener('submit', (e) => {
     if (villain === null) return fail(villainInput, 'villain');
     if (hero === null) return fail(heroInput, 'hero');
     closeSheet();
-    newGame(hero, villain);
+    newGame(hero, villain, gameMode);
   } else {
     if (villain === null) return fail(villainInput, 'villain');
     closeSheet();

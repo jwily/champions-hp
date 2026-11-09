@@ -121,10 +121,10 @@ async function ready(page) {
   await page.waitForFunction(() => !document.body.classList.contains('starting'));
 }
 
-/** Saved data for a game in progress: { hero: [hp, max, up], villain: [...], stage, boost, game, powerUsed }. */
-function saved({ hero = [10, 10, 0], villain = [14, 14, 0], stage = 1, boost = false, game = 1, powerUsed = false }) {
+/** Saved data for a game in progress: { hero: [hp, max, up], villain: [...], stage, mode, boost, game, powerUsed }. */
+function saved({ hero = [10, 10, 0], villain = [14, 14, 0], stage = 1, mode = 'standard', boost = false, game = 1, powerUsed = false }) {
   const side = ([hp, max, up = 0]) => ({ hp, max, up });
-  return { version: 3, game, stage, boost, hero: side(hero), villain: side(villain), powerUsed };
+  return { version: 4, game, stage, mode, boost, hero: side(hero), villain: side(villain), powerUsed };
 }
 
 // ---------- Reading and acting on the page ----------
@@ -185,14 +185,23 @@ function equal(actual, expected, what) {
  * Runs `fn(scenario, { engine, browser })`, where scenario(name, async (open) => ...) runs one
  * independent check.
  */
+const AT_ONCE = 8; // scenarios running at once, per engine
+
 async function scenarios(browser, label, fn, engine) {
   const results = [];
   const only = process.env.ONLY;
   const pending = [];
+  // At most AT_ONCE scenarios at a time: starting all of them together sent bursts of connections
+  // that overflowed the system's queue for the test server ("The network connection was lost").
+  let running = 0;
+  const waiting = [];
+  const slot = () => (running < AT_ONCE ? (running++, Promise.resolve()) : new Promise((r) => waiting.push(r)));
+  const free = () => (waiting.length ? waiting.shift()() : running--);
   await fn((name, body) => {
     if (only && !name.toLowerCase().includes(only.toLowerCase())) return;
     pending.push(
       (async () => {
+        await slot();
         const pages = [];
         try {
           await body(async (opts) => {
@@ -206,6 +215,7 @@ async function scenarios(browser, label, fn, engine) {
           results.push([name, e]);
         } finally {
           for (const page of pages) await page.context().close();
+          free();
         }
       })()
     );

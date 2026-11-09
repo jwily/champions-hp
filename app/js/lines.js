@@ -17,6 +17,8 @@ export const HERO_LINES = [
   [Infinity, 'いくぞ!!'], // "Here I go!!"
 ];
 
+export const HERO_WIN = 'やった!!'; // "I did it!!", once the villain's last stage is down
+
 export const lineFor = (lines, share) => lines.find(([limit]) => share <= limit)[1];
 
 // Sound effects (js/sfx.js letters them): a few classic words per action, `big` for holds.

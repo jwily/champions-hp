@@ -155,15 +155,24 @@ module.exports = (scenario) => {
           apart(box('#villain .max'), box('#villain .shout'));
           if (hNum.bottom > hero.bottom) out.push('The hero number spills out of the bottom of its panel');
           within(ink('#hero .line'), box('#hero .round'));
+          // VICTORY!! (the longest-lines case is a won game): inside the panel, clear of the rest.
+          if (document.getElementById('villain').classList.contains('won')) {
+            const victory = box('#villain .victory');
+            within(victory, villain);
+            apart(victory, vNum);
+            apart(victory, box('#villain .shout'));
+            apart(victory, glyphs('#villain .max'));
+          }
           // The 術 toggle: inside the panel, clear of the number and balloon.
           const power = box('#power');
           within(power, hero);
-          within(box('#power .tag'), hero);
+          if (document.getElementById('power').getAttribute('aria-pressed') === 'true') within(box('#power .tag'), hero);
           apart(power, hNum);
           apart(power, box('#hero .round'));
 
           for (const sel of ['#set', '#next', '#seal', '#power', ...[0, 1, 2, 3].map((i) => document.querySelectorAll('.key')[i])]) {
             const b = box(sel);
+            if (!b.width && !b.height) continue; // hidden (Next stage after a win)
             within(b, view);
             if (b.height < 44 || b.width < 44) out.push(`${b.name} is too small to tap (${Math.round(b.width)}×${Math.round(b.height)})`);
           }

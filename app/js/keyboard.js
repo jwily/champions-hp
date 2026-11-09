@@ -9,6 +9,7 @@ export function trackKeyboard() {
   const update = () => {
     const covered = Math.max(0, Math.round(window.innerHeight - view.height - view.offsetTop));
     document.documentElement.style.setProperty('--keyboard', `${covered}px`);
+    document.documentElement.classList.toggle('keyboard-open', covered > 0);
   };
   view.addEventListener('resize', update);
   view.addEventListener('scroll', update);

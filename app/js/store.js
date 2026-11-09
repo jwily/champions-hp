@@ -2,19 +2,25 @@
 // which saves and fires `hp:change`; app.js redraws on that event.
 
 const KEY = 'champions-hp';
-const VERSION = 3;
+const VERSION = 4;
 export const MAX_HP = 99;
 
-// powerUsed: the hero's 術 ("jutsu") toggle, for a special ability the player has to remember using.
+// Villain stages by mode: Standard plays stages I and II, Expert the scenario's expert stages, II
+// and III (Rules Reference v1.8 p. 28). Defeating the last one wins (p. 47).
+export const STAGES = { standard: [1, 2], expert: [2, 3] };
+
+// mode: 'standard' or 'expert' (kept between games). powerUsed: the hero's 術 ("jutsu") toggle,
+// sealed (true) until released: most heroes have no limited ability to track.
 function fresh() {
-  return { version: VERSION, game: 0, stage: 1, boost: false, hero: null, villain: null, powerUsed: false };
+  return { version: VERSION, game: 0, stage: 1, mode: 'standard', boost: false, hero: null, villain: null, powerUsed: true };
 }
 
 // Older saved shapes, upgraded to this one. Version 2 also tracked rounds, phases and limited
-// abilities, since replaced by the single 術 toggle.
+// abilities, since replaced by the single 術 toggle; version 3 had no mode.
 const MIGRATIONS = {
-  1: (s) => ({ ...s, version: 3, powerUsed: false }),
-  2: ({ round, phase, abilities, used, ...s }) => ({ ...s, version: 3, powerUsed: false }),
+  1: (s) => ({ ...s, version: 4, mode: 'standard', powerUsed: true }),
+  2: ({ round, phase, abilities, used, ...s }) => ({ ...s, version: 4, mode: 'standard', powerUsed: true }),
+  3: (s) => ({ ...s, version: 4, mode: 'standard' }),
 };
 
 const validSide = (c) =>
@@ -30,7 +36,8 @@ function load() {
       saved.version === VERSION &&
       validSide(saved.hero) &&
       validSide(saved.villain) &&
-      typeof saved.powerUsed === 'boolean'
+      typeof saved.powerUsed === 'boolean' &&
+      saved.mode in STAGES
     ) {
       return { ...fresh(), ...saved };
     }
@@ -58,15 +65,19 @@ export const total = (c) => c.max + c.up;
 
 export const started = () => state.hero !== null && state.villain !== null;
 
-export function newGame(heroHp, villainHp) {
+export function newGame(heroHp, villainHp, mode = state.mode) {
   state.game += 1;
-  state.stage = 1;
+  state.mode = mode;
+  state.stage = STAGES[mode][0];
   state.boost = false;
   state.hero = side(heroHp);
   state.villain = side(villainHp);
-  state.powerUsed = false;
+  state.powerUsed = true;
   save();
 }
+
+/** The villain's last stage is down: the player wins. */
+export const won = () => state.villain !== null && state.villain.hp === 0 && state.stage >= STAGES[state.mode].at(-1);
 
 export function nextStage(villainHp) {
   state.stage += 1;
