@@ -34,7 +34,17 @@ export function openSheet(forWhat) {
   cancel.hidden = !started(); // the first game can't be cancelled: there's nothing to go back to
   clearError();
   sheet.hidden = false;
+  frameArt();
   document.activeElement?.blur(); // nothing focused, not even the button that opened it
+}
+
+// Each panel's art is sized for the panel with the keyboard closed, so the keyboard only crops it.
+function frameArt() {
+  if (document.documentElement.classList.contains('keyboard-open')) return;
+  for (const row of sheet.querySelectorAll('.entry')) {
+    row.style.removeProperty('--art-h');
+    if (!row.hidden) row.style.setProperty('--art-h', `${row.clientHeight}px`);
+  }
 }
 
 function closeSheet() {
@@ -85,3 +95,7 @@ modeRow.addEventListener('click', (e) => {
 });
 for (const input of [villainInput, heroInput]) input.addEventListener('input', clearError);
 cancel.addEventListener('click', closeSheet);
+// The page itself resizing (not the keyboard, which iOS lays over it): the panels' sizes change.
+window.addEventListener('resize', () => {
+  if (!sheet.hidden) frameArt();
+});

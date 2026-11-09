@@ -1,8 +1,9 @@
 // Draws the home-screen icon and the plain black launch screens, into app/icons/. Run: npm run icons
-// The icon (the user's pick): a manga panel, screentoned, with focus lines converging on its lower
-// right corner, where ドン! bursts out into the black gutter. The panel runs off the top and left
-// edges, a corner of a page rather than a centered square, and has no ink frame: a heavy frame on
-// black read as a bevelled tile. Square and full-bleed: iOS rounds the corners itself.
+// The icon (the user's pick): a manga panel of plain paper (screentone dots were noise at
+// home-screen size), with focus lines converging on its lower right corner, where ドン! bursts out
+// into the black gutter. The panel runs off the top and left edges, a corner of a page rather than
+// a centered square, and has no ink frame: a heavy frame on black read as a bevelled tile. Square
+// and full-bleed: iOS rounds the corners itself.
 
 const fs = require('fs');
 const path = require('path');
@@ -13,7 +14,7 @@ const ICONS = path.join(APP, 'icons');
 // Bump this whenever the icon's look changes. iOS keeps its own copy of a home-screen icon, looked up
 // by the icon's address, and Add to Home Screen uses that copy over the new file; a new file name is
 // the only way past it. The run renames the files and rewrites index.html and manifest.json to match.
-const ICON_VERSION = 2;
+const ICON_VERSION = 3;
 const iconFile = (size) => `icon-${size}-v${ICON_VERSION}.png`;
 const FONT = fs.readFileSync(path.join(APP, 'fonts', 'dela-gothic-one.woff2')).toString('base64');
 // Launch screen sizes, matching the apple-touch-startup-image links in index.html (a test checks).
@@ -52,11 +53,9 @@ svg { position: absolute; inset: 0; width: 100%; height: 100%; }
   -webkit-text-stroke: 22px #d8d1c1; paint-order: stroke; }
 </style><div class="icon">
 <svg viewBox="0 0 100 100">
-  <defs><pattern id="tone" width="3" height="3" patternUnits="userSpaceOnUse"><circle cx="1.5" cy="1.5" r=".65" fill="#b1a998"/></pattern>
-  <clipPath id="panel"><rect width="82" height="82"/></clipPath></defs>
+  <defs><clipPath id="panel"><rect width="82" height="82"/></clipPath></defs>
   <rect width="82" height="82" fill="#d8d1c1"/>
   <g clip-path="url(#panel)">
-    <rect width="82" height="82" fill="url(#tone)"/>
     <path d="${focusLines(70, 70, 56, 22)}" fill="#171512" opacity="0.85"/>
   </g>
 </svg>

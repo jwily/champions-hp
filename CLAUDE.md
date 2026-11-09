@@ -166,7 +166,10 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   rides above the keyboard while it's open (`js/keyboard.js` sets `--keyboard` from the visual
   viewport: iOS overlays the keyboard without resizing the page, and its number pad has no Done
   key). The field panels shrink to share what's left, in one step: a padding transition stuttered
-  (it relaid the sheet every frame and lagged the keyboard).
+  (it relaid the sheet every frame and lagged the keyboard). The room is made as the finger lands
+  on a field, from the keyboard's last height, so iOS never scrolls to a low field (Hero HP jolted
+  down and back); the lift then focuses that field itself. The panels' art keeps its
+  keyboard-closed size and is cropped, not rescaled (Next stage's lone panel zoomed out).
 - Never put the manga's artwork, logos or village symbols in the app.
 
 ## Working with this user

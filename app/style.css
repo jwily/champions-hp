@@ -181,6 +181,12 @@ button.narration.pressed,
   background-image: radial-gradient(var(--tone) 1px, transparent 1.25px);
   background-size: 4px 4px;
 }
+/* In the HP sheet the keyboard shrinks the panels. The art keeps the size it has with the keyboard
+   closed (--art-h, set by js/sheet.js) and is cropped, not rescaled: scaled to cover, a lone tall
+   panel (Next stage) zoomed out as it shrank. It holds to the panel's outer edge, where the tone is. */
+.entry .art-wrap { height: var(--art-h, 100%); }
+.entry .art-wrap[data-art='villain'] { inset: 0 0 auto; }
+.entry .art-wrap[data-art='hero'] { inset: auto 0 0; }
 /* The tone fades away from the panel's outer edge: down from the top for the villain, up from
    the bottom for the hero (the same in the HP sheet as on the page). */
 .fade {

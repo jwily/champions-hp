@@ -97,6 +97,71 @@ module.exports = (scenario) => {
     }
   }
 
+  // The keyboard crops the sheet's art, never rescales it: a lone tall panel (Next stage) used to
+  // zoom out as it shrank. The art holds to the panel's outer edge (top for the villain).
+  for (const mode of ['#set', '#next']) {
+    scenario(`the keyboard crops the ${mode === '#set' ? 'new game' : 'next stage'} sheet's art, without zooming`, async (open) => {
+      const page = await open({ phone: 'iPhone 14 Pro', game: {} });
+      await page.click(mode);
+      const arts = () =>
+        page.evaluate(() =>
+          [...document.querySelectorAll('.entry:not([hidden])')].map((row) => {
+            const art = row.querySelector('.art').getBoundingClientRect();
+            const panel = row.getBoundingClientRect();
+            return { side: row.id, width: Math.round(art.width), height: Math.round(art.height), top: Math.round(art.top - panel.top), bottom: Math.round(panel.bottom - art.bottom), panel: Math.round(panel.height) };
+          })
+        );
+      const before = await arts();
+      await page.evaluate(() => {
+        Object.defineProperty(window.visualViewport, 'height', { value: innerHeight - 291, configurable: true });
+        window.visualViewport.dispatchEvent(new Event('resize'));
+      });
+      const after = await arts();
+      for (const [i, a] of after.entries()) {
+        const b = before[i];
+        check(a.panel < b.panel, `${a.side}: the panel shrinks (${b.panel} to ${a.panel})`);
+        equal([a.width, a.height], [b.width, b.height], `${a.side}: the art's size`);
+        if (a.side === 'villain-row') equal(a.top, 0, `${a.side}: the art holds to the top`);
+        else equal(a.bottom, 0, `${a.side}: the art holds to the bottom`);
+      }
+    });
+  }
+
+  // Tapping Hero HP with the keyboard closed: the sheet makes room as the finger lands (so iOS
+  // has no field under the keyboard to scroll to), and the lift focuses Hero HP even though the
+  // fields have moved under the finger: low on the panel, it's now over the buttons.
+  for (const phone of Object.keys(PHONES)) {
+    scenario(`tapping Hero HP makes room first on ${phone}`, async (open) => {
+      const page = await open({ phone, game: {} });
+      await page.click('#set');
+      const hero = await page.locator('#hero-row').boundingBox();
+      const [x, y] = [hero.x + hero.width / 2, hero.y + hero.height - 6];
+      await page.evaluate(([x, y]) => {
+        const target = document.elementFromPoint(x, y);
+        target.dispatchEvent(new Event('touchstart', { bubbles: true, cancelable: true })); // (desktop WebKit can't make Touch objects)
+      }, [x, y]);
+      const during = await page.evaluate(([x, y]) => ({
+        open: document.documentElement.classList.contains('keyboard-open'),
+        heroBottom: document.getElementById('hero-row').getBoundingClientRect().bottom,
+        visible: innerHeight - parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--keyboard')),
+        under: document.elementFromPoint(x, y)?.closest('button, .entry')?.id,
+      }), [x, y]);
+      check(during.open, 'The sheet makes room as the finger lands');
+      check(during.heroBottom <= during.visible + 1, `Hero HP is clear of the keyboard (bottom ${Math.round(during.heroBottom)}, keyboard at ${Math.round(during.visible)})`);
+      await page.evaluate(([x, y]) => {
+        const target = document.elementFromPoint(x, y) ?? document.body;
+        const end = new Event('touchend', { bubbles: true, cancelable: true });
+        target.dispatchEvent(end);
+        if (!end.defaultPrevented) target.click(); // what iOS does after an uncancelled touch
+      }, [x, y]);
+      equal(await page.evaluate(() => document.activeElement?.id), 'hero-input', `Focused (the finger lifted over ${during.under ?? 'nothing'})`);
+      check(await page.locator('#sheet').isVisible(), 'The sheet is still open');
+      // No keyboard came (Playwright has none): the sheet gets its room back.
+      await page.waitForTimeout(1200);
+      check(!(await page.evaluate(() => document.documentElement.classList.contains('keyboard-open'))), 'Room given back when no keyboard came');
+    });
+  }
+
   for (const phone of Object.keys(PHONES)) {
     for (const [label, game] of Object.entries(CASES)) {
       scenario(`fits on ${phone} (${label})`, async (open) => {
