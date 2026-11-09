@@ -166,7 +166,17 @@ module.exports = (scenario) => {
           // The 術 toggle: inside the panel, clear of the number and balloon.
           const power = box('#power');
           within(power, hero);
-          if (document.getElementById('power').getAttribute('aria-pressed') === 'true') within(box('#power .tag'), hero);
+          if (document.getElementById('power').getAttribute('aria-pressed') === 'true') {
+            within(box('#power .tag'), hero);
+            apart(box('#power .tag'), hNum);
+          }
+          // Balloon text centered in its balloon, both ways (a wrapped line once hung off-center).
+          for (const sel of ['#villain .shout', '#hero .round']) {
+            const b = box(sel);
+            const t = ink(`${sel} .line`);
+            const off = Math.max(Math.abs((t.left + t.right - b.left - b.right) / 2), Math.abs((t.top + t.bottom - b.top - b.bottom) / 2));
+            if (off > 2) out.push(`${sel}'s text is ${Math.round(off)}px off center`);
+          }
           apart(power, hNum);
           apart(power, box('#hero .round'));
 

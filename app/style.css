@@ -210,7 +210,14 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   line-height: 1.3;
   color: var(--ink);
 }
-.balloon .line { writing-mode: vertical-rl; max-height: 100%; }
+.balloon .line {
+  writing-mode: vertical-rl;
+  max-height: 100%;
+  /* Centered both ways: each column centered along its length, and a line that wraps into two
+     columns broken evenly (a short last column hung from the top and looked off-center). */
+  text-align: center;
+  text-wrap: balance;
+}
 .upright { text-combine-upright: all; -webkit-text-combine: horizontal; }
 
 /* Balloons: SVG outlines (index.html) with a non-scaling stroke, so the ink line is one width all
@@ -302,20 +309,20 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
 
 /* Bottom-left of the hero panel, no box. Ready: the character in off-white with a blue outline (blue
    marks this and nothing else, as orange marks the max-HP mode). Used: a paper sealing tag slaps
-   on across it and the character fades to a faint outline. The button keeps a 48px tap area. */
+   on across it and the character fades to a faint outline. */
 .power {
   position: absolute;
-  left: 8px;
-  bottom: 6px;
+  left: 6px;
+  bottom: 18px; /* room below for the tilted tag's lower corner */
   z-index: 1;
-  width: 48px;
-  height: 48px;
+  width: 64px;
+  height: 64px;
   display: grid;
   place-items: center;
 }
 .power .kanji {
   font-family: var(--heavy);
-  font-size: 34px;
+  font-size: 48px;
   line-height: 1;
   color: var(--paper);
   -webkit-text-stroke: 0.1em var(--blue);
@@ -323,23 +330,24 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
 }
 .power[aria-pressed='true'] .kanji { -webkit-text-stroke-color: var(--tone); }
 
-/* The sealing tag: a strip of paper with a ruled border and 封印 written down it. */
+/* The sealing tag: a strip of paper with a ruled border and 封印 written down it, with room around
+   the characters. */
 .power .tag {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 24px;
-  height: 56px;
+  width: 38px;
+  height: 88px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 5px;
   background: var(--tag);
-  border: 1.5px solid var(--ink);
-  box-shadow: inset 0 0 0 2px var(--tag), inset 0 0 0 3px var(--ink);
+  border: 2px solid var(--ink);
+  box-shadow: inset 0 0 0 3px var(--tag), inset 0 0 0 4.5px var(--ink);
   font-family: 'Potta One', var(--antique); /* brush-written, as sealing tags are */
-  font-size: 15px;
+  font-size: 19px;
   line-height: 1;
   color: var(--ink);
   transform: translate(-50%, -50%) rotate(-18deg) scale(1.6);
