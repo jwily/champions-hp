@@ -14,7 +14,7 @@ const ICONS = path.join(APP, 'icons');
 // Bump this whenever the icon's look changes. iOS keeps its own copy of a home-screen icon, looked up
 // by the icon's address, and Add to Home Screen uses that copy over the new file; a new file name is
 // the only way past it. The run renames the files and rewrites index.html and manifest.json to match.
-const ICON_VERSION = 3;
+const ICON_VERSION = 4;
 const iconFile = (size) => `icon-${size}-v${ICON_VERSION}.png`;
 const FONT = fs.readFileSync(path.join(APP, 'fonts', 'dela-gothic-one.woff2')).toString('base64');
 // Launch screen sizes, matching the apple-touch-startup-image links in index.html (a test checks).
@@ -27,18 +27,23 @@ function seeded(seed) {
 
 // Focus lines (集中線): wedges from around (cx, cy) out past the edges, drawn like the hero panel's
 // (js/art.js), irregular so they don't read as the Rising Sun flag: uneven spacing, each starting at
-// its own distance (a hollow middle, no meeting point drawn), every third heavier.
+// its own distance (a hollow middle, no meeting point drawn), every third heavier. Fewer and heavier
+// than the panel's, with blunt tips: at home-screen size, hairlines and sharp tips broke up into
+// specks. Widths are half-widths where the lines leave the icon.
 function focusLines(cx, cy, count, inner) {
   const random = seeded(5);
+  const TIP = 0.4;
+  const f = (n) => n.toFixed(2);
   let d = '';
   for (let i = 0; i < count; i++) {
     const a = ((i + random() * 0.8) / count) * 2 * Math.PI;
     const r = inner * (0.75 + random() * 0.9);
-    const w = i % 3 ? 0.7 + random() * 0.6 : 1.8 + random() * 0.7;
+    const w = i % 3 ? 1.6 + random() * 0.8 : 3.4 + random();
+    const [x1, y1] = [cx + r * Math.cos(a), cy + r * Math.sin(a)];
     const [x2, y2] = [cx + 120 * Math.cos(a), cy + 120 * Math.sin(a)];
-    const [nx, ny] = [-Math.sin(a) * w, Math.cos(a) * w];
-    d += `M${(cx + r * Math.cos(a)).toFixed(1)} ${(cy + r * Math.sin(a)).toFixed(1)}`;
-    d += `L${(x2 + nx).toFixed(1)} ${(y2 + ny).toFixed(1)}L${(x2 - nx).toFixed(1)} ${(y2 - ny).toFixed(1)}Z`;
+    const [nx, ny] = [-Math.sin(a), Math.cos(a)];
+    d += `M${f(x1 + nx * TIP)} ${f(y1 + ny * TIP)}L${f(x2 + nx * w)} ${f(y2 + ny * w)}`;
+    d += `L${f(x2 - nx * w)} ${f(y2 - ny * w)}L${f(x1 - nx * TIP)} ${f(y1 - ny * TIP)}Z`;
   }
   return d;
 }
@@ -56,7 +61,7 @@ svg { position: absolute; inset: 0; width: 100%; height: 100%; }
   <defs><clipPath id="panel"><rect width="82" height="82"/></clipPath></defs>
   <rect width="82" height="82" fill="#d8d1c1"/>
   <g clip-path="url(#panel)">
-    <path d="${focusLines(70, 70, 56, 22)}" fill="#171512" opacity="0.85"/>
+    <path d="${focusLines(70, 70, 30, 22)}" fill="#171512"/>
   </g>
 </svg>
 <div class="sfx">ドン!</div></div>`;
