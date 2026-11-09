@@ -382,6 +382,31 @@ module.exports = (scenario) => {
     equal({ missing, leftOut }, { missing: [], leftOut: [] }, 'Manifest');
   });
 
+  scenario('text and key graphics meet contrast minimums', async (open) => {
+    const page = await open({ game: {} });
+    const ratios = await page.evaluate(() => {
+      const v = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      const lum = (hex) => {
+        const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((x) => (x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4));
+        return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+      };
+      const ratio = (a, b) => {
+        const [hi, lo] = [lum(v(a)), lum(v(b))].sort((x, y) => y - x);
+        return (hi + 0.05) / (lo + 0.05);
+      };
+      return {
+        'ink on paper': ratio('--ink', '--paper'),
+        'small print on paper': ratio('--sub', '--paper'),
+        'running head on black': ratio('--head', '--black'),
+        'bonus on paper': ratio('--orange-ink', '--paper'),
+        '術 outline on paper': ratio('--blue', '--paper'),
+      };
+    });
+    // WCAG: 4.5:1 for small text, 3:1 for graphics (the 術 outline).
+    const short = Object.entries(ratios).filter(([name, r]) => r < (name.startsWith('術') ? 3 : 4.5));
+    equal(short.map(([n, r]) => `${n} ${r.toFixed(2)}`), [], 'Below minimum contrast');
+  });
+
   scenario('the page is valid HTML', async () => {
     const { HtmlValidate, FileSystemConfigLoader } = require('html-validate');
     const validator = new HtmlValidate(new FileSystemConfigLoader({ extends: ['html-validate:standard'] }));

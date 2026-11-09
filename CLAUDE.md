@@ -89,6 +89,11 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   tone and line work rather than heavy tone, vertical lettering with "!!" set upright, heavy
   hand-lettered katakana sound effects, the chapter-title format "[mark with ruby]1：TITLE!!", and the
   running head "NARUTO—ナルト—1". Spirals (uzumaki) recur everywhere.
+- Shared values are tokens on `:root`: `--inset` (10px, anything tucked into a panel corner),
+  `--line` / `--line-fine` (2px / 1.5px ink), `--text-s/m/l` (11 / 13 / 14px serif sizes). 術 is
+  the one deliberate exception to `--inset` (the user wanted more room; the tag needs clearance).
+- Contrast is tested: small text 4.5:1, the 術 outline 3:1 (graphics). Faint `.inert` keys are
+  deliberately low (an "inactive" state).
 - Paper is dimmed (`--paper` #d8d1c1) so the panels don't glare in a dim room; ink is near-black.
 - Ink lines must be even: the villain's shout balloon is an SVG polygon with a non-scaling 1.5px
   stroke (a paper shape clipped inside an ink one made the long spikes' line several times
