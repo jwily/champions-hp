@@ -232,6 +232,16 @@ module.exports = (scenario) => {
     equal(await pressed(), 'Expert', 'Expert is remembered for the next game');
   });
 
+  scenario('on the last stage, Next stage reads Final stage and can’t be pressed', async (open) => {
+    const page = await open({ game: { villain: [5, 14], stage: 2 } });
+    equal(await page.textContent('#next'), 'Final stage', 'Standard stage II is the final one');
+    check(await page.$eval('#next', (b) => b.disabled), 'and it’s disabled');
+    await page.click('#next', { force: true });
+    check(!(await page.isVisible('#sheet')), 'Pressing it opens nothing');
+    const expert = await open({ game: { villain: [5, 14], stage: 2, mode: 'expert' } });
+    equal(await expert.textContent('#next'), 'Next stage ▸', 'Expert stage II still has a next stage');
+  });
+
   scenario('Standard wins when stage II is down, not stage I', async (open) => {
     const page = await open({ game: { villain: [1, 14], stage: 1 } });
     await tap(page, 'villain', '-');

@@ -22,6 +22,7 @@ module.exports = (scenario) => {
           const panel = document.getElementById(s);
           const effect = [...panel.querySelectorAll(':scope > .sfx')].at(-1);
           if (!effect) return null; // already faded (a busy machine): nothing to measure
+          if (effect.classList.contains('vertical') && effect.textContent.includes('…')) return `${effect.textContent} uses a sideways … in vertical lettering`;
           const r = effect.getBoundingClientRect();
           const x = r.left + r.width / 2;
           const y = r.top + r.height / 2;
@@ -169,6 +170,13 @@ module.exports = (scenario) => {
           if (document.getElementById('power').getAttribute('aria-pressed') === 'true') {
             within(box('#power .tag'), hero);
             apart(box('#power .tag'), hNum);
+          }
+          // The − / + signs centered in their keys.
+          for (const key of document.querySelectorAll('.key')) {
+            const sign = key.querySelector('.sign').getBoundingClientRect();
+            const k = key.getBoundingClientRect();
+            const off = Math.max(Math.abs((sign.left + sign.right - k.left - k.right) / 2), Math.abs((sign.top + sign.bottom - k.top - k.bottom) / 2));
+            if (off > 1) out.push(`A sign is ${off.toFixed(1)}px off center in its key`);
           }
           // Balloon text centered in its balloon, both ways (a wrapped line once hung off-center).
           for (const sel of ['#villain .shout', '#hero .round']) {

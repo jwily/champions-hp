@@ -1,6 +1,6 @@
 // Startup and drawing. The page is a manga "flashback" page: paper panels on black gutters.
 
-import { state, started, total, change, toggleBoost, togglePower, won, MAX_HP } from './store.js';
+import { state, started, total, change, toggleBoost, togglePower, won, MAX_HP, STAGES } from './store.js';
 import { VILLAIN_LINES, HERO_LINES, HERO_WIN, lineFor } from './lines.js';
 import { soundEffect } from './sfx.js';
 import { trackPresses, onHold } from './presses.js';
@@ -58,6 +58,10 @@ function draw() {
   }
   $('#power').setAttribute('aria-pressed', state.powerUsed);
   $('#power').setAttribute('aria-label', state.powerUsed ? 'Special ability used (sealed)' : 'Special ability ready');
+  // On the villain's last stage, Next stage is just a caption: "Final stage", not pressable.
+  const final = state.stage >= STAGES[state.mode].at(-1);
+  $('#next').disabled = final;
+  $('#next').textContent = final ? 'Final stage' : 'Next stage ▸';
   // The villain's last stage is down: VICTORY!!! where Next stage was, and the hero cheers.
   const victory = won();
   sides.villain.panel.classList.toggle('won', victory);

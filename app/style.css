@@ -305,6 +305,8 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
 /* The villain is down: Next stage is what to press now, so it turns solid ink. Still: a pulse
    was distracting (the user's call, after trying a fade and a blink). */
 #villain.down .next { background: var(--ink); color: var(--paper); }
+/* On the last stage it's a plain caption, "Final stage": nothing to press. */
+.next:disabled { cursor: default; }
 
 /* ---------- Hero extras: the 術 ("jutsu") toggle for a special ability ---------- */
 
@@ -396,6 +398,25 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   justify-content: center;
 }
 .key.pressed { background: var(--ink); color: var(--paper); }
+/* − and + are drawn as bars, not text: the heavy font has no − of its own, so browsers drew it
+   from different fallback fonts at different heights. Bars sit exactly at the key's center, at
+   the heavy lettering's weight, and take the key's color (faint when inert, paper when pressed). */
+.sign {
+  position: relative;
+  width: 0.62em;
+  height: 0.2em;
+  background: currentColor;
+}
+.key[data-dir='1'] .sign::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.2em;
+  height: 0.62em;
+  background: currentColor;
+  transform: translate(-50%, -50%);
+}
 .key.inert { color: var(--tone); }
 .boosting .key .border { border: 3px solid var(--orange); }
 

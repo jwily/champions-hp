@@ -50,10 +50,14 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   (only when tapped, not at launch) and the character fades. Blue means ready. It starts sealed
   (the user: most heroes have no limited ability).
 - **Standard / Expert** (`mode`, state version 4): `STAGES` in store.js (I → II, or II → III, RR
-  p. 28), chosen in the New game sheet and kept. `won()`: the last stage at 0 shows VICTORY!!!
+  p. 28), chosen in the New game sheet and kept. On the last stage Next stage is a disabled "Final stage" caption.
+  `won()`: the last stage at 0 shows VICTORY!!!
   (where Next stage was) and the hero's line やった!!. It replaced round / phase tracking with
   per-period ability tokens (v2), which the user found to be more than they needed. 術 ("jutsu")
   was the user's pick over 力 ("power").
+- − and + are drawn as CSS bars (`.sign`), not text: the heavy font has no − and engines fell back
+  to different fonts at different heights. Vertical sound effects use ︙ for … (the heavy font
+  draws … sideways, off to the left).
 - `js/lines.js`: balloon lines and sound-effect words. `js/art.js`: the inked spirals and rays.
   `js/sheet.js`: the HP entry sheet.
 - **Presses** (`js/presses.js`, lessons from Bgt-J's presses.js, not a copy): a control activates
