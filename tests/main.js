@@ -2,10 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { APP, appChars, appFiles, key, tap, hold, read, stored, fillSheet, check, equal, ready } = require('./helpers');
-// Must match app/js/presses.js.
-const HOLD_MS = 450;
-const REPEAT_MS = 550;
+const { APP, appChars, appFiles, key, tap, hold, holdTimes, read, stored, fillSheet, check, equal, ready } = require('./helpers');
 
 module.exports = (scenario) => {
   scenario('first launch asks for HP and can’t be cancelled', async (open) => {
@@ -45,6 +42,7 @@ module.exports = (scenario) => {
 
   scenario('holding changes by 5, then 5 more each repeat', async (open) => {
     const page = await open({ clock: true, game: { villain: [30, 30] } });
+    const { HOLD_MS, REPEAT_MS } = await holdTimes(page);
     await hold(page, 'villain', '-', HOLD_MS + 100);
     equal((await read(page, 'villain')).hp, 25, 'One hold step, and no extra 1 on release');
     await hold(page, 'villain', '-', HOLD_MS + REPEAT_MS * 2 + 100);
@@ -131,6 +129,7 @@ module.exports = (scenario) => {
 
   scenario('sound effects vary, stack up to three, and holds get the big ones', async (open) => {
     const page = await open({ clock: true, game: { villain: [40, 40] } });
+    const { HOLD_MS } = await holdTimes(page);
     const effects = () =>
       page.$$eval('#villain > .sfx', (list) =>
         list.map((e) => ({ text: e.textContent, classes: e.className, tilt: e.style.getPropertyValue('--tilt') }))
@@ -146,7 +145,11 @@ module.exports = (scenario) => {
     shown = await effects();
     equal(shown.length, 3, 'Fast taps stack, three at most');
     check(new Set(shown.map((e) => e.tilt)).size > 1, 'Each at its own tilt');
-    check(await page.$eval('#villain', (p) => p.classList.contains('shake')), 'The panel shakes on a hit');
+    const shakes = await page.evaluate(() => {
+      document.querySelector('.key[data-side="villain"][data-dir="-1"]').click();
+      return document.getElementById('villain').getAnimations().length > 0; // read at once: it's brief
+    });
+    check(shakes, 'The panel shakes on a hit');
     await hold(page, 'villain', '-', HOLD_MS + 50);
     shown = await effects();
     check(BIG.includes(shown.at(-1).text), `A hold gets a big word: ${shown.at(-1).text}`);
@@ -220,6 +223,7 @@ module.exports = (scenario) => {
 
   scenario('a hold that drifts is called off, and its lift is an ordinary tap', async (open) => {
     const page = await open({ clock: true, game: {} });
+    const { HOLD_MS, REPEAT_MS } = await holdTimes(page);
     const box = await key(page, 'villain', '-').boundingBox();
     await page.mouse.move(box.x + 30, box.y + box.height / 2);
     await page.mouse.down();

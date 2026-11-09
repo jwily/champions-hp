@@ -2,8 +2,8 @@
 
 import { MAX_HP, state, started, newGame, nextStage } from './store.js';
 import { spirals, rays } from './art.js';
+import { $, make } from './dom.js';
 
-const $ = (s) => document.querySelector(s);
 const sheet = $('#sheet');
 const form = $('#sheet-form');
 const heroRow = $('#hero-row');
@@ -15,12 +15,10 @@ let mode = 'new';
 // The fields' panels get the main page's art: spirals for the villain, rays for the hero.
 const ART = { spirals, rays };
 for (const panel of sheet.querySelectorAll('[data-art]')) {
-  const wrap = Object.assign(document.createElement('span'), { className: 'art-wrap' });
-  wrap.append(ART[panel.dataset.art](), Object.assign(document.createElement('span'), { className: 'tone fade' }));
+  const wrap = make('span', 'art-wrap');
+  wrap.append(ART[panel.dataset.art](), make('span', 'tone fade'));
   panel.prepend(wrap);
 }
-
-export const sheetOpen = () => !sheet.hidden;
 
 /** mode: 'new' (hero and villain HP) or 'next' (the villain's next stage). */
 export function openSheet(next) {
@@ -34,7 +32,7 @@ export function openSheet(next) {
   $('#sheet-cancel').hidden = !started();
   clearError();
   sheet.hidden = false;
-  document.activeElement?.blur(); // nothing focused (not even the button that opened it): tap a panel to type
+  document.activeElement?.blur(); // nothing focused, not even the button that opened it
 }
 
 export function closeSheet() {

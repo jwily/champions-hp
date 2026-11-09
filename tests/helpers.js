@@ -142,6 +142,9 @@ const read = (page, side) =>
     };
   }, side);
 
+/** The app's hold timings, read from app/js/presses.js in the page. */
+const holdTimes = (page) => page.evaluate(() => import('./js/presses.js').then(({ HOLD_MS, REPEAT_MS }) => ({ HOLD_MS, REPEAT_MS })));
+
 const stored = (page) => page.evaluate(() => JSON.parse(localStorage.getItem('champions-hp')));
 
 async function fillSheet(page, { hero, villain }) {
@@ -158,11 +161,12 @@ function check(condition, message) {
   if (!condition) throw new CheckFailed(message);
 }
 
+// JSON with object keys sorted, so equal() ignores key order.
+const canonical = (value) =>
+  JSON.stringify(value, (_, v) => (v && typeof v === 'object' && !Array.isArray(v) ? Object.fromEntries(Object.entries(v).sort()) : v));
+
 function equal(actual, expected, what) {
-  check(
-    JSON.stringify(actual) === JSON.stringify(expected),
-    `${what}: expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`
-  );
+  check(canonical(actual) === canonical(expected), `${what}: expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
 }
 
 /**
@@ -215,6 +219,7 @@ module.exports = {
   key,
   tap,
   hold,
+  holdTimes,
   read,
   stored,
   fillSheet,

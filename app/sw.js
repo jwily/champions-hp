@@ -1,13 +1,13 @@
-// Makes the app launch instantly and work offline, and brings deploys in without mixing versions.
-// Lessons from Bgt-J's sw.js, simplified for an app that loads every file at startup:
+// Makes the app launch instantly and work offline, and brings deploys in without mixing versions:
 // - Launches are served entirely from a saved copy on the phone, so starting never waits on the
 //   network.
 // - Each launch (and each return from the background) downloads the files again in the background,
 //   past the browser's cache: GitHub Pages lets browsers reuse files for 10 minutes unchecked.
 // - A version is saved only when every file arrived (marked complete last), and only if some file's
 //   bytes changed, so nothing needs bumping on a deploy.
-// - A new version is switched to only when the app launches, so a running app never mixes old and
-//   new files. The page then asks which version it runs; app.js says "App updated" when it changed.
+// - A new version is switched to only when the app launches (the app loads every file at startup),
+//   so a running app never mixes old and new files. The page then asks which version it runs;
+//   app.js says "App updated" when it changed.
 // Add any new app file to FILES (a test checks).
 
 const PREFIX = 'champions-hp-'; // saved versions are caches named champions-hp-<time saved>
@@ -20,6 +20,7 @@ const FILES = [
   'manifest.json',
   'js/app.js',
   'js/art.js',
+  'js/dom.js',
   'js/keyboard.js',
   'js/lines.js',
   'js/presses.js',

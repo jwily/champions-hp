@@ -7,25 +7,28 @@ import { trackPresses, onHold } from './presses.js';
 import { spirals, rays } from './art.js';
 import { openSheet } from './sheet.js';
 import { trackKeyboard } from './keyboard.js';
+import { $, make } from './dom.js';
 
-const $ = (s, root = document) => root.querySelector(s);
+const SIDES = [
+  ['villain', 'Villain', VILLAIN_LINES, spirals],
+  ['hero', 'Hero', HERO_LINES, rays],
+];
 
 const sides = Object.fromEntries(
-  [
-    ['villain', VILLAIN_LINES, spirals],
-    ['hero', HERO_LINES, rays],
-  ].map(([key, lines, art]) => {
+  SIDES.map(([key, name, lines, art]) => {
     const panel = $(`#${key}`);
     $('.art-wrap', panel).prepend(art());
     return [
       key,
       {
+        name,
         panel,
         lines,
         num: $('.num', panel),
         max: $('.max', panel),
         line: $('.line', panel),
         focus: $('.focus', panel),
+        status: $('.status', panel),
       },
     ];
   })
@@ -33,11 +36,7 @@ const sides = Object.fromEntries(
 
 // Vertical text, with "!!" set side by side inside the column as manga lettering does.
 function setVertical(el, text) {
-  el.replaceChildren(
-    ...text.split(/(!!)/).filter(Boolean).map((part) =>
-      part === '!!' ? Object.assign(document.createElement('span'), { className: 'upright', textContent: part }) : part
-    )
-  );
+  el.replaceChildren(...text.split(/(!!)/).filter(Boolean).map((part) => (part === '!!' ? make('span', 'upright', part) : part)));
 }
 
 function draw() {
@@ -46,26 +45,31 @@ function draw() {
     if (!c) continue;
     el.num.textContent = c.hp;
     el.max.textContent = `/ ${total(c)}`;
-    if (c.up) el.max.append(Object.assign(document.createElement('span'), { className: 'up', textContent: ` (+${c.up})` }));
+    if (c.up) el.max.append(make('span', 'up', ` (+${c.up})`));
+    el.status.textContent = `${el.name} ${c.hp} of ${total(c)}`;
     setVertical(el.line, lineFor(el.lines, c.hp / total(c)));
     el.panel.classList.toggle('down', c.hp === 0);
   }
   $('#stage-num').textContent = state.stage;
   $('#game-num').textContent = Math.max(1, state.game);
-  const seal = $('#seal');
-  seal.setAttribute('aria-pressed', state.boost);
+  $('#seal').setAttribute('aria-pressed', state.boost);
   document.body.classList.toggle('boosting', state.boost);
 }
+
+const SHAKE = [
+  { transform: 'translate(0, 0)' },
+  { transform: 'translate(-4px, 2px)' },
+  { transform: 'translate(3px, -2px)' },
+  { transform: 'translate(-2px, 1px)' },
+  { transform: 'translate(0, 0)' },
+];
 
 function effect(key, kind, amount) {
   const el = sides[key];
   soundEffect(el.panel, key, kind, amount);
   if (kind === 'hit' || kind === 'unboost') {
-    el.focus.classList.add('flash');
-    requestAnimationFrame(() => requestAnimationFrame(() => el.focus.classList.remove('flash')));
-    el.panel.classList.remove('shake');
-    void el.panel.offsetWidth;
-    el.panel.classList.add('shake');
+    el.focus.animate([{ opacity: 0.6 }, { opacity: 0 }], { duration: 350, easing: 'ease-out' }); // focus lines
+    el.panel.animate(SHAKE, { duration: 220 });
   }
 }
 
@@ -92,25 +96,25 @@ document.addEventListener('hp:change', draw);
 draw();
 if (!started()) openSheet('new');
 
-// Show the page once the fonts are in (or after a moment, whichever comes first).
-Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 1500))]).then(() =>
+// Show the page once the fonts are in, or after FONT_WAIT_MS at most. (index.html also shows it
+// after 2.5 s by itself, in case this script never runs.)
+const FONT_WAIT_MS = 1500;
+Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, FONT_WAIT_MS))]).then(() =>
   document.body.classList.remove('starting')
 );
 
 // ---------- Updates ----------
 // New versions download in the background (sw.js) and run from the next launch. The first launch
-// running a new one says "App updated" briefly, in a caption over the running head, as Bgt-J does.
-// iOS mostly resumes the app rather than relaunching it, so coming back from the background checks
-// for a new version too.
+// running a new one says "App updated" briefly, in a caption over the running head. iOS mostly
+// resumes the app rather than relaunching it, so coming back from the background checks too.
 
 const VERSION_KEY = 'champions-hp-app-version'; // the version the last launch ran (sw.js names them)
 const NOTICE_MS = 4000;
 let noticeTimer = null;
 
 function notice(text) {
-  const node = $('#notice');
-  node.textContent = text;
-  node.hidden = false;
+  $('#notice').textContent = text;
+  $('#notice').hidden = false;
   $('.running').hidden = true;
   clearTimeout(noticeTimer);
   noticeTimer = setTimeout(endNotice, NOTICE_MS);

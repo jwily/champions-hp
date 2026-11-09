@@ -25,9 +25,7 @@ function load() {
   return fresh();
 }
 
-// After load's helpers: `validSide` is a const, so calling load() above it threw (silently, in
-// load's own catch) and every launch started fresh.
-export const state = load();
+export const state = load(); // after load's helpers: they're consts
 
 function save() {
   try {

@@ -1,7 +1,4 @@
-// Presses: every tap on the app's own controls, and holds on the − / + keys. The rules below are
-// lessons from Bgt-J (~/projects/budget-tracker/app/js/presses.js), learned there on the phone.
-// Not taken: Bgt-J sends a tap in the gap between controls to the nearest one. Between − and + that
-// would be a guess at the sign, so a tap in the gutter does nothing.
+// Presses: every tap on the app's own controls, and holds on the − / + keys.
 //
 // A press activates what it started on (by calling its click()) when it lifts still over it, the
 // same for touch, pen and mouse. The browser's own click for a press never counts: iOS decides by
@@ -10,6 +7,7 @@
 // if it comes anyway. Clicks from the keyboard or from code carry no click count, and go through.
 // Fields and labels (NATIVE) are left to the browser: iOS needs its own tap to focus them. Each
 // finger is tracked on its own, so overlapping taps (two thumbs, or fast tapping) each count.
+// A tap in a gap between controls does nothing: between − and + a guess could pick the wrong sign.
 // Give controls ordinary `click` listeners and nothing else; don't add click-timing workarounds.
 
 const PRESSABLE = 'button, [role=button]';
@@ -72,9 +70,8 @@ export function trackPresses() {
 
   // The browser's own click for a press: cancelled at the source, and stopped if it comes anyway.
   // A touch's end goes to the element it started on even if a redraw has since removed it from the
-  // page, so it's cancelled on that element itself: that touch's end only, then the listener goes.
-  // (In Bgt-J it once stayed, and caught every later touch bubbling up through that element: every
-  // field under it stopped taking focus until the app was restarted.)
+  // page, so it's cancelled on that element itself. The listener must go after that one touch: left
+  // in place, it would cancel every later touch bubbling through the element, fields' included.
   document.addEventListener(
     'touchstart',
     (event) => {

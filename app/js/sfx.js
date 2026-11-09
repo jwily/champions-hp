@@ -56,7 +56,7 @@ function openSpot(panel, side) {
 
 const BIG = 1.45; // holds (5 at once) are louder
 const MAX_AT_ONCE = 3; // per panel
-const SHOW_MS = 1000; // how long an effect stays: it appears and goes at once, like a drawn panel (the user's choice)
+const SHOW_MS = 1000; // how long an effect stays (it appears and goes at once: no animation)
 
 export function soundEffect(panel, side, kind, amount) {
   const look = LOOKS[kind];

@@ -21,15 +21,29 @@
   --tone: #b1a998; /* screentone dots and the art's ink wash */
   --sub: #5a5449; /* small print on paper */
   --head: #a39d91; /* small print on the black page */
-  --orange: #ff7a1a;
+  --orange: #ff7a1a; /* the one spot color: the max-HP mode */
+  --orange-ink: #c4500a; /* the same orange, dark enough to read as small text on paper */
+  --error: #8e2410;
+  --seal-off: #8a7b6b;
   --col-gap: 8px;
   --row-gap: 12px;
   --side: 12px;
+  --key-row-h: clamp(60px, 10.5dvh, 86px); /* the − / + rows and the sheet's button row */
+  --key-ratio: 1.55fr; /* the bigger key's share: − on the page, FIGHT!! on the sheet */
   --heavy: 'Dela Gothic One', 'Hiragino Kaku Gothic StdN', sans-serif;
   --antique: 'Zen Antique', 'Hiragino Mincho ProN', serif;
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 
 html, body {
   margin: 0;
@@ -79,36 +93,22 @@ button {
   color: var(--head);
 }
 .head b { font-weight: 400; color: var(--paper); }
-/* A message ("App updated") borrows the running head's place, as a narration caption. */
-.notice {
-  border: 1.5px solid var(--paper);
+/* Narration box: ink on paper in a plain rectangle, like the manga's captions. The antique serif
+   only reads as lettering in ink on paper, so this is how text sits on the black page: as labels,
+   messages ("App updated" borrows the running head's place) and buttons. */
+.narration {
   background: var(--paper);
+  border: 1.5px solid var(--ink);
   color: var(--ink);
-  padding: 5px 10px;
-  font-size: 12px;
-  animation: notice-in 0.18s ease-out;
-}
-.notice[hidden], .running[hidden] { display: none; }
-@keyframes notice-in { from { opacity: 0; transform: translateX(-6px); } }
-
-/* Narration-box buttons: a plain rectangle, like a manga caption. */
-.caption {
-  border: 1.5px solid var(--paper);
-  background: var(--black);
-  color: var(--paper);
   font-size: 13px;
+  line-height: 1.2;
+  padding: 4px 10px;
+}
+button.narration {
   min-height: 34px;
   padding: 6px 12px;
-  line-height: 1.2;
 }
-.caption.pressed { background: var(--paper); color: var(--black); }
-/* On the page, buttons are narration boxes: ink on paper, like the manga's caption boxes. */
-.narration-button {
-  background: var(--paper);
-  color: var(--ink);
-  border-color: var(--ink);
-}
-.narration-button.pressed { background: var(--ink); color: var(--paper); }
+button.narration.pressed { background: var(--ink); color: var(--paper); }
 
 /* ---------- Panels ---------- */
 
@@ -118,7 +118,7 @@ button {
   color: var(--ink);
   container-type: size;
 }
-/* The ink border, drawn as its own layer so it can wobble like a hand-inked line. */
+/* The ink border, drawn as its own layer so it can sit over the art. */
 .border {
   position: absolute;
   inset: 0;
@@ -162,16 +162,7 @@ button {
   background: repeating-conic-gradient(var(--ink) 0 0.45deg, transparent 0.45deg 4deg);
   -webkit-mask: radial-gradient(circle, transparent 22%, #000 44%);
   mask: radial-gradient(circle, transparent 22%, #000 44%);
-  opacity: 0;
-  transition: opacity 0.35s ease-out;
-}
-.focus.flash { opacity: 0.6; transition: none; }
-
-.shake { animation: shake 0.22s; }
-@keyframes shake {
-  25% { transform: translate(-4px, 2px); }
-  50% { transform: translate(3px, -2px); }
-  75% { transform: translate(-2px, 1px); }
+  opacity: 0; /* app.js flashes it */
 }
 
 /* ---------- Numbers, balloons, sound effects ---------- */
@@ -198,7 +189,7 @@ button {
 }
 #villain .max { right: 12px; }
 #hero .max { left: 14px; }
-.max .up { color: #c4500a; }
+.max .up { color: var(--orange-ink); }
 
 .balloon {
   position: absolute;
@@ -213,7 +204,7 @@ button {
 .upright { text-combine-upright: all; -webkit-text-combine: horizontal; }
 
 /* The villain's spiky shout balloon: an SVG outline (index.html) with a constant-width ink line.
-   Lettered like the hero's balloon: the heavy font turned many-stroke kanji (癪) into blots. */
+   Lettered in the serif, like the hero's: the heavy font blots many-stroke kanji (癪) this small. */
 .shout {
   left: 5cqw;
   top: 9cqh;
@@ -249,7 +240,7 @@ button {
 .round .line { max-height: 72%; }
 
 /* Sound effects (js/sfx.js): each one placed, tilted and styled at random. No animation: they
-   appear and go at once (the user's choice). */
+   appear and go at once. */
 .sfx {
   position: absolute;
   z-index: 2;
@@ -308,9 +299,9 @@ button {
 
 .keys {
   display: grid;
-  grid-template-columns: 1.55fr 1fr; /* − is used most, so it's the bigger panel */
+  grid-template-columns: var(--key-ratio) 1fr; /* − is used most, so it's the bigger panel */
   gap: var(--col-gap);
-  height: clamp(60px, 10.5vh, 86px);
+  height: var(--key-row-h);
   margin-top: var(--row-gap);
 }
 .key {
@@ -347,12 +338,12 @@ button {
   width: 44px;
   height: 44px;
   transform: translateY(-46%) rotate(-5deg);
-  border: 2.5px solid #8a7b6b;
+  border: 2.5px solid var(--seal-off);
   border-radius: 4px;
   /* The hanko's inner rule: a thin second frame inside the first. */
-  box-shadow: inset 0 0 0 2.5px var(--black), inset 0 0 0 3.5px #8a7b6b;
+  box-shadow: inset 0 0 0 2.5px var(--black), inset 0 0 0 3.5px var(--seal-off);
   background: var(--black);
-  color: #8a7b6b;
+  color: var(--seal-off);
   font-family: var(--heavy);
   font-size: 23px;
   line-height: 1;
@@ -367,7 +358,6 @@ button {
   color: var(--ink);
 }
 
-#villain { margin-top: 2px; }
 
 /* ---------- Sheet ---------- */
 /* A page of its own over the main one: black gutters, the fields as panels (villain above hero, as
@@ -388,7 +378,6 @@ button {
     max(var(--side), env(safe-area-inset-left));
   transition: padding-bottom 0.25s ease-out; /* follows the keyboard up and down */
 }
-.sheet[hidden] { display: none; }
 .sheet-page {
   width: min(420px, 100%);
   display: flex;
@@ -414,7 +403,6 @@ button {
   max-height: 170px;
   cursor: text;
 }
-.entry[hidden] { display: none; }
 .entry input {
   position: absolute;
   inset: 0;
@@ -440,37 +428,27 @@ button {
 /* The panel being typed in gets a heavier border. */
 .entry:focus-within .border { border-width: 4px; }
 
-/* Narration box: paper, ink border, the antique serif (as Next stage). */
-.narration {
+.entry .narration {
   position: absolute;
   z-index: 1;
   left: 10px;
   top: 10px;
-  background: var(--paper);
-  border: 1.5px solid var(--ink);
-  color: var(--ink);
-  font-size: 13px;
-  padding: 4px 10px;
-  line-height: 1.2;
 }
 .error {
-  position: static;
   align-self: flex-start;
   margin: 0;
-  color: #8e2410;
+  color: var(--error);
 }
-.error[hidden] { display: none; }
 
 /* At the bottom, under the thumb (above the keyboard while it's open). */
 .sheet-actions {
   display: grid;
-  grid-template-columns: 1fr 1.55fr;
+  grid-template-columns: 1fr var(--key-ratio);
   gap: var(--col-gap);
   flex: none;
   margin-top: auto;
-  height: clamp(60px, 10.5vh, 86px);
+  height: var(--key-row-h);
 }
-.sheet-key[hidden] { display: none; }
 /* The first game has no Cancel: Fight takes the row. */
 .sheet-actions:has(#sheet-cancel[hidden]) { grid-template-columns: 1fr; }
 .sheet-key {
