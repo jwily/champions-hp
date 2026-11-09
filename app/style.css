@@ -1,0 +1,404 @@
+/* Champions HP: a manga "flashback" page (Naruto's black-gutter pages): paper panels on black.
+   Measured from chapter 1 of the manga: straight-edged panels with thin ink borders, rows
+   separated a little more than columns, vertical lettering in balloons, hand-lettered katakana
+   sound effects. One spot color, orange, marks the max-HP toggle and nothing else. */
+
+@font-face {
+  font-family: 'Dela Gothic One';
+  src: url('fonts/dela-gothic-one.woff2') format('woff2');
+  font-display: block;
+}
+@font-face {
+  font-family: 'Zen Antique';
+  src: url('fonts/zen-antique.woff2') format('woff2');
+  font-display: block;
+}
+
+:root {
+  --black: #000;
+  --paper: #d8d1c1; /* dimmed warm paper, so the panels don't glare in a dim room */
+  --ink: #171512;
+  --tone: #b1a998; /* screentone dots and the art's ink wash */
+  --sub: #5a5449; /* small print on paper */
+  --head: #a39d91; /* small print on the black page */
+  --orange: #ff7a1a;
+  --col-gap: 8px;
+  --row-gap: 12px;
+  --side: 12px;
+  --heavy: 'Dela Gothic One', 'Hiragino Kaku Gothic StdN', sans-serif;
+  --antique: 'Zen Antique', 'Hiragino Mincho ProN', serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--black);
+  color: var(--paper);
+  font-family: var(--antique);
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+#page {
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto 1fr auto;
+  padding:
+    max(8px, env(safe-area-inset-top))
+    max(var(--side), env(safe-area-inset-right))
+    max(10px, env(safe-area-inset-bottom))
+    max(var(--side), env(safe-area-inset-left));
+}
+
+/* ---------- Page furniture ---------- */
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 42px;
+  font-size: 11px;
+  color: var(--head);
+}
+.head b { font-weight: 400; color: var(--paper); }
+
+/* Narration-box buttons: a plain rectangle, like a manga caption. */
+.caption {
+  border: 1.5px solid var(--paper);
+  background: var(--black);
+  color: var(--paper);
+  font-size: 13px;
+  min-height: 34px;
+  padding: 6px 12px;
+  line-height: 1.2;
+}
+.caption:active { background: var(--paper); color: var(--black); }
+
+/* ---------- Panels ---------- */
+
+.panel {
+  position: relative;
+  background: var(--paper);
+  color: var(--ink);
+  container-type: size;
+}
+/* The ink border, drawn as its own layer so it can wobble like a hand-inked line. */
+.border {
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--ink);
+  pointer-events: none;
+  filter: url(#rough);
+}
+.art-wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--tone);
+  stroke-linecap: round;
+}
+.tone {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(var(--tone) 1px, transparent 1.25px);
+  background-size: 4px 4px;
+}
+.fade {
+  -webkit-mask: linear-gradient(180deg, #000, transparent 75%);
+  mask: linear-gradient(180deg, #000, transparent 75%);
+}
+#hero .fade {
+  -webkit-mask: linear-gradient(0deg, #000, transparent 60%);
+  mask: linear-gradient(0deg, #000, transparent 60%);
+}
+
+/* Focus lines (集中線), flashed on a hit. */
+.focus {
+  position: absolute;
+  inset: -80%;
+  background: repeating-conic-gradient(var(--ink) 0 0.45deg, transparent 0.45deg 4deg);
+  -webkit-mask: radial-gradient(circle, transparent 22%, #000 44%);
+  mask: radial-gradient(circle, transparent 22%, #000 44%);
+  opacity: 0;
+  transition: opacity 0.35s ease-out;
+}
+.focus.flash { opacity: 0.6; transition: none; }
+
+.shake { animation: shake 0.22s; }
+@keyframes shake {
+  25% { transform: translate(-4px, 2px); }
+  50% { transform: translate(3px, -2px); }
+  75% { transform: translate(-2px, 1px); }
+}
+
+/* ---------- Numbers, balloons, sound effects ---------- */
+
+.num {
+  position: absolute;
+  font-family: var(--heavy);
+  font-size: min(44cqh, 34cqw);
+  line-height: 0.9;
+  color: var(--ink);
+  -webkit-text-stroke: 0.08em var(--paper);
+  paint-order: stroke;
+  font-variant-numeric: tabular-nums;
+}
+#villain .num { right: 6cqw; top: 54%; transform: translateY(-50%); font-size: min(40cqh, 30cqw); }
+/* The hero's number breaks out over the panel's top border, as Kishimoto does for impact. */
+#hero .num { left: 4cqw; top: 0; transform: translateY(-22%); font-size: min(46cqh, 29cqw); }
+
+.max {
+  position: absolute;
+  bottom: 8px;
+  font-size: 14px;
+  color: var(--sub);
+}
+#villain .max { right: 12px; }
+#hero .max { left: 14px; }
+.max .up { color: #c4500a; }
+
+.balloon {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1.3;
+  color: var(--ink);
+}
+.balloon .line { writing-mode: vertical-rl; max-height: 100%; }
+.upright { text-combine-upright: all; -webkit-text-combine: horizontal; }
+
+/* The villain's spiky shout balloon: ink star with a paper star inside. */
+.shout {
+  left: 5cqw;
+  top: 9cqh;
+  width: max(84px, 27cqw);
+  height: min(62cqh, 100cqh - 9cqh - 56px);
+  background: var(--ink);
+  font-family: var(--heavy);
+  font-size: 12px;
+}
+.shout, .shout::before {
+  clip-path: polygon(50% 0, 58% 13%, 74% 4%, 72% 21%, 94% 17%, 82% 34%, 100% 46%, 82% 56%, 96% 74%, 74% 70%, 76% 92%, 60% 80%, 50% 100%, 40% 82%, 24% 96%, 26% 72%, 4% 78%, 18% 58%, 0 46%, 18% 34%, 6% 16%, 28% 22%, 26% 4%, 42% 16%);
+}
+.shout::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: var(--paper);
+}
+.shout .line { position: relative; max-height: 60%; }
+
+/* The hero's round balloon. */
+.round {
+  right: 6cqw;
+  top: 26cqh;
+  width: max(70px, 21cqw);
+  height: 54cqh;
+  background: var(--paper);
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+}
+.round .line { max-height: 72%; }
+
+.sfx {
+  position: absolute;
+  font-family: var(--heavy);
+  font-size: min(18cqh, 40px);
+  line-height: 0.92;
+  letter-spacing: -0.08em;
+  writing-mode: vertical-rl;
+  color: var(--ink);
+  -webkit-text-stroke: 0.11em var(--paper);
+  paint-order: stroke;
+  transform: rotate(8deg);
+  opacity: 0;
+  pointer-events: none;
+}
+.sfx.show { animation: sfx 0.6s ease-out; }
+@keyframes sfx {
+  0% { opacity: 1; transform: rotate(8deg) scale(1.25); }
+  15% { opacity: 1; transform: rotate(8deg) scale(1); }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+#villain .sfx { left: calc(5cqw + max(84px, 27cqw) + 6px); top: 8cqh; }
+#hero .sfx { right: calc(6cqw + max(70px, 21cqw) + 6px); top: 34cqh; }
+
+/* ---------- Villain extras ---------- */
+
+/* Inset panel in the top-right corner, separated by a black gutter. */
+.inset {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 12px 10px 6px;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  box-shadow: 0 0 0 6px var(--black);
+  font-family: var(--heavy);
+  font-size: 13px;
+  line-height: 1;
+  color: var(--ink);
+}
+.inset ruby { ruby-position: over; }
+.inset rt { font-family: var(--antique); font-size: 8px; color: var(--sub); }
+
+.next {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 1;
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--ink);
+}
+.next:active { background: var(--ink); color: var(--paper); }
+#villain.down .next { animation: beckon 0.9s ease-in-out infinite alternate; }
+@keyframes beckon { to { background: var(--ink); color: var(--paper); } }
+
+/* ---------- Keys ---------- */
+
+.keys {
+  display: grid;
+  grid-template-columns: 1.55fr 1fr; /* − is used most, so it's the bigger panel */
+  gap: var(--col-gap);
+  height: clamp(60px, 10.5vh, 86px);
+  margin-top: var(--row-gap);
+}
+.key {
+  font-family: var(--heavy);
+  font-size: 46px;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.key small {
+  position: absolute;
+  right: 8px;
+  bottom: 5px;
+  font-family: var(--antique);
+  font-size: 10px;
+  color: var(--sub);
+}
+.key.pressed { background: var(--ink); color: var(--paper); }
+.key.pressed small { color: var(--tone); }
+.boosting .key .border { border: 3px solid var(--orange); }
+
+/* ---------- The 増 seal ---------- */
+
+.seal-row {
+  position: relative;
+  height: 36px;
+}
+.seal {
+  position: absolute;
+  right: 8%;
+  top: 50%;
+  z-index: 2;
+  width: 46px;
+  height: 46px;
+  transform: translateY(-46%) rotate(-5deg);
+  border: 2.5px solid #8a7b6b;
+  border-radius: 5px;
+  background: var(--black);
+  color: #8a7b6b;
+  font-family: var(--heavy);
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.seal rt { font-family: var(--antique); font-size: 8px; }
+.seal[aria-pressed='true'] {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: var(--ink);
+}
+
+#villain { margin-top: 2px; }
+
+/* ---------- Sheet ---------- */
+
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.86);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: max(14vh, env(safe-area-inset-top)) 16px 16px;
+}
+.sheet[hidden] { display: none; }
+.card {
+  width: min(300px, 100%);
+  background: var(--paper);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  box-shadow: 0 0 0 6px var(--black), 0 0 0 7.5px var(--paper);
+  padding: 18px;
+}
+.card h1 {
+  margin: 0 0 6px;
+  font-family: var(--heavy);
+  font-size: 22px;
+  font-weight: 400;
+}
+.card label { display: block; margin-top: 12px; font-size: 13px; color: var(--sub); }
+.card label[hidden] { display: none; }
+.card input {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  font-family: var(--heavy);
+  font-size: 32px;
+  color: var(--ink);
+  background: #e9e3d6;
+  border: 2px solid var(--ink);
+  border-radius: 0;
+  padding: 6px 10px;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.card input:focus { outline: 3px solid var(--orange); outline-offset: 0; }
+.error { min-height: 18px; margin: 8px 0 0; font-size: 13px; color: #9b2a12; }
+.sheet-actions { display: flex; gap: 8px; margin-top: 8px; }
+.sheet-actions .caption {
+  flex: 1;
+  padding: 10px;
+  font-size: 15px;
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--ink);
+}
+.sheet-actions .caption[hidden] { display: none; }
+.sheet-actions .primary,
+.sheet-actions .caption:active { background: var(--ink); color: var(--paper); }

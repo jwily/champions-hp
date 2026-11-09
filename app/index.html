@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Champions HP">
+  <meta name="theme-color" content="#000000">
+  <title>Champions HP</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <!-- Launch screens: plain black while iOS starts the app (tests/tools/make-icons.js). -->
+  <link rel="apple-touch-startup-image" href="icons/launch-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="icons/launch-1125x2436.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="icons/launch-1170x2532.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="icons/launch-1179x2556.png" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="icons/launch-1206x2622.png" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="icons/launch-828x1792.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="icons/launch-1242x2688.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="icons/launch-1284x2778.png" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="icons/launch-1290x2796.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="icons/launch-1320x2868.png" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+  <link rel="preload" href="fonts/dela-gothic-one.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/zen-antique.woff2" as="font" type="font/woff2" crossorigin>
+  <!-- Black from the first frame; the page fades in once the fonts are ready (app.js). -->
+  <style>
+    html, body { background: #000; }
+    body { transition: opacity 0.12s ease-out; }
+    body.starting { opacity: 0; animation: show-anyway 0s 2.5s forwards; }
+    @keyframes show-anyway { to { opacity: 1; } }
+  </style>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="starting">
+  <main id="page">
+    <!-- Running head, after the manga's "NARUTO—ナルト—1": the number counts games. -->
+    <header class="head">
+      <span class="running"><b>HP</b>—ヒットポイント—<b id="game-num">1</b></span>
+      <button id="set" class="caption">Set HP</button>
+    </header>
+
+    <section id="villain" class="panel" aria-label="Villain">
+      <div class="art-wrap"><div class="tone fade"></div><div class="focus"></div></div>
+      <div class="balloon shout" aria-hidden="true"><span class="line"></span></div>
+      <div class="num" aria-live="polite"></div>
+      <div class="max"></div>
+      <div class="sfx" aria-hidden="true"></div>
+      <!-- Inset panel in the corner, after the chapter titles ("ナンバー1：うずまきナルト!!"). -->
+      <div class="inset"><ruby>◎<rt>ステージ</rt></ruby><span id="stage-num">1</span>：VILLAIN!!</div>
+      <button id="next" class="caption next">Next stage ▸</button>
+      <div class="border"></div>
+    </section>
+    <div class="keys">
+      <button class="panel key" data-side="villain" data-dir="-1" aria-label="Villain minus 1, hold for minus 5">−<small>hold −5</small><span class="border"></span></button>
+      <button class="panel key" data-side="villain" data-dir="1" aria-label="Villain plus 1, hold for plus 5">+<span class="border"></span></button>
+    </div>
+
+    <div class="seal-row">
+      <!-- The max-HP toggle, as a hanko seal: 増 ("increase"). -->
+      <button id="seal" class="seal" aria-pressed="false" aria-label="Raise or lower max HP"><ruby>増<rt>ぞう</rt></ruby></button>
+    </div>
+
+    <section id="hero" class="panel" aria-label="Hero">
+      <div class="art-wrap"><div class="tone fade"></div><div class="focus"></div></div>
+      <div class="balloon round" aria-hidden="true"><span class="line"></span></div>
+      <div class="max"></div>
+      <div class="sfx" aria-hidden="true"></div>
+      <div class="border"></div>
+      <!-- Breaks out over the panel's top border. -->
+      <div class="num" aria-live="polite"></div>
+    </section>
+    <div class="keys">
+      <button class="panel key" data-side="hero" data-dir="-1" aria-label="Hero minus 1, hold for minus 5">−<small>hold −5</small><span class="border"></span></button>
+      <button class="panel key" data-side="hero" data-dir="1" aria-label="Hero plus 1, hold for plus 5">+<span class="border"></span></button>
+    </div>
+  </main>
+
+  <div id="sheet" class="sheet" hidden>
+    <form id="sheet-form" class="card" novalidate>
+      <h1 id="sheet-title">NEW GAME!!</h1>
+      <label id="hero-row">Hero HP
+        <input id="hero-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off">
+      </label>
+      <label><span id="villain-label">Villain HP</span>
+        <input id="villain-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off">
+      </label>
+      <p id="sheet-error" class="error" role="alert"></p>
+      <div class="sheet-actions">
+        <button type="button" id="sheet-cancel" class="caption">Cancel</button>
+        <button type="submit" id="sheet-ok" class="caption primary">Fight</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Hand-inked panel borders: a slight wobble. -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <filter id="rough"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="2.2"/></filter>
+  </svg>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

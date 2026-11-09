@@ -1,0 +1,15 @@
+{
+  "name": "champions-hp-tests",
+  "private": true,
+  "description": "Browser tests and tools for the Champions HP app in ../app",
+  "scripts": {
+    "test": "node run.js",
+    "setup": "npx playwright install chromium webkit",
+    "fonts": "node tools/fonts.js",
+    "icons": "node tools/make-icons.js",
+    "screens": "node tools/screens.js"
+  },
+  "devDependencies": {
+    "playwright": "1.56.1"
+  }
+}
