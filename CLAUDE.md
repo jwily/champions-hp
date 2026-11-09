@@ -44,8 +44,8 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   (across in wide gaps, down in narrow ones, so a word never stands over the digits). A burst
   spreads out, three at most per panel. tests/layout.js fires many and checks each center.
 - **The 術 toggle** (`powerUsed`, state version 3; `MIGRATIONS` upgrades v1 and v2): one toggle
-  for the hero's special ability: the bare character, no box; off-white with a black outline, and
-  filled blue with a deep navy outline when used (an outline-only change wasn't noticeable). It replaced round / phase tracking with
+  for the hero's special ability: the bare character, no box; black outline; off-white, filled blue
+  when used (an outline-only change wasn't noticeable; a navy outline didn't come through). It replaced round / phase tracking with
   per-period ability tokens (v2), which the user found to be more than they needed. 術 ("jutsu")
   was the user's pick over 力 ("power").
 - `js/lines.js`: balloon lines and sound-effect words. `js/art.js`: the inked spirals and rays.
