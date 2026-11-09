@@ -253,7 +253,7 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   width: max(84px, 27cqw);
   height: min(62cqh, 100cqh - 9cqh - 66px); /* clear of Next stage */
 }
-.shout .line { max-height: 58%; }
+.shout .line { max-height: 72%; } /* the star's inner area */
 
 /* The hero's oval. */
 .round {

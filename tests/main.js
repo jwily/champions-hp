@@ -77,7 +77,7 @@ module.exports = (scenario) => {
     const page = await open({ game: { villain: [1, 14, 2], boost: true } });
     await page.click('#seal');
     await tap(page, 'villain', '-');
-    equal((await read(page, 'villain')).line, 'バ…バカな…!!', 'Villain line at 0');
+    equal((await read(page, 'villain')).line, '遊びは終わりだ…', 'First stage at 0: not beaten, about to stop holding back');
     check(await page.$eval('#villain', (p) => p.classList.contains('down')), 'Next stage beckons at 0');
     await page.click('#next');
     equal(await page.textContent('#sheet-title'), 'STAGE 2!!', 'Sheet title');
@@ -88,7 +88,7 @@ module.exports = (scenario) => {
     await page.click('#seal');
     await page.click('#next');
     await fillSheet(page, { villain: 15 });
-    equal(await read(page, 'villain'), { hp: 15, max: '/ 15', line: 'フン…' }, 'Stage 2 villain');
+    equal(await read(page, 'villain'), { hp: 15, max: '/ 15', line: 'これが真の力だ!!' }, 'Stage 2 opens with the reveal');
     equal(await page.textContent('#stage-num'), '2', 'Stage 2');
     equal(await page.getAttribute('#seal', 'aria-pressed'), 'false', 'Seal off for the new stage');
     equal((await read(page, 'hero')).hp, 10, 'Hero untouched');
@@ -261,6 +261,7 @@ module.exports = (scenario) => {
     await fillSheet(page, { villain: 1 });
     await tap(page, 'villain', '-');
     check(await page.isVisible('#villain .victory'), 'VICTORY!!! at stage II');
+    equal((await read(page, 'villain')).line, 'バ…バカな…!!', 'The final stage’s defeat line');
   });
 
   // ---------- The 術 toggle ----------

@@ -9,9 +9,12 @@ import { openSheet } from './sheet.js';
 import { trackKeyboard } from './keyboard.js';
 import { $, make } from './dom.js';
 
+// The villain's lines depend on the stage (first or final), so they're looked up when drawn.
+const villainLines = () => VILLAIN_LINES[state.stage >= STAGES[state.mode].at(-1) ? 'final' : 'first'];
+
 const SIDES = [
-  ['villain', 'Villain', VILLAIN_LINES, spirals],
-  ['hero', 'Hero', HERO_LINES, rays],
+  ['villain', 'Villain', villainLines, spirals],
+  ['hero', 'Hero', () => HERO_LINES, rays],
 ];
 
 const sides = Object.fromEntries(
@@ -36,9 +39,15 @@ const sides = Object.fromEntries(
   })
 );
 
-// Vertical text, with "!" and "!!" set upright inside the column as manga lettering does.
+// Vertical text: "!" and "!!" set upright inside the column as manga lettering does, and a new
+// column wherever the line marks a break ("\n", between phrases).
 function setVertical(el, text) {
-  el.replaceChildren(...text.split(/(!+)/).filter(Boolean).map((part) => (part.startsWith('!') ? make('span', 'upright', part) : part)));
+  el.replaceChildren(
+    ...text
+      .split(/(!+|\n)/)
+      .filter(Boolean)
+      .map((part) => (part === '\n' ? document.createElement('br') : part.startsWith('!') ? make('span', 'upright', part) : part))
+  );
 }
 
 function draw() {
@@ -49,7 +58,7 @@ function draw() {
     el.max.textContent = `/ ${total(c)}`;
     if (c.up) el.max.append(make('span', 'up', ` (+${c.up})`));
     el.status.textContent = `${el.name} ${c.hp} of ${total(c)}`;
-    setVertical(el.line, lineFor(el.lines, c.hp / total(c)));
+    setVertical(el.line, lineFor(el.lines(), c.hp / total(c)));
     el.panel.classList.toggle('down', c.hp === 0);
     // A key that can't change anything right now shows faint (it stays pressable: nothing happens).
     const [canLower, canRaise] = state.boost ? [c.up > 0, total(c) < MAX_HP] : [c.hp > 0, c.hp < total(c)];

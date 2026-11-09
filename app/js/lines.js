@@ -3,16 +3,31 @@
 // after adding text, run `npm run fonts` (a test checks every character is covered).
 
 // Balloon lines by share of max HP left: the first entry whose limit the share is at or under.
-export const VILLAIN_LINES = [
-  [0, 'バ…バカな…!!'], // "Im-impossible...!!" (defeated)
-  [0.3, 'ぐっ…!!'], // "Ngh...!!"
-  [0.99, '小癪な!'], // "Insolent!" (annoyed, not yet shouting)
-  [Infinity, 'フン…'], // "Hmph..."
-];
+// "\n" marks where a line breaks into its next column, at a phrase, as a letterer would. Keep each
+// phrase to 5 characters at most ("!!" counts as one): that's what fits in the iPhone SE's balloons
+// (a layout test checks no line wraps mid-phrase).
+
+// The villain's lines, for each of their two stages, by share of max HP left: the first entry whose
+// limit the share is at or under. The first stage is confident; at 0 they aren't beaten, they're
+// about to stop holding back. The final stage opens with the reveal of their true power.
+export const VILLAIN_LINES = {
+  first: [
+    [0, '遊びは\n終わりだ…'], // "Playtime's over…" (not defeated: about to transform)
+    [0.3, 'ぐっ…!!'], // "Ngh…!!"
+    [0.99, '小癪な!'], // "Insolent!"
+    [Infinity, 'フン…'], // "Hmph…"
+  ],
+  final: [
+    [0, 'バ…\nバカな…!!'], // "Im… impossible…!!" (defeated)
+    [0.3, 'ありえん…!!'], // "This can't be…!!"
+    [0.99, 'その程度か!'], // "Is that all you've got!"
+    [Infinity, 'これが\n真の力だ!!'], // "This is my true power!!" (the reveal)
+  ],
+};
 
 export const HERO_LINES = [
   [0, '………'],
-  [0.3, 'くっ…まだだ…!!'], // "Ngh... not yet...!!"
+  [0.3, 'くっ…\nまだだ…!!'], // "Ngh... not yet...!!"
   [0.99, 'まだまだ!'], // "Not done yet!" (hurt but steady)
   [Infinity, 'いくぞ!!'], // "Here I go!!"
 ];

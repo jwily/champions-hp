@@ -6,6 +6,8 @@ const { PHONES, check } = require('./helpers');
 const CASES = {
   'widest numbers': { hero: [99, 90, 9], villain: [99, 99, 0], stage: 3, powerUsed: true },
   'longest lines': { hero: [1, 99, 0], villain: [0, 99, 0], stage: 12 },
+  'first stage down': { hero: [1, 99, 0], villain: [0, 99, 0], stage: 1 },
+  'the reveal': { hero: [99, 99, 0], villain: [99, 99, 0], stage: 2 },
 };
 
 module.exports = (scenario) => {
@@ -170,6 +172,20 @@ module.exports = (scenario) => {
           if (document.getElementById('power').getAttribute('aria-pressed') === 'true') {
             within(box('#power .tag'), hero);
             apart(box('#power .tag'), hNum);
+          }
+          // Each balloon line breaks only where it's marked (at phrases), never mid-phrase: as many
+          // columns as marked phrases.
+          for (const sel of ['#villain .shout .line', '#hero .round .line']) {
+            const line = document.querySelector(sel);
+            const phrases = line.querySelectorAll('br').length + 1;
+            const range = document.createRange();
+            range.selectNodeContents(line);
+            // Columns, by where they sit across: an upright "!!" sits a few px off its column's line, so
+            // positions within half a character of each other are one column.
+            const lefts = [...range.getClientRects()].filter((r) => r.width && r.height).map((r) => r.left + r.width / 2).sort((x, y) => x - y);
+            const half = parseFloat(getComputedStyle(line).fontSize) / 2;
+            const columns = lefts.filter((x, i) => i === 0 || x - lefts[i - 1] > half).length;
+            if (columns > phrases) out.push(`${sel} wraps mid-phrase (${columns} columns for ${phrases} phrases)`);
           }
           // The − / + signs centered in their keys.
           for (const key of document.querySelectorAll('.key')) {

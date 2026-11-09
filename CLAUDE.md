@@ -63,6 +63,11 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   mid-HP lines (小癪な!, まだまだ!); "!!" for real shouts (holds, low-HP and defeat lines, いくぞ!!,
   and the chapter-title style labels VILLAIN!!, STAGE n!!, FIGHT!!); "!!!" only for VICTORY. Hisses,
   rumbles and breaths take none; NEW GAME takes none. "!" and "!!" stand upright in vertical text.
+- The villain has lines for two stages (`VILLAIN_LINES.first` / `.final`, chosen by stage): the
+  first stage at 0 isn't beaten but about to stop holding back (遊びは終わりだ…), and the final
+  stage opens with the reveal of true power (これが真の力だ!!), a Naruto staple. Lines break into
+  columns at marked phrases (\n); each phrase is 5 characters at most to fit the SE's balloon at
+  14px (the user preferred shorter lines over smaller text). A layout test checks no mid-phrase wrap.
 - `js/lines.js`: balloon lines and sound-effect words. `js/art.js`: the inked spirals and rays.
   `js/sheet.js`: the HP entry sheet.
 - **Presses** (`js/presses.js`, lessons from Bgt-J's presses.js, not a copy): a control activates
