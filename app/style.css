@@ -573,6 +573,7 @@ button.narration.pressed,
   caret-color: var(--ink);
   outline: none;
   -webkit-text-stroke-width: 0.08em;
+  font-variant-numeric: tabular-nums; /* spaced like the page's numbers: every digit as wide */
   -webkit-user-select: text;
   user-select: text;
 }
