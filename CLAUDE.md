@@ -9,13 +9,16 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
 
 - `app/` is the deployable app: plain HTML/CSS/ES modules, no build step, no dependencies.
   Serve it with `cd app && python3 -m http.server 8000`.
-- `tests/`: `npm test` runs `main` and `layout` on WebKit and Chromium at once (it starts its own
-  server on port 8766). `npm test -- webkit layout` runs one engine and pass; `ONLY=<part of a
+- `tests/`: `npm test` runs `main`, `layout` and `updates` on WebKit and Chromium at once (it starts
+  its own server on port 8766; the deploy scenario uses 8767). `updates` is Chromium-only: Playwright's
+  WebKit can't reload offline through a service worker. Service workers are blocked in scenarios
+  unless they ask for them (`open({ serviceWorkers: 'allow' })`). `npm test -- webkit layout` runs one engine and pass; `ONLY=<part of a
   name> npm test` runs matching scenarios. First time: `npm install && npm run setup`.
 - Scenarios are independent (`scenario(name, async (open) => ...)`): each opens a fresh app with
   just the data it needs (`open({ game: { hero: [hp, max, up], villain: [...], stage, boost } })`).
-- Holds are checked on Playwright's fake clock (`open({ clock: true })`, `hold()` runs it), never
-  real time.
+- Holds are checked on Playwright's fake clock (`open({ clock: true })`, paused after load; `hold()`
+  runs it on), never real time. Left unpaused, it also follows real time, and a busy machine added
+  an extra repeat.
 - Layout checks measure the big numbers' actual glyphs (canvas text metrics), not their line boxes,
   which reach far above the digits.
 - Run `npm test` before every commit; `.githooks/pre-push` runs it before a push that touches `app/`
@@ -31,15 +34,26 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
 - Max HP follows the rules: "gets +X hit points" raises the dial by X and, when it ends, lowers it
   by X (RR v1.8 p. 22); heals stop at max (p. 21). In state, `max` is the printed/typed value and
   `up` the bonus; `total()` is the current maximum.
-- `js/lines.js`: balloon lines and sound effects. `js/press.js`: tap = 1, hold = 5 after 450 ms,
-  repeating every 550 ms (no double-tap detection: it would misread fast taps). `js/art.js`: the
-  inked spirals and rays. `js/sheet.js`: the HP entry sheet.
+- `js/lines.js`: balloon lines and sound effects. `js/art.js`: the inked spirals and rays.
+  `js/sheet.js`: the HP entry sheet.
+- **Presses** (`js/presses.js`, lessons from Bgt-J's presses.js, not a copy): a control activates
+  (its `click()`) when a press lifts still over it; the browser's own click never counts (cancelled
+  at touchend on the touched element only, and stopped if it comes: any click with a click count);
+  each finger is tracked on its own; fields and labels are left native so iOS can focus them. Give
+  controls plain `click` listeners. Holds use `onHold` (450 ms, repeating every 550 ms; drifting
+  10px calls a hold off). Deliberately not taken from Bgt-J: sending a tap in a gap to the nearest
+  control (between − and + that would guess the sign). No double-tap detection (it would misread
+  fast taps).
 - **Fonts are subsets.** `npm run fonts` downloads Dela Gothic One and Zen Antique cut to the
   characters the app uses (Google Fonts `text=`), and writes `fonts/chars.txt`. After adding any
   text, run it; a test fails if a character isn't covered.
-- **Offline:** `sw.js` caches FILES on install and serves from the cache. **Bump `VERSION` in sw.js
-  with every deploy that changes app files**, or phones keep the old copy. Add new files to FILES
-  (a test checks).
+- **Offline and updates** (`sw.js`, lessons from Bgt-J's, simplified since this app loads every file
+  at startup): launches are served from a saved complete version; each launch, and each return from
+  the background, downloads FILES past the browser cache (GitHub Pages sends max-age=600) and saves
+  a new version only if all arrived and some bytes changed, so nothing needs bumping. A new version
+  is switched to only at a launch, so a running app never mixes files. The first launch on a new
+  version shows "App updated" for 4 s in a caption over the running head (`notice()` in app.js).
+  Add new files to FILES (a test checks).
 
 ## Design rules
 

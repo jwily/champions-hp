@@ -4,7 +4,6 @@
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
-const { spawn } = require('child_process');
 
 const APP = path.join(__dirname, '..', 'app');
 const PORT = 8766;
@@ -42,33 +41,43 @@ function appFiles(dir = APP) {
   });
 }
 
-function serve() {
-  const server = spawn('python3', ['-m', 'http.server', String(PORT), '--bind', '127.0.0.1', '--directory', APP], {
-    stdio: 'ignore',
-  });
-  const up = () =>
-    new Promise((resolve) => {
-      http.get(URL, (res) => resolve(res.statusCode === 200)).on('error', () => resolve(false));
+const TYPES = {
+  '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json',
+  '.png': 'image/png', '.woff2': 'font/woff2', '.txt': 'text/plain',
+};
+
+/**
+ * Serves ../app. Options, for tests of updates: port; extra response headers; and
+ * change(urlPath, data), which can return different file contents (to simulate a deploy).
+ * Resolves to the server; stop it with server.close().
+ */
+function serve({ port = PORT, headers = {}, change = null } = {}) {
+  const server = http.createServer((req, res) => {
+    const urlPath = decodeURIComponent(new globalThis.URL(req.url, 'http://x').pathname);
+    const file = path.join(APP, urlPath.endsWith('/') ? `${urlPath}index.html` : urlPath);
+    if (!file.startsWith(APP)) return res.writeHead(403).end();
+    fs.readFile(file, (err, data) => {
+      if (err) return res.writeHead(404).end();
+      res
+        .writeHead(200, { 'Content-Type': TYPES[path.extname(file)] ?? 'application/octet-stream', ...headers })
+        .end(change?.(urlPath, data) ?? data);
     });
-  return (async () => {
-    for (let i = 0; i < 50; i++) {
-      if (await up()) return server;
-      await new Promise((r) => setTimeout(r, 100));
-    }
-    server.kill();
-    throw new Error('The test server did not start');
-  })();
+  });
+  return new Promise((resolve) => server.listen(port, '127.0.0.1', () => resolve(server)));
 }
 
 /**
  * Opens the app in a fresh context. `storage` is saved data to start from (an object, or a raw
  * string for corrupt data); `game` is a shortcut for a game in progress.
  */
-async function open(browser, { phone = 'iPhone 14 Pro', storage, game, clock = false } = {}) {
+async function open(browser, { phone = 'iPhone 14 Pro', storage, game, clock = false, url = URL, serviceWorkers = 'block' } = {}) {
+  // Service workers are off unless a scenario is about them: they'd serve saved copies between
+  // reloads.
   const context = await browser.newContext({
     viewport: PHONES[phone],
     deviceScaleFactor: 3,
     hasTouch: true,
+    serviceWorkers,
   });
   if (game) storage = saved(game);
   if (storage !== undefined) {
@@ -88,8 +97,11 @@ async function open(browser, { phone = 'iPhone 14 Pro', storage, game, clock = f
   // Holds are timed, so scenarios that hold run on a fake clock: real-time checks fail when the
   // machine is busy.
   if (clock) await page.clock.install();
-  await page.goto(URL);
+  await page.goto(url);
   await ready(page);
+  // Paused, so time moves only when a scenario runs it on: left flowing, it also moves with real
+  // time, and a busy machine slipped an extra hold repeat in.
+  if (clock) await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1000);
   return page;
 }
 
@@ -153,8 +165,11 @@ function equal(actual, expected, what) {
   );
 }
 
-/** Runs `fn(scenario)`, where scenario(name, async (open) => ...) runs one independent check. */
-async function scenarios(browser, label, fn) {
+/**
+ * Runs `fn(scenario, { engine, browser })`, where scenario(name, async (open) => ...) runs one
+ * independent check.
+ */
+async function scenarios(browser, label, fn, engine) {
   const results = [];
   const only = process.env.ONLY;
   const pending = [];
@@ -178,7 +193,7 @@ async function scenarios(browser, label, fn) {
         }
       })()
     );
-  });
+  }, { engine, browser });
   await Promise.all(pending);
   const failed = results.filter(([, e]) => e);
   for (const [name, e] of results) {

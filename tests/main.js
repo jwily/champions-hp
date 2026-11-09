@@ -2,8 +2,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const { APP, appChars, appFiles, tap, hold, read, stored, fillSheet, check, equal, ready } = require('./helpers');
-// Must match app/js/press.js.
+const { APP, appChars, appFiles, key, tap, hold, read, stored, fillSheet, check, equal, ready } = require('./helpers');
+// Must match app/js/presses.js.
 const HOLD_MS = 450;
 const REPEAT_MS = 550;
 
@@ -131,6 +131,78 @@ module.exports = (scenario) => {
     const sfx = await page.$eval('#villain .sfx', (s) => ({ text: s.textContent, shown: s.classList.contains('show') }));
     check(['ドン!', 'バキ!', 'ドカッ', 'ガッ'].includes(sfx.text) && sfx.shown, `Hit effect: ${JSON.stringify(sfx)}`);
     check(await page.$eval('#villain', (p) => p.classList.contains('shake')), 'The panel shakes on a hit');
+  });
+
+  // ---------- Presses (lessons from Bgt-J: app/js/presses.js) ----------
+
+  scenario('a press that slides off a key before lifting does nothing', async (open) => {
+    const page = await open({ game: {} });
+    const box = await key(page, 'villain', '-').boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2, box.y - 60, { steps: 4 });
+    await page.mouse.up();
+    equal((await read(page, 'villain')).hp, 14, 'Villain after sliding off');
+  });
+
+  scenario('a tap in the gutter between − and + does nothing', async (open) => {
+    const page = await open({ game: {} });
+    const minus = await key(page, 'villain', '-').boundingBox();
+    const plus = await key(page, 'villain', '+').boundingBox();
+    await page.mouse.click((minus.x + minus.width + plus.x) / 2, minus.y + minus.height / 2);
+    equal((await read(page, 'villain')).hp, 14, 'Villain after a gutter tap');
+  });
+
+  scenario('two fingers at once each count', async (open) => {
+    const page = await open({ game: {} });
+    await page.evaluate(() => {
+      const fire = (el, type, id) => {
+        const r = el.getBoundingClientRect();
+        el.dispatchEvent(new PointerEvent(type, { pointerId: id, bubbles: true, button: 0, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2, pointerType: 'touch' }));
+      };
+      const v = document.querySelector('.key[data-side="villain"][data-dir="-1"]');
+      const h = document.querySelector('.key[data-side="hero"][data-dir="-1"]');
+      fire(v, 'pointerdown', 11);
+      fire(h, 'pointerdown', 12);
+      fire(v, 'pointerup', 11);
+      fire(h, 'pointerup', 12);
+    });
+    equal([(await read(page, 'villain')).hp, (await read(page, 'hero')).hp], [13, 9], 'Both taps counted');
+  });
+
+  scenario('the browser’s own click never adds a second tap', async (open) => {
+    const page = await open({ game: {} });
+    await tap(page, 'villain', '-'); // pointer events plus the browser's click
+    equal((await read(page, 'villain')).hp, 13, 'One tap, one point');
+    await page.evaluate(() => document.querySelector('.key[data-side="villain"][data-dir="-1"]').dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 })));
+    equal((await read(page, 'villain')).hp, 13, 'A stray browser click alone does nothing');
+    await page.evaluate(() => document.querySelector('.key[data-side="villain"][data-dir="-1"]').click());
+    equal((await read(page, 'villain')).hp, 12, 'A click from code still works');
+  });
+
+  scenario('touch taps work, and the sheet’s fields still take focus', async (open) => {
+    const page = await open({ game: {} });
+    await key(page, 'hero', '-').tap();
+    equal((await read(page, 'hero')).hp, 9, 'Hero after a touch tap');
+    await page.tap('#set');
+    check(await page.isVisible('#sheet'), 'Set HP opens the sheet by touch');
+    await page.tap('#hero-input');
+    equal(await page.evaluate(() => document.activeElement.id), 'hero-input', 'Tapping a field focuses it');
+    await page.tap('#sheet-cancel');
+    check(!(await page.isVisible('#sheet')), 'Cancel by touch');
+    await page.tap('#seal');
+    equal(await page.getAttribute('#seal', 'aria-pressed'), 'true', 'The seal by touch');
+  });
+
+  scenario('a hold that drifts is called off, and its lift is an ordinary tap', async (open) => {
+    const page = await open({ clock: true, game: {} });
+    const box = await key(page, 'villain', '-').boundingBox();
+    await page.mouse.move(box.x + 30, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + 60, box.y + box.height / 2, { steps: 3 });
+    await page.clock.runFor(HOLD_MS + REPEAT_MS);
+    await page.mouse.up();
+    equal((await read(page, 'villain')).hp, 13, 'A tap, not a hold');
   });
 
   scenario('offline list covers every app file', async () => {

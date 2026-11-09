@@ -79,6 +79,17 @@ button {
   color: var(--head);
 }
 .head b { font-weight: 400; color: var(--paper); }
+/* A message ("App updated") borrows the running head's place, as a narration caption. */
+.notice {
+  border: 1.5px solid var(--paper);
+  background: var(--paper);
+  color: var(--ink);
+  padding: 5px 10px;
+  font-size: 12px;
+  animation: notice-in 0.18s ease-out;
+}
+.notice[hidden], .running[hidden] { display: none; }
+@keyframes notice-in { from { opacity: 0; transform: translateX(-6px); } }
 
 /* Narration-box buttons: a plain rectangle, like a manga caption. */
 .caption {
@@ -90,7 +101,7 @@ button {
   padding: 6px 12px;
   line-height: 1.2;
 }
-.caption:active { background: var(--paper); color: var(--black); }
+.caption.pressed { background: var(--paper); color: var(--black); }
 
 /* ---------- Panels ---------- */
 
@@ -279,7 +290,7 @@ button {
   color: var(--ink);
   border-color: var(--ink);
 }
-.next:active { background: var(--ink); color: var(--paper); }
+.next.pressed { background: var(--ink); color: var(--paper); }
 #villain.down .next { animation: beckon 0.9s ease-in-out infinite alternate; }
 @keyframes beckon { to { background: var(--ink); color: var(--paper); } }
 
@@ -401,4 +412,4 @@ button {
 }
 .sheet-actions .caption[hidden] { display: none; }
 .sheet-actions .primary,
-.sheet-actions .caption:active { background: var(--ink); color: var(--paper); }
+.sheet-actions .caption.pressed { background: var(--ink); color: var(--paper); }

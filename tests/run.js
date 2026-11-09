@@ -7,7 +7,7 @@
 const playwright = require('playwright');
 const { serve, scenarios } = require('./helpers');
 
-const PASSES = { main: require('./main'), layout: require('./layout') };
+const PASSES = { main: require('./main'), layout: require('./layout'), updates: require('./updates') };
 const ENGINES = ['webkit', 'chromium'];
 
 async function main() {
@@ -21,14 +21,14 @@ async function main() {
       engines.map(async (engine) => {
         const browser = await playwright[engine].launch();
         try {
-          for (const pass of passes) failed += await scenarios(browser, `${engine} ${pass}`, PASSES[pass]);
+          for (const pass of passes) failed += await scenarios(browser, `${engine} ${pass}`, PASSES[pass], engine);
         } finally {
           await browser.close();
         }
       })
     );
   } finally {
-    server.kill();
+    server.close();
   }
   console.log(failed ? `\n${failed} failed` : '\nAll passed');
   process.exit(failed ? 1 : 0);

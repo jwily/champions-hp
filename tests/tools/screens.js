@@ -28,7 +28,7 @@ async function main() {
     }
   } finally {
     await browser.close();
-    server.kill();
+    server.close();
   }
   console.log(`Screenshots in ${OUT}`);
 }

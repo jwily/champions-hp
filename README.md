@@ -37,6 +37,9 @@ Pushing `master` publishes `app/` to GitHub Pages (`.github/workflows/pages.yml`
 https://www.johnjylee.com/champions-hp/. Open that in Safari, then Share → **Add to Home Screen**.
 Your game is saved on the phone, tied to that address.
 
+The app opens instantly from a copy saved on the phone, and works offline. A new deploy downloads
+in the background and is used from the next launch, which says "App updated" for a moment.
+
 ## Tests
 
 ```sh
@@ -46,10 +49,13 @@ npm run setup      # downloads the test browsers (once)
 npm test           # every check on WebKit (Safari's engine) and Chromium
 ```
 
-- `main.js`: starting a game, taps and holds, the 増 seal, stages, saving, bad saved data, the
+- `main.js`: starting a game, taps and holds, the 増 seal, stages, saving, bad saved data, presses
+  (sliding off, gutter taps, two fingers, stray browser clicks, touch, fields taking focus), the
   offline file list, and font coverage
 - `layout.js`: on an iPhone SE, 13 mini, 14 Pro and 16 Pro Max, with the widest numbers and the
   longest lines: nothing spills out or overlaps, nothing scrolls, every control is big enough to tap
+- `updates.js` (Chromium only): opening offline, and a deploy arriving on the launch after with
+  "App updated"
 
 Tools: `npm run screens` screenshots each phone size into `tests/output/screens/`. `npm run fonts`
 re-cuts the bundled fonts after you add text. `npm run icons` redraws the icon and launch screens.

@@ -2,7 +2,7 @@
 
 import { state, started, total, change, toggleBoost } from './store.js';
 import { VILLAIN_LINES, HERO_LINES, lineFor, SFX } from './lines.js';
-import { onPress } from './press.js';
+import { trackPresses, onHold } from './presses.js';
 import { spirals, rays } from './art.js';
 import { openSheet } from './sheet.js';
 
@@ -73,6 +73,9 @@ function effect(key, kind) {
   }
 }
 
+// − / +: a tap is 1, a hold 5 (and 5 more each repeat). Fast taps all count: there's no double-tap
+// detection, which would misread three quick taps as a double tap and a tap.
+trackPresses();
 for (const key of document.querySelectorAll('.key')) {
   const side = key.dataset.side;
   const dir = +key.dataset.dir;
@@ -80,7 +83,8 @@ for (const key of document.querySelectorAll('.key')) {
     const kind = change(side, n * dir);
     if (kind) effect(side, kind);
   };
-  onPress(key, { tap: () => apply(1), hold: () => apply(5) });
+  key.addEventListener('click', () => apply(1));
+  onHold(key, () => apply(5));
 }
 
 $('#seal').addEventListener('click', toggleBoost);
@@ -96,6 +100,55 @@ Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 1500))]).th
   document.body.classList.remove('starting')
 );
 
-if ('serviceWorker' in navigator && location.protocol === 'https:') {
+// ---------- Updates ----------
+// New versions download in the background (sw.js) and run from the next launch. The first launch
+// running a new one says "App updated" briefly, in a caption over the running head, as Bgt-J does.
+// iOS mostly resumes the app rather than relaunching it, so coming back from the background checks
+// for a new version too.
+
+const VERSION_KEY = 'champions-hp-app-version'; // the version the last launch ran (sw.js names them)
+const NOTICE_MS = 4000;
+let noticeTimer = null;
+
+function notice(text) {
+  const node = $('#notice');
+  node.textContent = text;
+  node.hidden = false;
+  $('.running').hidden = true;
+  clearTimeout(noticeTimer);
+  noticeTimer = setTimeout(endNotice, NOTICE_MS);
+}
+
+function endNotice() {
+  clearTimeout(noticeTimer);
+  noticeTimer = null;
+  $('#notice').hidden = true;
+  $('.running').hidden = false;
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    if (noticeTimer) endNotice(); // not a stale message hours later
+    return;
+  }
+  navigator.serviceWorker?.controller?.postMessage('check-for-update');
+});
+
+// The service worker lets the app open offline. It only registers on HTTPS or localhost.
+if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    const { version } = event.data ?? {};
+    if (!version) return;
+    let seen;
+    try {
+      seen = localStorage.getItem(VERSION_KEY);
+      if (seen === version) return;
+      localStorage.setItem(VERSION_KEY, version);
+    } catch {
+      return; // storage full or blocked: rather say nothing than say it at every launch
+    }
+    if (seen) notice('App updated');
+  });
+  navigator.serviceWorker.controller?.postMessage('which-version');
 }
