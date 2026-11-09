@@ -216,6 +216,7 @@ module.exports = (scenario) => {
           for (const sel of ['#set', '#next', '#seal', '#power', ...[0, 1, 2, 3].map((i) => document.querySelectorAll('.key')[i])]) {
             const b = box(sel);
             if (!b.width && !b.height) continue; // hidden (Next stage after a win)
+            if (typeof sel === 'string' && document.querySelector(sel).disabled) continue; // a caption (Final stage), not a control
             within(b, view);
             if (b.height < 44 || b.width < 44) out.push(`${b.name} is too small to tap (${Math.round(b.width)}×${Math.round(b.height)})`);
           }

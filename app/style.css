@@ -192,15 +192,6 @@ button.narration.pressed,
   mask: linear-gradient(0deg, #000, transparent 60%);
 }
 
-/* Focus lines (集中線), flashed on a hit. */
-.focus {
-  position: absolute;
-  inset: -80%;
-  background: repeating-conic-gradient(var(--ink) 0 0.45deg, transparent 0.45deg 4deg);
-  -webkit-mask: radial-gradient(circle, transparent 22%, #000 44%);
-  mask: radial-gradient(circle, transparent 22%, #000 44%);
-  opacity: 0; /* app.js flashes it */
-}
 
 /* ---------- Numbers, balloons, sound effects ---------- */
 
@@ -327,8 +318,14 @@ button.narration.pressed,
 }
 /* The villain is down: Next stage turns solid ink (Inked, above), still: a pulse was distracting
    (the user's call, after trying a fade and a blink). */
-/* On the last stage it's a plain caption, "Final stage": nothing to press. */
-.next:disabled { cursor: default; }
+/* On the last stage it's a caption, "Final stage": nothing to press. Captions are compact boxes
+   (like the sheet's labels) and buttons tall ones, so it reads as a label, not a dead button, and
+   keeps its ink rather than looking greyed out (the user's pick). */
+.next:disabled {
+  min-height: 0;
+  padding: 4px var(--pad-x);
+  cursor: default;
+}
 
 /* ---------- Hero extras: the 術 ("jutsu") toggle for a special ability ---------- */
 

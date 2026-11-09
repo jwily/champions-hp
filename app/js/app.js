@@ -30,7 +30,6 @@ const sides = Object.fromEntries(
         num: $('.num', panel),
         max: $('.max', panel),
         line: $('.line', panel),
-        focus: $('.focus', panel),
         status: $('.status', panel),
         minus: $(`.key[data-side="${key}"][data-dir="-1"]`),
         plus: $(`.key[data-side="${key}"][data-dir="1"]`),
@@ -99,11 +98,9 @@ const SHAKE = [
 function effect(key, kind, amount) {
   const el = sides[key];
   soundEffect(el.panel, key, kind, amount);
-  // Only a hit shakes the panel and flashes focus lines: a heal, or max HP changing (フッ…,
-  // something fading), isn't an impact.
-  if (kind !== 'hit') return;
-  el.focus.animate([{ opacity: 0.6 }, { opacity: 0 }], { duration: 350, easing: 'ease-out' });
-  el.panel.animate(SHAKE, { duration: 220 });
+  // Only a hit shakes the panel: a heal, or max HP changing (フッ…, something fading), isn't an
+  // impact. (No focus-line flash: it fought the hero's own lines, the user's call.)
+  if (kind === 'hit') el.panel.animate(SHAKE, { duration: 220 });
 }
 
 // − / +: a tap is 1, a hold 5 (and 5 more each repeat). Fast taps all count: there's no double-tap

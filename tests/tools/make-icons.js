@@ -1,7 +1,8 @@
 // Draws the home-screen icon and the plain black launch screens, into app/icons/. Run: npm run icons
 // The icon (the user's pick): a manga panel, screentoned, with focus lines converging on its lower
-// right corner, where ドン! bursts out over the border into the black gutter. Square and full-bleed:
-// iOS rounds the corners itself.
+// right corner, where ドン! bursts out into the black gutter. The panel runs off the top and left
+// edges, a corner of a page rather than a centered square, and has no ink frame: a heavy frame on
+// black read as a bevelled tile. Square and full-bleed: iOS rounds the corners itself.
 
 const fs = require('fs');
 const path = require('path');
@@ -46,10 +47,10 @@ svg { position: absolute; inset: 0; width: 100%; height: 100%; }
 </style><div class="icon">
 <svg viewBox="0 0 100 100">
   <defs><pattern id="tone" width="3" height="3" patternUnits="userSpaceOnUse"><circle cx="1.5" cy="1.5" r=".65" fill="#b1a998"/></pattern>
-  <clipPath id="panel"><rect x="9" y="9" width="72" height="72"/></clipPath></defs>
-  <rect x="8" y="8" width="74" height="74" fill="#d8d1c1" stroke="#171512" stroke-width="2"/>
+  <clipPath id="panel"><rect width="82" height="82"/></clipPath></defs>
+  <rect width="82" height="82" fill="#d8d1c1"/>
   <g clip-path="url(#panel)">
-    <rect x="9" y="9" width="72" height="72" fill="url(#tone)"/>
+    <rect width="82" height="82" fill="url(#tone)"/>
     <path d="${focusLines(70, 70, 56, 22)}" fill="#171512" opacity="0.85"/>
   </g>
 </svg>

@@ -62,7 +62,9 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   (bright white is only for the ready state). Blue means ready. It starts sealed
   (the user: most heroes have no limited ability).
 - **Standard / Expert** (`mode`, state version 4): `STAGES` in store.js (I → II, or II → III, RR
-  p. 28), chosen in the New game sheet and kept. On the last stage Next stage is a disabled "Final stage" caption.
+  p. 28), chosen in the New game sheet and kept. On the last stage Next stage is a disabled "Final stage" caption: a compact caption box
+  like the sheet's labels (captions are compact boxes, buttons tall ones), not a greyed-out button;
+  disabled controls get no pressed look (`presses.js`).
   `won()`: the last stage at 0 shows VICTORY!!!
   (where Next stage was) and the hero's line やった!!. It replaced round / phase tracking with
   per-period ability tokens (v2), which the user found to be more than they needed. 術 ("jutsu")
@@ -146,6 +148,8 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
 - Limits and states are designed, not left to the happy path: a key that can't change anything shows
   faint (`.inert`), a defeated side's number is a hollow outline, Next stage turns solid ink, still,
   when the villain is down (a fade and a blink were both tried; the user found motion distracting).
+- A hit shakes its panel and nothing else: a focus-line flash was removed (it fought the hero's own
+  lines).
 - Panel borders are ruled straight (as Naruto's are); no wobble filter. Tap targets are 44px+.
 - Two spot colors, each with one job: blue for the 術 toggle while it's ready, and orange only for
   the max-HP mode (the inked 増 seal, the keys' borders, the bonus). Keep each meaning one thing.

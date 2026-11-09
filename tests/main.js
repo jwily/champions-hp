@@ -155,6 +155,7 @@ module.exports = (scenario) => {
       return document.getElementById('villain').getAnimations().length > 0; // read at once: it's brief
     });
     check(shakes, 'The panel shakes on a hit');
+    check(!(await page.$('#villain .focus')), 'No focus-line flash (it fought the hero’s own lines)');
     const calm = await page.evaluate(async () => {
       for (const a of document.getElementById('villain').getAnimations()) a.finish();
       document.getElementById('seal').click();
@@ -247,7 +248,16 @@ module.exports = (scenario) => {
     const page = await open({ game: { villain: [5, 14], stage: 2 } });
     equal(await page.textContent('#next'), 'Final stage', 'Standard stage II is the final one');
     check(await page.$eval('#next', (b) => b.disabled), 'and it’s disabled');
-    await page.click('#next', { force: true });
+    const caption = await page.$eval('#next', (b) => b.getBoundingClientRect().height);
+    await page.click('#set');
+    const label = await page.$eval('#villain-row .narration', (l) => l.getBoundingClientRect().height);
+    equal(Math.round(caption), Math.round(label), 'Drawn as a compact caption box, the height of the sheet’s labels');
+    await page.click('#sheet-cancel');
+    const box = await page.locator('#next').boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    check(!(await page.$eval('#next', (b) => b.classList.contains('pressed'))), 'No pressed look while held');
+    await page.mouse.up();
     check(!(await page.isVisible('#sheet')), 'Pressing it opens nothing');
     const expert = await open({ game: { villain: [5, 14], stage: 2, mode: 'expert' } });
     equal(await expert.textContent('#next'), 'Next stage ▸', 'Expert stage II still has a next stage');

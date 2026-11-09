@@ -10,7 +10,8 @@
 // A tap in a gap between controls does nothing: between − and + a guess could pick the wrong sign.
 // Give controls ordinary `click` listeners and nothing else; don't add click-timing workarounds.
 
-const PRESSABLE = 'button, [role=button]';
+// A disabled control (Next stage on the last stage) isn't pressable: no pressed look, no click.
+const PRESSABLE = 'button:not(:disabled), [role=button]:not([aria-disabled=true])';
 const NATIVE = 'input, textarea, select, label';
 
 export const HOLD_MS = 450; // a press held this long is a hold, not a tap
@@ -25,7 +26,7 @@ const pressTarget = (hit) => hit.closest?.(PRESSABLE) ?? hit;
 // As a native tap would: a field being typed in loses focus (closing the keyboard) when a control
 // is pressed, unless the control belongs to the same form (Fight keeps the field's value either way).
 function activate(target) {
-  if (!target || target.disabled || !target.matches(PRESSABLE)) return;
+  if (!target?.matches?.(PRESSABLE)) return;
   const field = document.activeElement;
   if (field?.matches('input, textarea') && !target.closest('form')?.contains(field)) field.blur();
   target.click();
