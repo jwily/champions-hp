@@ -70,7 +70,7 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
 - Sound-effect words and tilts are dealt from shuffled bags (`deal()` in sfx.js): every option once
   before any repeats, never the same twice in a row (the user wanted "iPod shuffle" randomness that
   feels random). Positions use best-of-8 candidates for the same reason.
-- `js/lines.js`: balloon lines and sound-effect words. `js/art.js`: the inked spirals and rays.
+- `js/lines.js`: balloon lines and sound-effect words. `js/art.js`: the inked spirals (villain) and focus lines (hero).
   `js/sheet.js`: the HP entry sheet.
 - **Presses** (`js/presses.js`, lessons from Bgt-J's presses.js, not a copy): a control activates
   (its `click()`) when a press lifts still over it; the browser's own click never counts (cancelled
@@ -105,6 +105,13 @@ app does; this file covers how to work on it. Card rules questions go to `~/proj
   running head "NARUTO—ナルト—1" (here "MC—マーベル・チャンピオンズ—" and the game count; マーベル・
   チャンピオンズ is the game's Japanese title). Spirals (uzumaki) recur everywhere. "!!!" appears too
   (なっ!!!, chapter 1 p. 24), which VICTORY!!! uses.
+- Panel art is abstract ink in the tone color, from chapter 1: spirals for the villain (sinister),
+  straight lines for the hero (the user wanted straight against curved). The hero's are manga focus
+  lines (集中線) fanning up from below the panel, deliberately irregular so they don't read as the
+  Rising Sun flag (the first version did): uneven spacing, each line starting at its own distance
+  (so the middle is hollow and no meeting point is drawn), each tapering to a point toward the
+  middle. Tried and rejected: smoke puffs from the ボン on p. 46 (round lobes read as clip art,
+  olives, bubbles), parallel speed lines, focus lines from every edge, rising strokes (grass).
 - The villain's panel gets a little more height than the hero's (1.15 : 1): it holds more (balloon,
   stage box, Next stage). Layout tests check both still fit on the SE.
 - Shared values are tokens on `:root`: `--inset` (10px, anything tucked into a panel corner),

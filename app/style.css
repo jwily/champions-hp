@@ -153,6 +153,7 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   stroke: var(--tone);
   stroke-linecap: round;
 }
+.art .ink { fill: var(--tone); stroke: none; } /* shapes drawn as fills: the hero's tapered lines */
 .tone {
   position: absolute;
   inset: 0;
