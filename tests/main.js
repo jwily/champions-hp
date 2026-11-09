@@ -154,6 +154,16 @@ module.exports = (scenario) => {
       return document.getElementById('villain').getAnimations().length > 0; // read at once: it's brief
     });
     check(shakes, 'The panel shakes on a hit');
+    const calm = await page.evaluate(async () => {
+      for (const a of document.getElementById('villain').getAnimations()) a.finish();
+      document.getElementById('seal').click();
+      document.querySelector('.key[data-side="villain"][data-dir="1"]').click(); // raise max HP
+      document.querySelector('.key[data-side="villain"][data-dir="-1"]').click(); // lower it: フッ…
+      const still = document.getElementById('villain').getAnimations().length === 0;
+      document.getElementById('seal').click(); // max-HP mode off again for the rest
+      return still;
+    });
+    check(calm, 'Max HP rising or falling doesn’t shake the panel');
     await hold(page, 'villain', '-', HOLD_MS + 50);
     shown = await effects();
     check(BIG.includes(shown.at(-1).text) && /\boutlined\b/.test(shown.at(-1).classes), `A hold gets a big, outlined word: ${JSON.stringify(shown.at(-1))}`);

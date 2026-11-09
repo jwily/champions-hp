@@ -87,7 +87,9 @@ const SHAKE = [
 function effect(key, kind, amount) {
   const el = sides[key];
   soundEffect(el.panel, key, kind, amount);
-  if (kind === 'hit' || kind === 'unboost') {
+  if (kind === 'hit') {
+    // Only a hit shakes the panel and flashes focus lines: a heal, or max HP changing (フッ…,
+    // something fading), isn't an impact.
     el.focus.animate([{ opacity: 0.6 }, { opacity: 0 }], { duration: 350, easing: 'ease-out' }); // focus lines
     el.panel.animate(SHAKE, { duration: 220 });
   }
