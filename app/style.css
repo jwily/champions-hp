@@ -23,7 +23,8 @@
   --head: #a39d91; /* small print on the black page */
   --orange: #ff7a1a; /* the one spot color: the max-HP mode */
   --orange-ink: #c4500a; /* the same orange, dark enough to read as small text on paper */
-  --blue: #2b62c9; /* the second spot color: the hero's special ability, used */
+  --blue: #2b62c9; /* the second spot color: the hero's special ability, ready */
+  --tag: #efe9dc; /* a sealing tag's paper, a shade lighter than the page's */
   --col-gap: 8px;
   --row-gap: 12px;
   --side: 12px;
@@ -295,9 +296,9 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
 
 /* ---------- Hero extras: the 術 ("jutsu") toggle for a special ability ---------- */
 
-/* Bottom-left of the hero panel: the character itself, no box, with a black outline. Off:
-   off-white. Used: filled blue, so the state reads at a glance (blue marks this and
-   nothing else, as orange marks the max-HP mode). The button keeps a 48px tap area. */
+/* Bottom-left of the hero panel, no box. Ready: the character in off-white with a blue outline (blue
+   marks this and nothing else, as orange marks the max-HP mode). Used: a paper sealing tag slaps
+   on across it and the character fades to a faint outline. The button keeps a 48px tap area. */
 .power {
   position: absolute;
   left: 8px;
@@ -307,14 +308,45 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   height: 48px;
   display: grid;
   place-items: center;
+}
+.power .kanji {
   font-family: var(--heavy);
   font-size: 34px;
   line-height: 1;
   color: var(--paper);
-  -webkit-text-stroke: 0.1em var(--ink);
+  -webkit-text-stroke: 0.1em var(--blue);
   paint-order: stroke;
 }
-.power[aria-pressed='true'] { color: var(--blue); }
+.power[aria-pressed='true'] .kanji { -webkit-text-stroke-color: var(--tone); }
+
+/* The sealing tag: a strip of paper with a ruled border and 封印 written down it. */
+.power .tag {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 24px;
+  height: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: var(--tag);
+  border: 1.5px solid var(--ink);
+  box-shadow: inset 0 0 0 2px var(--tag), inset 0 0 0 3px var(--ink);
+  font-family: var(--antique);
+  font-size: 15px;
+  line-height: 1;
+  color: var(--ink);
+  transform: translate(-50%, -50%) rotate(-18deg) scale(1.6);
+  opacity: 0;
+  pointer-events: none;
+}
+.power[aria-pressed='true'] .tag {
+  opacity: 1;
+  transform: translate(-50%, -50%) rotate(-18deg);
+  transition: transform 0.14s cubic-bezier(0.2, 0.9, 0.3, 1.3), opacity 0.08s; /* slapped on */
+}
 
 /* ---------- Keys ---------- */
 

@@ -158,6 +158,7 @@ module.exports = (scenario) => {
           // The 術 toggle: inside the panel, clear of the number and balloon.
           const power = box('#power');
           within(power, hero);
+          within(box('#power .tag'), hero);
           apart(power, hNum);
           apart(power, box('#hero .round'));
 

@@ -13,8 +13,9 @@ no build step, no dependencies.
   Fast taps all count, so tapping − three times is 3 damage. + heals up to max HP. A key shows
   faint when it can't change anything (− at 0, + at max), and a defeated side's number is hollow.
 - **Next stage ▸** asks for the villain's HP for the next stage. It pulses when the villain is at 0.
-- **術** (*jutsu*, bottom-left of the hero panel): tap it when you use the hero's special ability,
-  so there's nothing to remember; it turns blue. Tap again to clear it. A new game clears it.
+- **術** (*jutsu*, bottom-left of the hero panel): its blue outline means the hero's special ability
+  is ready. Tap it when you use the ability and a sealing tag (封印) covers it; tap again to release
+  it. A new game releases it.
 - **The 増 seal** ("increase") is the toggle for raising max HP, for effects that say a character
   "gets +X hit points" (Rules Reference v1.8, p. 22). While it's inked orange, − and + change the
   bonus instead: raising it raises max and current HP together; lowering it lowers both, which can

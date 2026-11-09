@@ -209,15 +209,19 @@ module.exports = (scenario) => {
 
   // ---------- The 術 toggle ----------
 
-  scenario('the 術 toggle marks the special ability used, and a new game clears it', async (open) => {
+  scenario('the 術 toggle seals the special ability when used, and a new game releases it', async (open) => {
     const page = await open({ game: {} });
     const used = () => page.getAttribute('#power', 'aria-pressed');
-    const color = () => page.$eval('#power', (b) => getComputedStyle(b).color);
-    equal(await used(), 'false', 'Not used to start');
-    const plain = await color();
+    const sealed = () => page.$eval('#power .tag', (t) => getComputedStyle(t).opacity === '1');
+    const outline = () => page.$eval('#power .kanji', (k) => getComputedStyle(k).webkitTextStrokeColor);
+    equal(await used(), 'false', 'Ready to start');
+    check(!(await sealed()), 'No seal while ready');
+    const ready = await outline();
     await page.click('#power');
     equal(await used(), 'true', 'Tapped: used');
-    check((await color()) !== plain, 'and filled with color');
+    await page.waitForFunction(() => getComputedStyle(document.querySelector('#power .tag')).opacity === '1'); // the tag's slap-on
+    check(await sealed(), 'Sealed with the tag');
+    check((await outline()) !== ready, 'and the character fades');
     await page.reload();
     await ready(page);
     equal(await used(), 'true', 'Saved across a relaunch');

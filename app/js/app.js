@@ -57,6 +57,7 @@ function draw() {
     el.plus.classList.toggle('inert', !canRaise);
   }
   $('#power').setAttribute('aria-pressed', state.powerUsed);
+  $('#power').setAttribute('aria-label', state.powerUsed ? 'Special ability used (sealed)' : 'Special ability ready');
   $('#stage-num').textContent = state.stage;
   $('#game-num').textContent = Math.max(1, state.game);
   $('#seal').setAttribute('aria-pressed', state.boost);
