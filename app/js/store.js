@@ -2,39 +2,24 @@
 // which saves and fires `hp:change`; app.js redraws on that event.
 
 const KEY = 'champions-hp';
-const VERSION = 2;
+const VERSION = 3;
 export const MAX_HP = 99;
-export const MAX_ABILITIES = 2; // limited abilities tracked per period
-export const PERIODS = ['round', 'phase'];
 
-// round and phase: where the game is (a round is the player phase, then the villain phase; Rules
-// Reference p. 4). abilities: how many of the hero's "Limit/Max 1 per round" and "per phase"
-// abilities to track (kept between games); used: which of them have been used this period.
+// powerUsed: the hero's 術 ("jutsu") toggle, for a special ability the player has to remember using.
 function fresh() {
-  return {
-    version: VERSION,
-    game: 0,
-    stage: 1,
-    boost: false,
-    hero: null,
-    villain: null,
-    round: 1,
-    phase: 'player',
-    abilities: { round: 0, phase: 0 },
-    used: { round: [], phase: [] },
-  };
+  return { version: VERSION, game: 0, stage: 1, boost: false, hero: null, villain: null, powerUsed: false };
 }
 
-// Older saved shapes, upgraded one version at a time.
+// Older saved shapes, upgraded to this one. Version 2 also tracked rounds, phases and limited
+// abilities, since replaced by the single 術 toggle.
 const MIGRATIONS = {
-  1: (s) => ({ ...s, version: 2, round: 1, phase: 'player', abilities: { round: 0, phase: 0 }, used: { round: [], phase: [] } }),
+  1: (s) => ({ ...s, version: 3, powerUsed: false }),
+  2: ({ round, phase, abilities, used, ...s }) => ({ ...s, version: 3, powerUsed: false }),
 };
 
 const validSide = (c) =>
   c === null ||
   (c && [c.hp, c.max, c.up].every(Number.isInteger) && c.hp >= 0 && c.max >= 1 && c.up >= 0);
-
-const validCount = (n) => Number.isInteger(n) && n >= 0 && n <= MAX_ABILITIES;
 
 function load() {
   try {
@@ -45,7 +30,7 @@ function load() {
       saved.version === VERSION &&
       validSide(saved.hero) &&
       validSide(saved.villain) &&
-      PERIODS.every((p) => validCount(saved.abilities?.[p]) && Array.isArray(saved.used?.[p]))
+      typeof saved.powerUsed === 'boolean'
     ) {
       return { ...fresh(), ...saved };
     }
@@ -73,19 +58,13 @@ export const total = (c) => c.max + c.up;
 
 export const started = () => state.hero !== null && state.villain !== null;
 
-const clearUsed = (...periods) => periods.forEach((p) => (state.used[p] = []));
-
-/** abilities: { round, phase } counts to track; left out, the last game's are kept. */
-export function newGame(heroHp, villainHp, abilities = state.abilities) {
+export function newGame(heroHp, villainHp) {
   state.game += 1;
   state.stage = 1;
   state.boost = false;
   state.hero = side(heroHp);
   state.villain = side(villainHp);
-  state.round = 1;
-  state.phase = 'player';
-  state.abilities = { ...abilities };
-  clearUsed(...PERIODS);
+  state.powerUsed = false;
   save();
 }
 
@@ -131,32 +110,7 @@ export function toggleBoost() {
   save();
 }
 
-/** Marks a tracked ability used, or unused again (a mistap). */
-export function toggleUsed(period, index) {
-  state.used[period][index] = !state.used[period][index];
-  save();
-}
-
-/** Player phase → villain phase → the next round's player phase. Per-phase abilities come back at
- * every step; per-round ones when a new round starts. */
-export function nextPhase() {
-  if (state.phase === 'player') {
-    state.phase = 'villain';
-    clearUsed('phase');
-  } else {
-    state.round += 1;
-    state.phase = 'player';
-    clearUsed(...PERIODS);
-  }
-  save();
-}
-
-/** One step back, for a mistap (what was marked used stays cleared). */
-export function previousPhase() {
-  if (state.phase === 'villain') state.phase = 'player';
-  else if (state.round > 1) {
-    state.round -= 1;
-    state.phase = 'villain';
-  } else return;
+export function togglePower() {
+  state.powerUsed = !state.powerUsed;
   save();
 }

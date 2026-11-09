@@ -44,14 +44,11 @@
 
     <section id="villain" class="panel" aria-label="Villain">
       <div class="art-wrap"><div class="tone fade"></div><div class="focus"></div></div>
-      <!-- Balloons run off the panel's edge, as the speaker is just out of frame (clipped here). -->
-      <div class="balloon-clip">
-        <div class="balloon shout" aria-hidden="true">
-          <!-- Vector outlines keep the ink line one width all round. Naruto's shout: many short,
-               uneven spikes around a rough oval. -->
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none"><polygon vector-effect="non-scaling-stroke" points="49.8,4.0 54.0,8.8 60.7,1.7 60.7,10.0 67.1,7.3 67.6,13.1 73.5,8.7 75.8,17.1 83.0,13.1 80.9,21.7 88.2,21.8 84.5,29.5 91.9,27.6 89.3,34.1 96.4,36.0 90.9,42.6 97.4,46.2 91.4,50.0 97.4,53.4 91.2,58.9 98.3,62.9 87.6,63.9 92.4,71.4 86.6,71.6 88.2,78.2 79.3,78.1 79.6,85.2 76.7,83.6 75.9,91.0 69.8,87.4 69.0,96.2 61.8,88.3 59.3,97.6 52.8,90.6 51.7,96.0 47.2,90.4 40.8,97.6 38.4,91.4 32.3,92.5 32.2,86.2 24.0,92.7 24.9,84.4 16.5,83.7 19.8,77.2 10.8,80.2 15.3,70.5 -5.8,74.7 12.9,65.1 5.6,62.1 10.3,56.7 1.9,56.3 10.0,49.8 1.7,46.1 7.9,41.8 5.7,37.5 12.3,35.2 5.0,29.4 15.8,27.8 9.7,21.3 20.4,22.3 18.2,12.1 26.4,17.4 22.2,9.0 30.1,12.0 30.8,3.8 39.2,10.2 42.7,1.0 46.2,9.6"/></svg>
-          <span class="line"></span>
-        </div>
+      <div class="balloon shout" aria-hidden="true">
+        <!-- Balloons are vector outlines with a non-scaling stroke, so the ink line is one width all
+             round, even stretched to the balloon's shape. -->
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none"><polygon vector-effect="non-scaling-stroke" points="50,0 58,13 74,4 72,21 94,17 82,34 100,46 82,56 96,74 74,70 76,92 60,80 50,100 40,82 24,96 26,72 4,78 18,58 0,46 18,34 6,16 28,22 26,4 42,16"/></svg>
+        <span class="line"></span>
       </div>
       <div class="reading" aria-hidden="true"><div class="num"></div><div class="max"></div></div>
       <span class="status visually-hidden" aria-live="polite"></span>
@@ -72,21 +69,14 @@
 
     <section id="hero" class="panel" aria-label="Hero">
       <div class="art-wrap"><div class="tone fade"></div><div class="focus"></div></div>
-      <div class="balloon-clip">
-        <div class="balloon round" aria-hidden="true">
-          <!-- A slightly lumpy oval with a short, curved tail toward the speaker off the corner. -->
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none"><path vector-effect="non-scaling-stroke" d="M97.9 46.0 C98.0 51.8 96.3 58.1 93.7 63.3 C91.1 68.5 87.0 73.4 82.6 77.2 L78.8 79.4 Q86.8 93.4 96.0 101.0 Q69.9 95.4 71.9 83.4 L67.4 86.1 C61.9 88.2 55.8 89.4 50.0 89.4 C44.2 89.4 38.0 88.2 32.7 86.0 C27.4 83.9 22.2 80.4 18.1 76.5 C14.0 72.6 10.6 67.7 8.1 62.6 C5.6 57.5 3.8 51.7 3.4 46.0 C3.0 40.3 3.6 33.9 5.7 28.5 C7.9 23.1 11.7 17.5 16.1 13.6 C20.5 9.7 26.7 6.8 32.3 5.2 C38.0 3.5 44.3 3.4 50.0 3.8 C55.7 4.2 61.4 5.6 66.7 7.5 C72.0 9.5 77.3 12.1 81.8 15.6 C86.2 19.1 90.7 23.7 93.4 28.8 C96.1 33.9 97.9 40.2 97.9 46.0 Z"/></svg>
-          <span class="line"></span>
-        </div>
+      <div class="balloon round" aria-hidden="true">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none"><ellipse vector-effect="non-scaling-stroke" cx="50" cy="50" rx="49" ry="49"/></svg>
+        <span class="line"></span>
       </div>
       <span class="status visually-hidden" aria-live="polite"></span>
-      <!-- Where the game is (tap for the next phase, which brings limited abilities back), then the
-           hero's once-per-round / once-per-phase abilities (tap one when it's used). -->
-      <div class="hero-foot">
-        <button id="phase" class="narration phase" aria-describedby="phase-hint"><span id="phase-round">Round 1</span><span id="phase-name">Player phase ▸</span></button>
-        <span id="phase-hint" class="visually-hidden">Tap for the next phase, hold to go back one.</span>
-        <div class="abilities" role="group" aria-label="Limited abilities"></div>
-      </div>
+      <!-- 術 ("jutsu", a technique): tap when the hero's special ability is used, so there's
+           nothing to remember. -->
+      <button id="power" class="power" aria-pressed="false" aria-label="Special ability used">術</button>
       <div class="border"></div>
       <!-- Breaks out over the panel's top border. -->
       <div class="reading" aria-hidden="true"><div class="num"></div><div class="max"></div></div>
@@ -112,17 +102,6 @@
         <input id="hero-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" placeholder="?">
         <span class="border"></span>
       </label>
-      <!-- How many of the hero's limited abilities to track (kept for the next game). -->
-      <div class="panel abilities-setup" id="abilities-row">
-        <div class="setup-group" data-period="round" role="group" aria-label="Abilities once per round">
-          <span class="setup-label">Once per round</span>
-          <button type="button" class="narration" data-count="0">0</button><button type="button" class="narration" data-count="1">1</button><button type="button" class="narration" data-count="2">2</button>
-        </div>
-        <div class="setup-group" data-period="phase" role="group" aria-label="Abilities once per phase">
-          <span class="setup-label">Once per phase</span>
-          <button type="button" class="narration" data-count="0">0</button><button type="button" class="narration" data-count="1">1</button><button type="button" class="narration" data-count="2">2</button>
-        </div>
-      </div>
       <p id="sheet-error" class="visually-hidden" role="alert"></p>
       <div class="sheet-actions">
         <button type="button" id="sheet-cancel" class="panel sheet-key">Cancel<span class="border"></span></button>

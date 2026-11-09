@@ -23,6 +23,7 @@
   --head: #a39d91; /* small print on the black page */
   --orange: #ff7a1a; /* the one spot color: the max-HP mode */
   --orange-ink: #c4500a; /* the same orange, dark enough to read as small text on paper */
+  --blue: #2b62c9; /* the second spot color: the hero's special ability, used */
   --col-gap: 8px;
   --row-gap: 12px;
   --side: 12px;
@@ -214,16 +215,8 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
 .balloon .line { writing-mode: vertical-rl; max-height: 100%; }
 .upright { text-combine-upright: all; -webkit-text-combine: horizontal; }
 
-/* Balloons: SVG outlines (index.html) with a constant-width ink line, lettered in the serif (the
-   heavy font blots many-stroke kanji like 癪 this small). Each runs off its panel's outer edge, as
-   Naruto's balloons often do when the speaker is out of frame: .balloon-clip cuts it at the panel,
-   and the panel's border is drawn over the cut. */
-.balloon-clip {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
+/* Balloons: SVG outlines (index.html) with a non-scaling stroke, so the ink line is one width all
+   round. Lettered in the serif (the heavy font blots many-stroke kanji like 癪 this small). */
 .balloon svg {
   position: absolute;
   inset: 0;
@@ -232,35 +225,32 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   overflow: visible;
 }
 .balloon polygon,
-.balloon path {
+.balloon ellipse {
   fill: var(--paper);
   stroke: var(--ink);
-  stroke-width: 1.25px;
+  stroke-width: 1.5px;
   stroke-linejoin: miter;
   stroke-miterlimit: 12;
 }
 .balloon .line { position: relative; }
 
-/* The villain's shout, off the left edge (the hidden part is padded out so the text stays centered
-   in what shows). */
+/* The villain's spiky shout. */
 .shout {
-  left: -5cqw;
-  top: 8cqh;
-  width: max(92px, 32cqw);
-  height: min(64cqh, 100cqh - 8cqh - 66px); /* clear of Next stage */
-  padding-left: 5cqw;
+  left: 5cqw;
+  top: 9cqh;
+  width: max(84px, 27cqw);
+  height: min(62cqh, 100cqh - 9cqh - 66px); /* clear of Next stage */
 }
-.shout .line { max-height: 56%; font-size: 14px; }
+.shout .line { max-height: 58%; font-size: 14px; }
 
-/* The hero's balloon, off the right edge. */
+/* The hero's oval. */
 .round {
-  right: -5cqw;
-  top: 22cqh;
-  width: max(82px, 26cqw);
-  height: 60cqh;
-  padding-right: 5cqw;
+  right: 6cqw;
+  top: 26cqh;
+  width: max(70px, 21cqw);
+  height: 54cqh;
 }
-.round .line { max-height: 66%; margin-top: -8%; } /* centered in the oval, above the tail */
+.round .line { max-height: 72%; }
 
 /* Sound effects (js/sfx.js): heavy katakana, solid for a change of 1, outlined for a hold. No
    animation: they appear and go at once. */
@@ -309,34 +299,30 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
 /* The villain is down: Next stage is what to press now. */
 #villain.down .next { background: var(--ink); color: var(--paper); }
 
-/* ---------- Hero extras: round / phase and limited abilities ---------- */
+/* ---------- Hero extras: the 術 ("jutsu") toggle for a special ability ---------- */
 
-/* Bottom-left of the hero panel, clear of the balloon: the marker, then the tokens, in reading
-   order (the block grows upward from the panel's bottom as it wraps). */
-.hero-foot {
+/* Bottom-left of the hero panel. Plain ink on paper; blue once the ability is used (blue marks this
+   and nothing else, as orange marks the max-HP mode). */
+.power {
   position: absolute;
   left: 10px;
   bottom: 10px;
   z-index: 1;
-  max-width: calc(105cqw - max(82px, 26cqw) - 16px); /* up to the balloon (.round), less a gap */
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--heavy);
+  font-size: 22px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
 }
-.abilities { display: contents; }
-.phase {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 3px 9px;
-  font-size: 12px;
-  line-height: 1.2;
-}
-.token { padding: 6px 8px; font-size: 12px; }
-.token.used {
-  color: var(--tone);
-  text-decoration: line-through;
+.power[aria-pressed='true'] {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: var(--paper);
 }
 
 /* ---------- Keys ---------- */
@@ -490,18 +476,3 @@ button.narration.pressed { background: var(--ink); color: var(--paper); }
   justify-content: center;
 }
 .sheet-key.pressed { background: var(--ink); color: var(--paper); }
-
-/* How many limited abilities to track: a small panel under the fields, two rows of 0 / 1 / 2.
-   Hidden while the keyboard is open: it isn't needed while typing a number. */
-.abilities-setup {
-  flex: none;
-  display: grid;
-  gap: 8px;
-  padding: 10px;
-  container-type: normal;
-}
-.keyboard-open .abilities-setup { display: none; }
-.setup-group { display: flex; align-items: center; gap: 6px; }
-.setup-label { flex: 1; font-size: 13px; }
-.setup-group button { width: 44px; }
-.setup-group button[aria-pressed='true'] { background: var(--ink); color: var(--paper); }

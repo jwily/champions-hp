@@ -107,10 +107,10 @@ export function trackPresses() {
 }
 
 /**
- * Press and hold: `step` runs after HOLD_MS and, with `repeat`, again every REPEAT_MS while held.
- * The press is then used up, so its lift doesn't also tap. Drifting off calls the hold off.
+ * Press and hold: `step` runs after HOLD_MS and again every REPEAT_MS while held. The press is then
+ * used up, so its lift doesn't also tap. Drifting off calls the hold off.
  */
-export function onHold(node, step, { repeat = true } = {}) {
+export function onHold(node, step) {
   const timers = new Map(); // pointerId -> timer
   const stop = (id) => {
     clearTimeout(timers.get(id));
@@ -125,7 +125,7 @@ export function onHold(node, step, { repeat = true } = {}) {
         if (!press) return;
         press.used = true;
         step();
-        if (repeat) timers.set(id, setInterval(step, REPEAT_MS));
+        timers.set(id, setInterval(step, REPEAT_MS));
       }, HOLD_MS)
     );
   });
